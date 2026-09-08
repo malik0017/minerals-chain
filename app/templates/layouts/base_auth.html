@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <title>{% block title %}Minerals Chain{% endblock %} - Minerals Chain</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', path='img/favicon.png') }}" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --adminuiux-content-font: "Open Sans", sans-serif;
+        --adminuiux-content-font-weight: 400;
+        --adminuiux-title-font: "Lexend", sans-serif;
+        --adminuiux-title-font-weight: 600;
+      }
+      .auth-shell {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+      }
+      .auth-card {
+        width: 100%;
+        max-width: 480px;
+      }
+      .auth-card img.auth-logo {
+        height: 40px;
+        margin-bottom: 1.5rem;
+      }
+    </style>
+    <link href="{{ url_for('static', path='css/app.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('static', path='css/theme-mineral.css') }}" rel="stylesheet" />
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body class="theme-blue roundedui">
+    <div class="auth-shell">
+      <div class="auth-card">
+        <div class="card shadow-sm border-0">
+          <div class="card-body p-4 p-md-5">
+            <div class="text-center">
+              <img src="{{ url_for('static', path='img/logo-1024.png') }}" alt="Minerals Chain" class="auth-logo" />
+            </div>
+            {% block content %}{% endblock %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

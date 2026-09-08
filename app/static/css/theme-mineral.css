@@ -1,0 +1,47 @@
+
+:root .theme-mineral,
+[data-bs-theme=light] .theme-mineral {
+  /* Primary — deep industrial teal (ore / quarry) */
+  --adminuiux-theme-1: #0e6e5c;
+  --adminuiux-theme-1-hover: #0b5c4d;
+  --adminuiux-theme-1-active: #084a3e;
+  --adminuiux-theme-1-rgb: 14, 110, 92;
+  --adminuiux-theme-1-text: #fff;
+
+  /* Secondary — copper / amber accent */
+  --adminuiux-theme-2: #c17a3f;
+  --adminuiux-theme-2-rgb: 193, 122, 63;
+  --adminuiux-theme-2-text: #fff;
+
+  /* Accent — dark navy / slate, used for gradients & highlights */
+  --adminuiux-theme-accent-1: #16324a;
+  --adminuiux-theme-accent-1-hover: #102538;
+  --adminuiux-theme-accent-1-active: #0b1a28;
+  --adminuiux-theme-accent-1-rgb: 22, 50, 74;
+  --adminuiux-theme-accent-1-text: #fff;
+
+  --adminuiux-theme-accent-2: #d4a24c;
+  --adminuiux-theme-accent-2-rgb: 212, 162, 76;
+  --adminuiux-theme-accent-2-text: #222;
+
+  /* Backgrounds */
+  --adminuiux-bg-1: #eef4f2;
+  --adminuiux-bg-2: #cfe3dd;
+
+  --bs-link-color: #0e6e5c;
+}
+
+[data-bs-theme=dark] .theme-mineral {
+  --adminuiux-bg-1: #04120e;
+  --adminuiux-bg-2: #0c2620;
+  --bs-dd-bg: #0f2a24;
+  --bs-link-color: hsla(0, 0%, 100%, 0.6);
+  --bs-body-bg: var(--adminuiux-bg-1);
+}
+
+/* Status colors used across product/order/verification states —
+   keep these semantic classes stable, the workflow code refers to them */
+.badge-status-draft            { background: var(--bs-secondary-bg-subtle); color: var(--bs-secondary-text-emphasis); }
+.badge-status-under-verification { background: var(--bs-warning-bg-subtle); color: var(--bs-warning-text-emphasis); }
+.badge-status-verified          { background: var(--bs-success-bg-subtle); color: var(--bs-success-text-emphasis); }
+.badge-status-failed            { background: var(--bs-danger-bg-subtle); color: var(--bs-danger-text-emphasis); }

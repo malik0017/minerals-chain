@@ -1,0 +1,120 @@
+{% extends "layouts/base_auth_split.html" %}
+{% block title %}Register{% endblock %}
+{% block content %}
+
+<div class="d-flex align-items-center gap-2 mb-1">
+  <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary-subtle" style="width:44px;height:44px;">
+    <i class="bi bi-person-plus text-primary"></i>
+  </span>
+  <div>
+    <h4 class="mb-0">Create your account</h4>
+    <p class="text-secondary mb-0 small">Register as a mine operator, buyer, or testing lab</p>
+  </div>
+</div>
+
+{% if errors %}
+<div class="alert alert-danger py-2 mt-3">
+  <ul class="mb-0 ps-3">
+    {% for err in errors %}<li>{{ err }}</li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<form method="post" action="{{ url_for('register_submit') }}" id="register-form" class="mt-4">
+
+  <label class="form-label">I am registering as a...</label>
+  <div class="btn-group w-100 mb-4" role="group">
+    {% for value, label, icon in [("seller", "Mine Operator", "bi-diagram-3"), ("buyer", "Buyer", "bi-cart3"), ("lab", "Testing Lab", "bi-eyedropper")] %}
+    <input type="radio" class="btn-check" name="role" id="role-{{ value }}" value="{{ value }}"
+           {% if form.role == value or (not form.role and value == "seller") %}checked{% endif %}
+           onchange="toggleLicenceField()" />
+    <label class="btn btn-outline-theme" for="role-{{ value }}"><i class="bi {{ icon }} me-1"></i>{{ label }}</label>
+    {% endfor %}
+  </div>
+
+  <div class="section-eyebrow mb-3"><i class="bi bi-building"></i> Company details</div>
+
+  <div class="mb-3">
+    <label class="form-icon-label form-label" for="company_name"><i class="bi bi-building"></i> Company name</label>
+    <input class="form-control" id="company_name" name="company_name" value="{{ form.company_name or '' }}"
+           placeholder="Enter your company name" required />
+  </div>
+
+  <div class="mb-3">
+    <label class="form-icon-label form-label" for="cr_number"><i class="bi bi-file-earmark-text"></i> Commercial Registration (CR) number</label>
+    <input class="form-control" id="cr_number" name="cr_number" value="{{ form.cr_number or '' }}"
+           placeholder="Enter CR number" required />
+  </div>
+
+  <div class="mb-3" id="licence-field">
+    <label class="form-icon-label form-label" id="licence-label" for="license_or_accreditation_number">
+      <i class="bi bi-award"></i> Mine licence number
+    </label>
+    <input class="form-control" id="license_or_accreditation_number" name="license_or_accreditation_number"
+           value="{{ form.license_or_accreditation_number or '' }}" placeholder="Enter licence or accreditation number" />
+  </div>
+
+  <div class="mb-4">
+    <label class="form-icon-label form-label" for="contact_phone"><i class="bi bi-telephone"></i> Contact phone <span class="text-secondary fw-normal">(optional)</span></label>
+    <input class="form-control" id="contact_phone" name="contact_phone" value="{{ form.contact_phone or '' }}"
+           placeholder="Enter contact phone number" />
+  </div>
+
+  <div class="section-eyebrow mb-3"><i class="bi bi-person"></i> Your account</div>
+
+  <div class="mb-3">
+    <label class="form-icon-label form-label" for="full_name"><i class="bi bi-person"></i> Your full name</label>
+    <input class="form-control" id="full_name" name="full_name" value="{{ form.full_name or '' }}"
+           placeholder="Enter your full name" required />
+  </div>
+
+  <div class="mb-3">
+    <label class="form-icon-label form-label" for="email"><i class="bi bi-envelope"></i> Email</label>
+    <input class="form-control" type="email" id="email" name="email" value="{{ form.email or '' }}"
+           placeholder="you@example.com" required />
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6">
+      <label class="form-icon-label form-label" for="password"><i class="bi bi-lock"></i> Password</label>
+      <input class="form-control" type="password" id="password" name="password" minlength="8"
+             placeholder="Create a password" required />
+    </div>
+    <div class="col-sm-6">
+      <label class="form-icon-label form-label" for="confirm_password"><i class="bi bi-lock"></i> Confirm password</label>
+      <input class="form-control" type="password" id="confirm_password" name="confirm_password" minlength="8"
+             placeholder="Confirm your password" required />
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-theme w-100 d-flex align-items-center justify-content-center gap-2">
+    Submit registration <i class="bi bi-arrow-right"></i>
+  </button>
+</form>
+
+<p class="text-center text-secondary mt-4 mb-0">
+  Already have an account? <a href="{{ url_for('login_form') }}">Log in</a>
+</p>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function toggleLicenceField() {
+    const role = document.querySelector('input[name="role"]:checked').value;
+    const label = document.getElementById('licence-label');
+    const input = document.getElementById('license_or_accreditation_number');
+    if (role === 'buyer') {
+      label.innerHTML = '<i class="bi bi-award"></i> Licence / accreditation number (not required for buyers)';
+      input.required = false;
+    } else if (role === 'lab') {
+      label.innerHTML = '<i class="bi bi-award"></i> Lab accreditation number';
+      input.required = true;
+    } else {
+      label.innerHTML = '<i class="bi bi-award"></i> Mine licence number';
+      input.required = true;
+    }
+  }
+  document.addEventListener('DOMContentLoaded', toggleLicenceField);
+</script>
+{% endblock %}

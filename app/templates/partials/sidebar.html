@@ -1,0 +1,108 @@
+<!--
+  Sidebar — real project navigation now, driven entirely by the
+  `nav_items` list each route passes in (see modules/seller/dashboard/
+  routes.py etc. for the shape: icon, label, url, active).
+
+  Everything else about this file (structure, classes, the collapsible
+  user-avatar toggle, the "Quick Links" card, the theme's active-link
+  styling) is unchanged from the vendor template — only the hardcoded
+  investment-menu links were vendor placeholder content and are now
+  real. header.html, footer.html, and personalize_theme_color.html are
+  untouched.
+-->
+ <div class="adminuiux-sidebar">
+    <div class="adminuiux-sidebar-inner">
+      <div class="px-3 not-iconic mt-3">
+        <div class="row">
+          <div class="col align-self-center">
+            <h6 class="fw-medium">Main Menu</h6>
+          </div>
+          <div class="col-auto">
+            <a
+              class="btn btn-link btn-square"
+              data-bs-toggle="collapse"
+              data-bs-target="#usersidebarprofile"
+              aria-expanded="false"
+              role="button"
+              aria-controls="usersidebarprofile"
+              ><i data-feather="user"></i
+            ></a>
+          </div>
+        </div>
+        <div class="text-center collapse" id="usersidebarprofile">
+          <figure class="avatar avatar-100 rounded-circle coverimg my-3">
+            <img src="{{ url_for('static', path='img/modern-ai-image/user-6.jpg') }}" alt="" />
+          </figure>
+          <h5 class="mb-1 fw-medium">{{ current_user.full_name | default('') }}</h5>
+          <p class="small">{{ current_user.company_name | default('') }}</p>
+        </div>
+      </div>
+
+      <ul class="nav flex-column menu-active-line">
+        {% for item in nav_items %}
+        <li class="nav-item">
+          <a href="{{ item.url }}" class="nav-link {% if item.active %}active{% endif %}"
+            ><i class="menu-icon bi {{ item.icon }}"></i>
+            <span class="menu-name">{{ item.label }}</span>
+            {% if item.badge %}<span class="badge text-bg-primary mx-2">{{ item.badge }}</span>{% endif %}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+
+      {% if upcoming_items %}
+      <div class="px-3 mt-2 not-iconic">
+        <h6 class="mb-2 small text-secondary text-uppercase">Coming soon</h6>
+      </div>
+      <ul class="nav flex-column">
+        {% for item in upcoming_items %}
+        <li class="nav-item">
+          <span class="nav-link disabled opacity-50" style="cursor:default;">
+            <i class="menu-icon bi {{ item.icon }}"></i>
+            <span class="menu-name">{{ item.label }}</span>
+          </span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      {% if admin_preview_links %}
+      <div class="px-3 mt-2 not-iconic">
+        <h6 class="mb-2 small text-secondary text-uppercase">Admin: view portals</h6>
+      </div>
+      <ul class="nav flex-column">
+        {% for item in admin_preview_links %}
+        <li class="nav-item">
+          <a href="{{ item.url }}" class="nav-link {% if item.active %}active{% endif %}"
+            ><i class="menu-icon bi {{ item.icon }}"></i>
+            <span class="menu-name">{{ item.label }}</span>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      <div class="mt-auto"></div>
+
+      <div class="px-3 mb-3 not-iconic">
+        <h6 class="mb-3 fw-medium">Quick Links</h6>
+        <div class="card adminuiux-card">
+          <div class="card-body p-2">
+            <div class="row gx-2">
+              <div class="col-12 d-flex justify-content-between">
+                <a href="{{ url_for('notifications_index') }}" class="btn btn-square btn-link">
+                  <i data-feather="bell"></i>
+                </a>
+                <a href="{{ url_for('help_center') }}" class="btn btn-square btn-link">
+                  <i data-feather="help-circle"></i>
+                </a>
+                <a href="{{ url_for('logout') }}" class="btn btn-square btn-link theme-red">
+                  <i data-feather="log-out"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

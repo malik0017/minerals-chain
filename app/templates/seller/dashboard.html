@@ -1,0 +1,33 @@
+{% extends "layouts/base.html" %}
+{% block title %}Seller Dashboard{% endblock %}
+{% block content %}
+
+{% if is_admin_preview %}
+<div class="alert alert-info d-flex align-items-center gap-2 mb-4">
+  <i class="bi bi-eye"></i>
+  <div>Admin preview — you're viewing the Seller Portal as <strong>{{ current_user.full_name }}</strong> (admin), not logged in as a seller.</div>
+</div>
+{% endif %}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h4 class="mb-1">Welcome, {{ current_user.full_name }}</h4>
+    <p class="text-secondary mb-0">{{ current_user.company_name }} · Mine Operator</p>
+  </div>
+  <span class="badge bg-success-subtle text-success px-3 py-2">
+    <i class="bi bi-patch-check-fill"></i> Approved
+  </span>
+</div>
+
+<div class="card adminuiux-card">
+  <div class="card-body">
+    <h6 class="mb-2"><i class="bi bi-signpost-split text-primary"></i> What's next for your portal</h6>
+    <p class="text-secondary mb-0">
+      Product listings, lab verification requests, and RFQ management are on
+      the roadmap — you'll see them appear in the sidebar as they ship. For
+      now, your account is fully approved and ready to go.
+    </p>
+  </div>
+</div>
+
+{% endblock %}

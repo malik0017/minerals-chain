@@ -1,0 +1,111 @@
+minerals/
+├── venv/
+├── app/
+│   ├── __init__.py              
+│   ├── main.py                    # wires seller/buyer/lab dashboard routers +
+│   │                               CompanyNotApprovedException handler
+│   │
+│   ├── core/
+│   │   ├── __init__.py            
+│   │   ├── config.py              
+│   │   ├── security.py            
+│   │   ├── auth.py                
+│   │   ├── permissions.py         #  require_active_portal() — role check AND
+│   │   │                            approval check, redirects to /home's status page instead
+│   │   │                            of a blunt 403 (used by all three new dashboards)
+│   │   ├── exceptions.py          # CompanyNotApprovedException
+│   │   ├── identity_guard.py      # [when RFQ/order models exist]
+│   │   └── localization.py       
+│   │
+│   ├── database/                  
+│   │
+│   ├── models/
+│   │   ├── __init__.py           
+│   │   ├── company.py             # enum columns fixed (values_callable) — see below
+│   │   ├── user.py                
+│   │   ├── notification.py        
+│   │   ├── audit_log.py           
+│   │   ├── product.py             # [ RESCOPED from B4, see note below]
+│   │   ├── verification.py        
+│   │   ├── passport.py            
+│   │   ├── rfq.py                 
+│   │   ├── quotation.py           
+│   │   ├── order.py               
+│   │   ├── dispute.py             
+│   │   ├── subscription.py        # tier ENUM already lives on Company (B1)
+│   │   └── invoice.py             
+│   │
+│   ├── schemas/auth.py            
+│   ├── repositories/              
+│   ├── services/                  
+│   │
+│   ├── modules/
+│   │   ├── __init__.py            
+│   │   ├── auth/
+│   │   │   └── routes.py           # [B4 UPDATED] /home now sends approved seller/buyer/lab
+│   │   │                            to their real portal dashboard, not dashboard-test
+│   │   ├── admin/approvals/       
+│   │   ├── shared/                 # /notifications
+│   │   ├── seller/
+│   │   │   ├── __init__.py         
+│   │   │   ├── dashboard/
+│   │   │   │   ├── __init__.py      
+│   │   │   │   └── routes.py        #  GET /seller/dashboard
+│   │   │   ├── listings/routes.py     
+│   │   │   ├── rfq_inbox/routes.py    
+│   │   │   └── orders/routes.py       
+│   │   ├── buyer/
+│   │   │   ├── __init__.py         
+│   │   │   ├── dashboard/
+│   │   │   │   ├── __init__.py      
+│   │   │   │   └── routes.py          GET /buyer/dashboard
+│   │   │   ├── rfq/routes.py          
+│   │   │   ├── quotations/routes.py   
+│   │   │   └── orders/routes.py       
+│   │   └── lab/
+│   │       ├── __init__.py         
+│   │       ├── dashboard/
+│   │       │   ├── __init__.py      
+│   │       │   └── routes.py          GET /lab/dashboard
+│   │       ├── requests/routes.py     
+│   │       └── certificates/routes.py 
+│   │
+│   ├── templates/
+│   │   ├── layouts/
+│   │   │   ├── base.html              # existing — vendor shell, used ONLY by dashboard-test now
+│   │   │   ├── base_auth.html          login / account_status (centered card)
+│   │   │   ├── base_auth_split.html   register only (two-column, matches reference design)
+│   │   │   ├── base_app.html           admin approvals / notifications (top bar, no sidebar)
+│   │   │   └── base_portal.html        the REAL portal shell — sidebar driven by
+│   │   │                               nav_items/upcoming_items from route context.
+│   │   ├── partials/                  # existing vendor partials — still used by dashboard-test
+│   │   │                               only; base_portal.html has its own sidebar/topbar markup
+│   │   ├── dashboard.html             # existing — now purely a design-reference page, nothing
+│   │   │                               routes here for a logged-in user anymore (see B4 home())
+│   │   ├── errors/403.html             
+│   │   ├── shared/notifications.html   
+│   │   ├── admin/                       # approvals_list.html, approvals_review.html
+│   │   ├── seller/
+│   │   │   └── dashboard.html           # real seller dashboard (welcome + status + roadmap)
+│   │   ├── buyer/
+│   │   │   └── dashboard.html           
+│   │   ├── lab/
+│   │   │   └── dashboard.html           
+│   │   └── auth/
+│   │       ├── login.html              
+│   │       ├── register.html            # redesigned, two-column (base_auth_split.html)
+│   │       └── account_status.html   
+│   │
+│   └── static/                    # existing, unchanged this batch
+│
+├── seeds/create_admin.py          
+├── alembic/
+│   └── versions/
+│       ├── 0001_initial_company_user.py        # create_type=False fix
+│       └── 0002_notifications_audit_log.py     
+├── alembic.ini                    
+├── requirements.txt                # [ unchanged since]
+├── README.md
+├── .env.example
+└── .env
+

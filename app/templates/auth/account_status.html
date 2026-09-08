@@ -1,0 +1,43 @@
+{% extends "layouts/base_auth.html" %}
+{% block title %}Account status{% endblock %}
+{% block content %}
+
+{% if status == "pending" %}
+  <h4 class="text-center mb-1">
+    <i class="bi bi-hourglass-split text-warning"></i> Registration under review
+  </h4>
+  <p class="text-secondary text-center mb-0">
+    Thanks for registering <strong>{{ company_name }}</strong>. A platform administrator is
+    reviewing your Commercial Registration and licence/accreditation details. You'll be notified
+    by email once a decision is made — there's nothing further to do right now.
+  </p>
+
+{% elif status == "rejected" %}
+  <h4 class="text-center mb-1">
+    <i class="bi bi-x-circle text-danger"></i> Registration not approved
+  </h4>
+  <p class="text-secondary text-center mb-2">
+    Your registration for <strong>{{ company_name }}</strong> was not approved.
+  </p>
+  {% if rejection_reason %}
+  <div class="alert alert-secondary py-2">{{ rejection_reason }}</div>
+  {% endif %}
+  <p class="text-secondary text-center mb-0">
+    Contact the platform administrator if you believe this was a mistake.
+  </p>
+
+{% elif status == "suspended" %}
+  <h4 class="text-center mb-1">
+    <i class="bi bi-slash-circle text-danger"></i> Account suspended
+  </h4>
+  <p class="text-secondary text-center mb-0">
+    <strong>{{ company_name }}</strong>'s access has been suspended by the platform administrator.
+    Contact them for details.
+  </p>
+{% endif %}
+
+<div class="text-center mt-4">
+  <a href="{{ url_for('logout') }}" class="btn btn-outline-theme">Log out</a>
+</div>
+
+{% endblock %}

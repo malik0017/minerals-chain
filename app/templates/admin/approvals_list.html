@@ -1,0 +1,41 @@
+{% extends "layouts/base.html" %}
+{% block title %}Pending approvals{% endblock %}
+{% block content %}
+
+<h4 class="mb-1">Pending registrations</h4>
+<p class="text-secondary mb-4">{{ companies | length }} awaiting review</p>
+
+{% if not companies %}
+<div class="alert alert-secondary">Nothing to review right now.</div>
+{% else %}
+<div class="table-responsive">
+  <table class="table align-middle">
+    <thead>
+      <tr>
+        <th>Company</th>
+        <th>Role</th>
+        <th>CR number</th>
+        <th>Submitted</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for company in companies %}
+      <tr>
+        <td>{{ company.company_name }}</td>
+        <td><span class="badge bg-secondary">{{ company.role.value }}</span></td>
+        <td>{{ company.cr_number }}</td>
+        <td>{{ company.created_at.strftime("%Y-%m-%d") }}</td>
+        <td class="text-end">
+          <a href="{{ url_for('admin_approvals_review', company_id=company.id) }}" class="btn btn-sm btn-theme">
+            Review
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% endblock %}

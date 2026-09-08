@@ -1,0 +1,23 @@
+{% extends "layouts/base.html" %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+
+<h4 class="mb-4">Notifications</h4>
+
+{% if not notification_list %}
+<div class="alert alert-secondary">Nothing here yet.</div>
+{% else %}
+<div class="list-group">
+  {% for n in notification_list %}
+  <div class="list-group-item">
+    <div class="d-flex justify-content-between">
+      <h6 class="mb-1">{{ n.title }}</h6>
+      <small class="text-secondary">{{ n.created_at.strftime("%Y-%m-%d %H:%M") }}</small>
+    </div>
+    <p class="mb-0 text-secondary">{{ n.body }}</p>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}

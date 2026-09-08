@@ -1,0 +1,28 @@
+{% extends "layouts/base_auth.html" %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+
+<h4 class="text-center mb-1">Welcome back</h4>
+<p class="text-secondary text-center mb-4">Log in to your Minerals Chain account</p>
+
+{% if error %}
+<div class="alert alert-danger py-2">{{ error }}</div>
+{% endif %}
+
+<form method="post" action="{{ url_for('login_submit') }}">
+  <div class="mb-3">
+    <label class="form-label" for="email">Email</label>
+    <input class="form-control" type="email" id="email" name="email" value="{{ email }}" required autofocus />
+  </div>
+  <div class="mb-3">
+    <label class="form-label" for="password">Password</label>
+    <input class="form-control" type="password" id="password" name="password" required />
+  </div>
+  <button type="submit" class="btn btn-theme w-100 mt-2">Log in</button>
+</form>
+
+<p class="text-center text-secondary mt-4 mb-0">
+  Don't have an account? <a href="{{ url_for('register_form') }}">Register</a>
+</p>
+
+{% endblock %}

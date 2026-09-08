@@ -1,0 +1,22 @@
+# --- Secrets: NEVER commit this. .env.example is the template teammates copy. ---
+.env
+
+# --- Python virtual environment (each dev creates their own) ---
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# --- Editor/IDE ---
+.vscode/
+.idea/
+
+# --- OS noise ---
+.DS_Store
+Thumbs.db
+
+# --- Logs ---
+*.log
+
+# --- Alembic (keep the migration files, ignore nothing here — listed
+!alembic/versions/
