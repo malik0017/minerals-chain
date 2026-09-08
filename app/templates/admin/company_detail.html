@@ -1,0 +1,165 @@
+{% extends "layouts/base.html" %}
+{% block title %}{{ company.company_name }}{% endblock %}
+{% block content %}
+
+<a href="{{ url_for('admin_companies_list') }}" class="text-secondary text-decoration-none small">&larr; Back to all companies</a>
+
+<div class="d-flex align-items-center justify-content-between mt-2 mb-4">
+  <div>
+    <h4 class="mb-1">{{ company.company_name }}</h4>
+    <span class="badge bg-secondary-subtle text-secondary">{{ company.role.value }}</span>
+    {% if company.status.value == "approved" %}<span class="badge bg-success-subtle text-success">Approved</span>
+    {% elif company.status.value == "pending" %}<span class="badge bg-warning-subtle text-warning">Pending</span>
+    {% elif company.status.value == "rejected" %}<span class="badge bg-danger-subtle text-danger">Rejected</span>
+    {% else %}<span class="badge bg-secondary-subtle text-secondary">Suspended</span>
+    {% endif %}
+  </div>
+  {% if company.status.value == "pending" %}
+  <a href="{{ url_for('admin_approvals_review', company_id=company.id) }}" class="btn btn-theme">
+    <i class="bi bi-inbox"></i> Go to approval review
+  </a>
+  {% endif %}
+</div>
+
+<div class="card adminuiux-card mb-3">
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Commercial Registration</dt>
+      <dd class="col-sm-9">{{ company.cr_number }}</dd>
+
+      <dt class="col-sm-3">Licence / accreditation</dt>
+      <dd class="col-sm-9">{{ company.license_or_accreditation_number or "—" }}</dd>
+
+      <dt class="col-sm-3">Contact</dt>
+      <dd class="col-sm-9">{{ company.contact_email }}{% if company.contact_phone %} · {{ company.contact_phone }}{% endif %}</dd>
+
+      <dt class="col-sm-3">Subscription tier</dt>
+      <dd class="col-sm-9">{{ company.subscription_tier.value if company.subscription_tier else "—" }}</dd>
+
+      {% if company.rejection_reason %}
+      <dt class="col-sm-3">Rejection reason</dt>
+      <dd class="col-sm-9">{{ company.rejection_reason }}</dd>
+      {% endif %}
+
+      <dt class="col-sm-3">Registered</dt>
+      <dd class="col-sm-9">{{ company.created_at.strftime("%Y-%m-%d %H:%M UTC") }}</dd>
+    </dl>
+  </div>
+</div>
+
+<div class="card adminuiux-card mb-3">
+  <div class="card-body">
+    <h6 class="mb-3"><i class="bi bi-people"></i> Users ({{ company_users | length }})</h6>
+    {% if not company_users %}
+    <p class="text-secondary mb-0">No users on this company.</p>
+    {% else %}
+    <ul class="list-unstyled mb-0">
+      {% for u in company_users %}
+      <li class="mb-1">{{ u.full_name }} — <span class="text-secondary">{{ u.email }}</span></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+</div>
+
+{% if company.role.value == "seller" %}
+<div class="card adminuiux-card">
+  <div class="card-body">
+    <h6 class="mb-3"><i class="bi bi-diagram-3"></i> Listings ({{ products | length }})</h6>
+    {% if not products %}
+    <p class="text-secondary mb-0">No listings yet.</p>
+    {% else %}
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr><th>Mineral</th><th>Quantity</th><th>Status</th><th>Verification attempts</th><th>Updated</th></tr>
+        </thead>
+        <tbody>
+          {% for p in products %}
+          <tr>
+            <td>{{ p.mineral_type }}{% if p.grade %} · {{ p.grade }}{% endif %}</td>
+            <td>{{ p.quantity_value }} {{ p.quantity_unit }}</td>
+            <td>
+              {% if p.status.value == "draft" %}<span class="badge bg-secondary-subtle text-secondary">Draft</span>
+              {% elif p.status.value == "under_verification" %}<span class="badge bg-warning-subtle text-warning">Under verification</span>
+              {% elif p.status.value == "verified" %}<span class="badge bg-success-subtle text-success">Verified</span>
+              {% elif p.status.value == "failed_verification" %}<span class="badge bg-danger-subtle text-danger">Failed verification</span>
+              {% else %}<span class="badge bg-secondary-subtle text-secondary">Suspended</span>
+              {% endif %}
+            </td>
+            <td class="text-secondary small">{{ verification_counts.get(p.id, 0) }}</td>
+            <td class="text-secondary small">{{ p.updated_at.strftime("%Y-%m-%d") }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card adminuiux-card">
+  <div class="card-body">
+    <h6 class="mb-3"><i class="bi bi-shield-check"></i> Mineral Passports ({{ passports | length }})</h6>
+    {% if not passports %}
+    <p class="text-secondary mb-0">No passport requests yet.</p>
+    {% else %}
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr><th>Mineral</th><th>Scope</th><th>Status</th><th>Passport #</th><th>Valid until</th></tr>
+        </thead>
+        <tbody>
+          {% for p in passports %}
+          <tr>
+            <td>{{ p.product.mineral_type }}</td>
+            <td>{{ p.scope.value | replace("_", " ") | capitalize }}</td>
+            <td>
+              {% if p.status.value == "approved" %}
+                {% if p.is_currently_valid %}<span class="badge bg-success-subtle text-success">Active</span>
+                {% else %}<span class="badge bg-secondary-subtle text-secondary">Expired</span>{% endif %}
+              {% elif p.status.value == "rejected" %}<span class="badge bg-danger-subtle text-danger">Rejected</span>
+              {% else %}<span class="badge bg-warning-subtle text-warning">Pending</span>
+              {% endif %}
+            </td>
+            <td class="text-secondary small">{{ p.passport_number or "—" }}</td>
+            <td class="text-secondary small">{{ p.valid_until or "—" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{% if company.role.value == "lab" %}
+<div class="card adminuiux-card">
+  <div class="card-body">
+    <h6 class="mb-3"><i class="bi bi-patch-check"></i> Certificates issued ({{ certificates | length }})</h6>
+    {% if not certificates %}
+    <p class="text-secondary mb-0">No certificates issued yet.</p>
+    {% else %}
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr><th>Certificate #</th><th>Mineral</th><th>Issued</th></tr>
+        </thead>
+        <tbody>
+          {% for c in certificates %}
+          <tr>
+            <td>{{ c.certificate_number }}</td>
+            <td>{{ c.product.mineral_type }}</td>
+            <td class="text-secondary small">{{ c.issued_at.strftime("%Y-%m-%d") }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

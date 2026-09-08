@@ -1,0 +1,92 @@
+{% extends "layouts/base.html" %}
+{% block title %}{% if mode == "edit" %}Edit Listing{% else %}New Listing{% endif %}{% endblock %}
+{% block content %}
+
+<a href="{{ url_for('seller_listings_index') }}" class="text-secondary text-decoration-none small">&larr; Back to listings</a>
+
+<h4 class="mt-2 mb-4">{% if mode == "edit" %}Edit listing{% else %}New listing{% endif %}</h4>
+
+{% if errors %}
+<div class="alert alert-danger py-2">
+  <ul class="mb-0 ps-3">
+    {% for err in errors %}<li>{{ err }}</li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<div class="card adminuiux-card">
+  <div class="card-body">
+    <form method="post" action="{% if mode == 'edit' %}{{ url_for('seller_listing_edit_submit', product_id=product.id) }}{% else %}{{ url_for('seller_listings_create') }}{% endif %}">
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label" for="mineral_type">Mineral type</label>
+          <input class="form-control" id="mineral_type" name="mineral_type" value="{{ form.mineral_type or '' }}"
+                 placeholder="e.g. Silica, Barite, Bentonite" required />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="grade">Grade <span class="text-secondary">(optional)</span></label>
+          <input class="form-control" id="grade" name="grade" value="{{ form.grade or '' }}" placeholder="e.g. Grade A" />
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="specifications_notes">Specifications <span class="text-secondary">(optional)</span></label>
+        <textarea class="form-control" id="specifications_notes" name="specifications_notes" rows="3"
+                  placeholder="e.g. Purity 99.5%, iron oxide &lt;0.02%, particle size 100-200 mesh">{{ form.specifications_notes or '' }}</textarea>
+      </div>
+
+      <hr class="my-4" />
+      <div class="section-eyebrow text-secondary text-uppercase small fw-semibold mb-3">Quantity</div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label" for="quantity_value">Quantity</label>
+          <input class="form-control" type="number" step="0.01" min="0.01" id="quantity_value" name="quantity_value"
+                 value="{{ form.quantity_value or '' }}" required />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="quantity_unit">Unit</label>
+          <input class="form-control" id="quantity_unit" name="quantity_unit" value="{{ form.quantity_unit or 'MT' }}"
+                 placeholder="MT, kg, tons..." required />
+        </div>
+      </div>
+
+      <div class="section-eyebrow text-secondary text-uppercase small fw-semibold mb-3">Pricing <span class="text-secondary fw-normal">(optional — leave blank for "contact for price")</span></div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <label class="form-label" for="price_value">Price</label>
+          <input class="form-control" type="number" step="0.01" min="0" id="price_value" name="price_value" value="{{ form.price_value or '' }}" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="price_currency">Currency</label>
+          <input class="form-control" id="price_currency" name="price_currency" value="{{ form.price_currency or 'SAR' }}" maxlength="3" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="price_unit">Per</label>
+          <input class="form-control" id="price_unit" name="price_unit" value="{{ form.price_unit or '' }}" placeholder="e.g. per MT" />
+        </div>
+      </div>
+
+      <hr class="my-4" />
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <label class="form-label" for="packaging">Packaging <span class="text-secondary">(optional)</span></label>
+          <input class="form-control" id="packaging" name="packaging" value="{{ form.packaging or '' }}" placeholder="e.g. Bulk, 25kg bags" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="trade_terms">Trade terms <span class="text-secondary">(optional)</span></label>
+          <input class="form-control" id="trade_terms" name="trade_terms" value="{{ form.trade_terms or '' }}" placeholder="e.g. FOB Jubail" />
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-theme">
+        {% if mode == "edit" %}Save changes{% else %}Create listing (as draft){% endif %}
+      </button>
+      {% if mode != "edit" %}
+      <p class="text-secondary small mt-2 mb-0">New listings start as a draft — not visible to buyers until verified.</p>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "layouts/base.html" %}
+{% block title %}{{ target.full_name }}{% endblock %}
+{% block content %}
+
+<a href="{{ url_for('admin_users_list') }}" class="text-secondary text-decoration-none small">&larr; Back to users</a>
+
+<h4 class="mt-2 mb-4">{{ target.full_name }}{% if is_self %} <span class="badge bg-info-subtle text-info">You</span>{% endif %}</h4>
+
+{% if error %}
+<div class="alert alert-danger py-2">{{ error }}</div>
+{% endif %}
+
+<div class="card adminuiux-card mb-3">
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Email</dt>
+      <dd class="col-sm-9">{{ target.email }}</dd>
+      <dt class="col-sm-3">Role</dt>
+      <dd class="col-sm-9"><span class="badge bg-secondary-subtle text-secondary">{{ target.role.value }}</span></dd>
+      <dt class="col-sm-3">Company</dt>
+      <dd class="col-sm-9">
+        {% if target.company %}
+        <a href="{{ url_for('admin_company_detail', company_id=target.company.id) }}">{{ target.company.company_name }}</a>
+        {% else %}—{% endif %}
+      </dd>
+      <dt class="col-sm-3">Registered</dt>
+      <dd class="col-sm-9">{{ target.created_at.strftime("%Y-%m-%d %H:%M UTC") }}</dd>
+    </dl>
+  </div>
+</div>
+
+<div class="card adminuiux-card">
+  <div class="card-body">
+    <h6 class="mb-3">Edit</h6>
+    <form method="post" action="{{ url_for('admin_user_edit', user_id=target.id) }}">
+      <div class="mb-3">
+        <label class="form-label" for="full_name">Full name</label>
+        <input class="form-control" id="full_name" name="full_name" value="{{ target.full_name }}" required />
+      </div>
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" {% if target.is_active %}checked{% endif %} {% if is_self %}disabled{% endif %} />
+        <label class="form-check-label" for="is_active">Account active</label>
+        {% if is_self %}<div class="form-text">You can't deactivate your own account.</div>{% endif %}
+      </div>
+      <button type="submit" class="btn btn-theme">Save changes</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

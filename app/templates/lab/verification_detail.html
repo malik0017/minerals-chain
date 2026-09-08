@@ -1,0 +1,84 @@
+{% extends "layouts/base.html" %}
+{% block title %}Verification Request{% endblock %}
+{% block content %}
+
+<a href="{{ url_for('lab_verification_index') }}" class="text-secondary text-decoration-none small">&larr; Back to requests</a>
+
+<h4 class="mt-2 mb-4">{{ vr.product.mineral_type }}{% if vr.product.grade %} · {{ vr.product.grade }}{% endif %}</h4>
+
+{% if error %}
+<div class="alert alert-danger py-2">{{ error }}</div>
+{% endif %}
+
+<div class="card adminuiux-card mb-3">
+  <div class="card-body">
+    <h6 class="mb-3">Product details</h6>
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Seller</dt>
+      <dd class="col-sm-9">{{ vr.product.seller_company.company_name }}</dd>
+
+      <dt class="col-sm-3">Quantity</dt>
+      <dd class="col-sm-9">{{ vr.product.quantity_value }} {{ vr.product.quantity_unit }}</dd>
+
+      <dt class="col-sm-3">Specifications</dt>
+      <dd class="col-sm-9" style="white-space: pre-line;">{{ vr.product.specifications_notes or "—" }}</dd>
+
+      <dt class="col-sm-3">Requested</dt>
+      <dd class="col-sm-9">{{ vr.created_at.strftime("%Y-%m-%d %H:%M UTC") }}</dd>
+    </dl>
+  </div>
+</div>
+
+{% if vr.status.value in ("requested", "sample_scheduled", "testing_in_progress") %}
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card adminuiux-card h-100">
+      <div class="card-body">
+        <h6 class="mb-3 text-success"><i class="bi bi-patch-check"></i> Issue certificate (pass)</h6>
+        <form method="post" action="{{ url_for('lab_verification_issue', request_id=vr.id) }}">
+          <textarea class="form-control mb-2" name="tested_parameters_notes" rows="4"
+                    placeholder="Tested parameters and results, e.g. Purity 99.6% (measured), iron oxide 0.015% (pass)" required></textarea>
+          <button type="submit" class="btn btn-success">Issue Certificate</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card adminuiux-card h-100">
+      <div class="card-body">
+        <h6 class="mb-3 text-danger"><i class="bi bi-x-circle"></i> Reject (fail)</h6>
+        <form method="post" action="{{ url_for('lab_verification_reject', request_id=vr.id) }}">
+          <textarea class="form-control mb-2" name="rejection_reason" rows="4"
+                    placeholder="Reason for rejection, shown to the seller" required></textarea>
+          <button type="submit" class="btn btn-danger">Reject</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% elif vr.status.value == "completed" and certificate %}
+<div class="card adminuiux-card border-success-subtle">
+  <div class="card-body">
+    <h6 class="mb-3 text-success"><i class="bi bi-patch-check-fill"></i> Certificate issued</h6>
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Certificate number</dt>
+      <dd class="col-sm-9">{{ certificate.certificate_number }}</dd>
+      <dt class="col-sm-3">Issued</dt>
+      <dd class="col-sm-9">{{ certificate.issued_at.strftime("%Y-%m-%d %H:%M UTC") }}</dd>
+      <dt class="col-sm-3">Tested parameters</dt>
+      <dd class="col-sm-9" style="white-space: pre-line;">{{ certificate.tested_parameters_notes }}</dd>
+    </dl>
+  </div>
+</div>
+
+{% elif vr.status.value == "failed" %}
+<div class="card adminuiux-card border-danger-subtle">
+  <div class="card-body">
+    <h6 class="mb-2 text-danger"><i class="bi bi-x-circle-fill"></i> Rejected</h6>
+    <p class="mb-0">{{ vr.rejection_reason }}</p>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

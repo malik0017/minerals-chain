@@ -1,0 +1,35 @@
+{% extends "layouts/base.html" %}
+{% block title %}Mineral Passports{% endblock %}
+{% block content %}
+
+<h4 class="mb-1">Pending Mineral Passport requests</h4>
+<p class="text-secondary mb-4">{{ passports | length }} awaiting review</p>
+
+{% if not passports %}
+<div class="alert alert-secondary">Nothing to review right now.</div>
+{% else %}
+<div class="card adminuiux-card">
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr><th>Company</th><th>Mineral</th><th>Scope</th><th>Requested</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for p in passports %}
+        <tr>
+          <td>{{ p.seller_company.company_name }}</td>
+          <td>{{ p.product.mineral_type }}</td>
+          <td><span class="badge bg-secondary-subtle text-secondary">{{ p.scope.value | replace("_", " ") | capitalize }}</span></td>
+          <td class="text-secondary small">{{ p.created_at.strftime("%Y-%m-%d") }}</td>
+          <td class="text-end">
+            <a href="{{ url_for('admin_passport_review', passport_id=p.id) }}" class="btn btn-sm btn-theme">Review</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

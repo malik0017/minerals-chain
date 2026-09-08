@@ -3,7 +3,7 @@ app/core/permissions.py
 """
 from fastapi import Depends
 from app.core.auth import get_current_user_required
-from app.core.exceptions import CompanyNotApprovedException, ForbiddenException
+from app.core.exceptions import AdminRedirectException, CompanyNotApprovedException, ForbiddenException
 from app.models.company import ApprovalStatus
 from app.models.user import User, UserRole
 
@@ -29,14 +29,6 @@ def require_active_portal(*allowed_roles: UserRole):
     """
     Role + approval gate for the real portal dashboards.
 
-    ADMIN always passes, regardless of which portal(s) the route
-    restricts to. BRD §6.8 gives admins full visibility across every
-    company/product/order/dispute — the same principle extends
-    naturally to just *viewing* another portal's dashboard, so an
-    admin can open /seller/dashboard, /buyer/dashboard, /lab/dashboard
-    directly without needing a second login. Non-admin users are
-    unaffected: still gated by role match + company approval exactly
-    as before.
     """
     def _dependency(user: User = Depends(get_current_user_required)) -> User:
         if user.role == UserRole.ADMIN:
@@ -48,3 +40,34 @@ def require_active_portal(*allowed_roles: UserRole):
         return user
 
     return _dependency
+
+
+def require_seller_company(user: User = Depends(get_current_user_required)) -> User:
+    """
+    Gates seller listing management (create/edit/view own products).
+
+    Batch 8: an admin hitting this no longer gets a blunt 403 — they're
+    redirected to /admin/companies (filtered to sellers), which shows
+    the same underlying data from the admin oversight angle instead.
+    See AdminRedirectException's docstring for why this is different
+    from a general admin bypass.
+    """
+    if user.role == UserRole.ADMIN:
+        raise AdminRedirectException("admin_companies_list", query="role=seller")
+    if user.role != UserRole.SELLER:
+        raise ForbiddenException()
+    if user.company is None or user.company.status != ApprovalStatus.APPROVED:
+        raise CompanyNotApprovedException()
+    return user
+
+
+def require_lab_company(user: User = Depends(get_current_user_required)) -> User:
+    """Gates lab verification-request management. Same admin-redirect
+    treatment as require_seller_company — see its docstring."""
+    if user.role == UserRole.ADMIN:
+        raise AdminRedirectException("admin_companies_list", query="role=lab")
+    if user.role != UserRole.LAB:
+        raise ForbiddenException()
+    if user.company is None or user.company.status != ApprovalStatus.APPROVED:
+        raise CompanyNotApprovedException()
+    return user

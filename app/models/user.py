@@ -43,6 +43,13 @@ class User(Base, TimestampMixin):
     # BRD §6.10 Localization — per-user language preference, drives dir="rtl" in base.html.
     preferred_language: Mapped[str] = mapped_column(String(2), nullable=False, default="en")
 
+    # Batch 8: just the filename (e.g. "3f2a...-c9.png"), not a full path —
+    # the upload route (services/avatar_service.py) controls where files
+    # actually live on disk (app/static/uploads/avatars/). NULL means "no
+    # custom avatar", and every template falls back to a default
+    # placeholder image rather than treating NULL as an error.
+    avatar_filename: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # --- Relationships ---

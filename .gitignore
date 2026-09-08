@@ -20,3 +20,10 @@ Thumbs.db
 
 # --- Alembic (keep the migration files, ignore nothing here — listed
 !alembic/versions/
+
+# --- User-uploaded content: profile pictures etc. Keep the folder
+#     structure (the .gitkeep placeholder) but not what users upload.
+app/static/uploads/*
+!app/static/uploads/avatars/
+app/static/uploads/avatars/*
+!app/static/uploads/avatars/.gitkeep

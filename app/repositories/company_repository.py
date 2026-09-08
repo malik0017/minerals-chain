@@ -4,7 +4,7 @@ app/repositories/company_repository.py
 
 import uuid
 from sqlalchemy.orm import Session
-from app.models.company import ApprovalStatus, Company
+from app.models.company import ApprovalStatus, Company, CompanyRole
 
 def get_by_cr_number(db: Session, cr_number: str) -> Company | None:
     return db.query(Company).filter(Company.cr_number == cr_number).first()
@@ -24,6 +24,25 @@ def list_pending(db: Session) -> list[Company]:
         .order_by(Company.created_at.asc())
         .all()
     )
+
+
+def list_all(
+    db: Session,
+    role: CompanyRole | None = None,
+    status: ApprovalStatus | None = None,
+) -> list[Company]:
+    """
+    BRD §6.8 — admin oversight across every company, regardless of
+    status. Optional role/status filters back the admin companies
+    list's dropdown filters; newest first, since that's usually what
+    an admin browsing the whole platform wants to see.
+    """
+    query = db.query(Company)
+    if role is not None:
+        query = query.filter(Company.role == role)
+    if status is not None:
+        query = query.filter(Company.status == status)
+    return query.order_by(Company.created_at.desc()).all()
 
 
 def create(db: Session, company: Company) -> Company:

@@ -19,13 +19,55 @@
   </span>
 </div>
 
+{% if stats_are_platform_wide %}
+<div class="alert alert-secondary py-2 mb-3">
+  <i class="bi bi-bar-chart"></i> Showing platform-wide totals across every lab (admin view) — not a single company's data.
+</div>
+{% endif %}
+
+<div class="row g-3 mb-3">
+  <div class="col-md-6">
+    <div class="card adminuiux-card h-100">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-secondary small">{% if stats_are_platform_wide %}Total requests (all labs){% else %}Total requests{% endif %}</div>
+          <div class="fs-3 fw-semibold">{{ request_count }}</div>
+        </div>
+        <i class="bi bi-eyedropper fs-1 text-primary opacity-50"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card adminuiux-card h-100">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-secondary small">{% if stats_are_platform_wide %}Awaiting review (all labs){% else %}Awaiting your review{% endif %}</div>
+          <div class="fs-3 fw-semibold">{{ pending_count }}</div>
+        </div>
+        <i class="bi bi-hourglass-split fs-1 text-warning opacity-50"></i>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="mb-3">
+  {% if stats_are_platform_wide %}
+  <a href="{{ url_for('admin_companies_list') }}?role=lab" class="btn btn-theme">
+    <i class="bi bi-building"></i> Browse lab companies
+  </a>
+  {% else %}
+  <a href="{{ url_for('lab_verification_index') }}" class="btn btn-theme">
+    <i class="bi bi-eyedropper"></i> View verification requests
+  </a>
+  {% endif %}
+</div>
+
 <div class="card adminuiux-card">
   <div class="card-body">
     <h6 class="mb-2"><i class="bi bi-signpost-split text-primary"></i> What's next for your portal</h6>
     <p class="text-secondary mb-0">
-      Incoming verification requests and certificate issuance are on the
-      roadmap — you'll see them appear in the sidebar as they ship. For now,
-      your account is fully approved and ready to go.
+      Verification requests are live now — sellers can request testing on
+      their listings, and you'll see them appear above. Certificate history
+      is available from each request's detail page.
     </p>
   </div>
 </div>

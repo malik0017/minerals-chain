@@ -205,7 +205,7 @@
                   class="avatar avatar-28 rounded-circle coverimg align-middle"
                 >
                   <img
-                    src="{{ url_for('static', path='img/modern-ai-image/user-6.jpg') }}" 
+                    src="{{ current_user.avatar_url | default('/static/img/logo-512.png') }}" 
                     alt=""
                     id="userphotoonboarding2"
                   />
@@ -223,7 +223,7 @@
                   <figure
                     class="avatar avatar-50 rounded-circle coverimg align-middle"
                   >
-                    <img src="{{ url_for('static', path='img/modern-ai-image/user-6.jpg') }}" alt="" />
+                    <img src="{{ current_user.avatar_url | default('/static/img/logo-512.png') }}" alt="" />
                   </figure>
                 </div>
                 <div class="col align-self-center">
@@ -234,7 +234,7 @@
             </div>
             <div class="px-2">
               <div>
-                <a class="dropdown-item" href="#"
+                <a class="dropdown-item" href="{{ url_for('my_profile') }}"
                   ><i data-feather="user" class="avatar avatar-18 me-1"></i> My
                   Profile</a
                 >
@@ -289,7 +289,7 @@
                 </div>
               </div>
               <div>
-                <a class="dropdown-item" href="#"
+                <a class="dropdown-item" href="{{ url_for('my_profile') }}"
                   ><i data-feather="settings" class="avatar avatar-18 me-1"></i>
                   Account Setting</a
                 >

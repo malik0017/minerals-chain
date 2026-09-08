@@ -1,111 +1,254 @@
 minerals/
 ├── venv/
 ├── app/
-│   ├── __init__.py              
-│   ├── main.py                    # wires seller/buyer/lab dashboard routers +
-│   │                               CompanyNotApprovedException handler
+│   ├── __init__.py
+│   ├── main.py                    # wires every router + exception handlers
 │   │
 │   ├── core/
-│   │   ├── __init__.py            
-│   │   ├── config.py              
-│   │   ├── security.py            
-│   │   ├── auth.py                
-│   │   ├── permissions.py         #  require_active_portal() — role check AND
-│   │   │                            approval check, redirects to /home's status page instead
-│   │   │                            of a blunt 403 (used by all three new dashboards)
-│   │   ├── exceptions.py          # CompanyNotApprovedException
-│   │   ├── identity_guard.py      # [when RFQ/order models exist]
-│   │   └── localization.py       
+│   │   ├── config.py              # pydantic-settings — reads .env
+│   │   ├── security.py            # Argon2 hashing, JWT session tokens
+│   │   ├── auth.py                # get_current_user_optional / _required
+│   │   ├── permissions.py         # require_portal, require_approved_company,
+│   │   │                            require_active_portal (admin can preview any
+│   │   │                            dashboard), require_seller_company /
+│   │   │                            require_lab_company (strict — redirect admin
+│   │   │                            to /admin/companies instead of 403)
+│   │   ├── exceptions.py          # NotAuthenticatedException, ForbiddenException,
+│   │   │                            CompanyNotApprovedException, AdminRedirectException
+│   │   ├── portal_nav.py          # build_portal_context(user, portal_role,
+│   │   │                            active_path) — ONE place building nav_items/
+│   │   │                            portal_label/upcoming_items/current_user/
+│   │   │                            is_admin_preview/avatar_url for every real page
+│   │   ├── identity_guard.py      # [not yet built — needed once RFQ/order models
+│   │   │                            exist, enforces buyer/seller identity concealment]
+│   │   └── localization.py        # [not yet built — AR/EN, RTL]
 │   │
-│   ├── database/                  
+│   ├── database/                  # base.py (engine/session/Base/TimestampMixin),
+│   │                               init_db.py (connection sanity check)
 │   │
 │   ├── models/
-│   │   ├── __init__.py           
-│   │   ├── company.py             # enum columns fixed (values_callable) — see below
-│   │   ├── user.py                
-│   │   ├── notification.py        
-│   │   ├── audit_log.py           
-│   │   ├── product.py             # [ RESCOPED from B4, see note below]
-│   │   ├── verification.py        
-│   │   ├── passport.py            
-│   │   ├── rfq.py                 
-│   │   ├── quotation.py           
-│   │   ├── order.py               
-│   │   ├── dispute.py             
-│   │   ├── subscription.py        # tier ENUM already lives on Company (B1)
-│   │   └── invoice.py             
+│   │   ├── __init__.py            # imports every model — required for Alembic
+│   │   ├── company.py             # Company, CompanyRole, ApprovalStatus, SubscriptionTier
+│   │   ├── user.py                # User, UserRole, avatar_filename
+│   │   ├── notification.py        # in-app notifications (BRD §6.9)
+│   │   ├── audit_log.py           # admin action trail (BRD §6.8)
+│   │   ├── product.py             # Product, ProductStatus (BRD §6.2)
+│   │   ├── verification.py        # VerificationRequest, VerificationStatus (BRD §6.3)
+│   │   ├── certificate.py         # Certificate (BRD §6.3)
+│   │   ├── passport.py            # MineralPassport, PassportScope, PassportStatus
+│   │   │                            (BRD §6.4) — is_currently_valid property
+│   │   ├── rfq.py                 # [phase 2]
+│   │   ├── quotation.py           # [phase 2]
+│   │   ├── order.py               # [phase 2]
+│   │   ├── dispute.py             # [phase 3]
+│   │   ├── subscription.py        # tier ENUM already lives on Company
+│   │   └── invoice.py             # [phase 3]
 │   │
-│   ├── schemas/auth.py            
-│   ├── repositories/              
-│   ├── services/                  
+│   ├── schemas/
+│   │   ├── auth.py                # RegisterRequest (role: seller|buyer|lab only), LoginRequest
+│   │   ├── profile.py             # ProfileUpdateRequest, PasswordChangeRequest
+│   │   ├── product.py             # ProductRequest
+│   │   ├── verification.py        # VerificationRequestCreate, IssueCertificateRequest,
+│   │   │                            RejectVerificationRequest
+│   │   └── passport.py            # PassportRequestCreate, PassportRejectRequest
+│   │
+│   ├── repositories/
+│   │   ├── company_repository.py  # + list_all() for admin oversight
+│   │   ├── user_repository.py     # + get_by_id(), list_all()
+│   │   ├── notification_repository.py
+│   │   ├── audit_log_repository.py
+│   │   ├── product_repository.py  # + count_all(), count_by_status() — admin
+│   │   │                            platform-wide stats when previewing Seller Portal
+│   │   ├── verification_repository.py  # + count_all(), count_active() — same,
+│   │   │                                 Lab Portal
+│   │   ├── certificate_repository.py    # + list_for_lab_company()
+│   │   └── passport_repository.py        # list_for_product/company/pending,
+│   │                                        has_pending_or_active(), get_by_number()
+│   │                                        (used by the public lookup)
+│   │
+│   ├── services/
+│   │   ├── auth_service.py
+│   │   ├── admin_service.py         # approve_company(), reject_company()
+│   │   ├── admin_user_service.py     # update_user() — name + active toggle only
+│   │   ├── profile_service.py         # update_profile(), change_password() —
+│   │   │                                works for ANY logged-in user
+│   │   ├── avatar_service.py           # save_avatar()/remove_avatar() — validates
+│   │   │                                type/size, writes to app/static/uploads/avatars/
+│   │   ├── product_service.py           # create_listing(), update_listing(),
+│   │   │                                  get_owned_listing()
+│   │   ├── verification_service.py       # request_verification(), issue_certificate(),
+│   │   │                                   reject_verification()
+│   │   └── passport_service.py            # request_passport(), approve_passport(),
+│   │                                        reject_passport() — VALIDITY_PERIOD_DAYS=365
+│   │                                        constant, see its docstring for why
 │   │
 │   ├── modules/
-│   │   ├── __init__.py            
-│   │   ├── auth/
-│   │   │   └── routes.py           # [B4 UPDATED] /home now sends approved seller/buyer/lab
-│   │   │                            to their real portal dashboard, not dashboard-test
-│   │   ├── admin/approvals/       
-│   │   ├── shared/                 # /notifications
+│   │   ├── auth/routes.py         # /register, /login, /logout, /home
+│   │   ├── admin/
+│   │   │   ├── approvals/routes.py     # company approve/reject queue
+│   │   │   ├── companies/routes.py      # /admin/companies — ALL companies any
+│   │   │   │                             status; drill-in shows users, seller
+│   │   │   │                             listings + verification-attempt counts +
+│   │   │   │                             passport history, or lab certificates —
+│   │   │   │                             BRD §6.8 full admin visibility
+│   │   │   ├── users/routes.py           # /admin/users — every account, edit
+│   │   │   │                              name/active-status
+│   │   │   └── passports/routes.py        # /admin/passports — pending queue,
+│   │   │                                    review, approve/reject
+│   │   ├── shared/
+│   │   │   ├── routes.py                # /notifications
+│   │   │   └── profile/routes.py         # /my-profile: name, password, avatar
+│   │   │                                  upload/remove — any logged-in user
+│   │   ├── public/routes.py               # /passports/verify — NO login required,
+│   │   │                                   BRD §6.4 authenticity lookup
 │   │   ├── seller/
-│   │   │   ├── __init__.py         
-│   │   │   ├── dashboard/
-│   │   │   │   ├── __init__.py      
-│   │   │   │   └── routes.py        #  GET /seller/dashboard
-│   │   │   ├── listings/routes.py     
-│   │   │   ├── rfq_inbox/routes.py    
-│   │   │   └── orders/routes.py       
+│   │   │   ├── dashboard/routes.py      # real listing/draft counts; admin preview
+│   │   │   │                             shows platform-wide totals instead of
+│   │   │   │                             hidden/zero
+│   │   │   ├── listings/routes.py       # full CRUD + request-verification +
+│   │   │   │                             request-passport actions
+│   │   │   ├── rfq_inbox/routes.py    # [phase 2]
+│   │   │   └── orders/routes.py       # [phase 2]
+│   │   │   NOTE: app/modules/seller/routes.py (no subfolder) is a stray unused
+│   │   │   duplicate, not imported anywhere — safe to delete, still not removed.
 │   │   ├── buyer/
-│   │   │   ├── __init__.py         
-│   │   │   ├── dashboard/
-│   │   │   │   ├── __init__.py      
-│   │   │   │   └── routes.py          GET /buyer/dashboard
-│   │   │   ├── rfq/routes.py          
-│   │   │   ├── quotations/routes.py   
-│   │   │   └── orders/routes.py       
+│   │   │   ├── dashboard/routes.py    # GET /buyer/dashboard — still placeholder,
+│   │   │   │                           no real buyer feature exists yet (phase 2)
+│   │   │   ├── rfq/routes.py          # [phase 2]
+│   │   │   ├── quotations/routes.py   # [phase 2]
+│   │   │   └── orders/routes.py       # [phase 2]
 │   │   └── lab/
-│   │       ├── __init__.py         
-│   │       ├── dashboard/
-│   │       │   ├── __init__.py      
-│   │       │   └── routes.py          GET /lab/dashboard
-│   │       ├── requests/routes.py     
-│   │       └── certificates/routes.py 
+│   │       ├── dashboard/routes.py    # real request counts; admin preview shows
+│   │       │                           platform-wide totals
+│   │       └── verification/routes.py # inbox, detail, issue, reject
 │   │
 │   ├── templates/
 │   │   ├── layouts/
-│   │   │   ├── base.html              # existing — vendor shell, used ONLY by dashboard-test now
-│   │   │   ├── base_auth.html          login / account_status (centered card)
-│   │   │   ├── base_auth_split.html   register only (two-column, matches reference design)
-│   │   │   ├── base_app.html           admin approvals / notifications (top bar, no sidebar)
-│   │   │   └── base_portal.html        the REAL portal shell — sidebar driven by
-│   │   │                               nav_items/upcoming_items from route context.
-│   │   ├── partials/                  # existing vendor partials — still used by dashboard-test
-│   │   │                               only; base_portal.html has its own sidebar/topbar markup
-│   │   ├── dashboard.html             # existing — now purely a design-reference page, nothing
-│   │   │                               routes here for a logged-in user anymore (see B4 home())
-│   │   ├── errors/403.html             
-│   │   ├── shared/notifications.html   
-│   │   ├── admin/                       # approvals_list.html, approvals_review.html
+│   │   │   ├── base.html              # THE real shell — every seller/buyer/lab/admin
+│   │   │   │                           page + dashboard-test extends this
+│   │   │   ├── base_auth.html         # login / account_status / public passport
+│   │   │   │                           lookup (centered card, no login required
+│   │   │   │                           to view — content decides what's shown)
+│   │   │   └── base_auth_split.html   # register only (two-column reference design)
+│   │   │   UNUSED, flagged for deletion (nothing extends these anymore):
+│   │   │     base_app.html, base_portal.html
+│   │   ├── partials/
+│   │   │   ├── sidebar.html            # data-driven: nav_items, upcoming_items,
+│   │   │   │                            admin_preview_links, real avatar_url
+│   │   │   ├── header.html             # Logout/My Profile/Account Setting all
+│   │   │   │                            wired; real avatar_url everywhere
+│   │   │   ├── footer.html             # untouched vendor content
+│   │   │   └── personalize_theme_color.html  # untouched — client-side color picker
+│   │   ├── dashboard.html             # design-reference page only
+│   │   ├── errors/403.html
+│   │   ├── shared/
+│   │   │   ├── notifications.html
+│   │   │   └── profile.html            # name form + password form + avatar card
+│   │   ├── admin/
+│   │   │   ├── approvals_list.html, approvals_review.html
+│   │   │   ├── companies_list.html, company_detail.html
+│   │   │   ├── users_list.html, user_detail.html
+│   │   │   └── passports_list.html, passport_review.html
+│   │   ├── public/
+│   │   │   └── passport_lookup.html    # no-login authenticity check
 │   │   ├── seller/
-│   │   │   └── dashboard.html           # real seller dashboard (welcome + status + roadmap)
-│   │   ├── buyer/
-│   │   │   └── dashboard.html           
-│   │   ├── lab/
-│   │   │   └── dashboard.html           
-│   │   └── auth/
-│   │       ├── login.html              
-│   │       ├── register.html            # redesigned, two-column (base_auth_split.html)
-│   │       └── account_status.html   
+│   │   │   ├── dashboard.html           # listing/draft counts (real or
+│   │   │   │                             platform-wide for admin preview)
+│   │   │   ├── listings_index.html, listing_form.html
+│   │   │   └── listing_detail.html      # verification section + passport section
+│   │   ├── buyer/dashboard.html
+│   │   ├── lab/dashboard.html
+│   │   └── auth/login.html, register.html, account_status.html
 │   │
-│   └── static/                    # existing, unchanged this batch
-│
-├── seeds/create_admin.py          
-├── alembic/
-│   └── versions/
-│       ├── 0001_initial_company_user.py        # create_type=False fix
-│       └── 0002_notifications_audit_log.py     
-├── alembic.ini                    
-├── requirements.txt                # [ unchanged since]
+│   ├── static/
+│   │   └── uploads/avatars/            # user-uploaded profile pictures,
+│   │                                    .gitignore'd (folder structure kept via
+│   │                                    .gitkeep, contents excluded)
+│   │
+├── seeds/create_admin.py          # the one manual step for provisioning an admin (BRD §7)
+├── alembic/versions/
+│   ├── 0001_initial_company_user.py
+│   ├── 0002_notifications_audit_log.py
+│   ├── 0003_products.py
+│   ├── 0004_verification.py
+│   ├── 0005_user_avatar.py
+│   └── 0006_mineral_passports.py
+├── alembic.ini
+├── requirements.txt
 ├── README.md
+├── .gitignore                     # .env, venv/, __pycache__/, uploaded avatars
 ├── .env.example
 └── .env
 
+──────────────────────────────────────────────────────────────
+CURRENT STATE
+──────────────────────────────────────────────────────────────
+Working end-to-end, verified against real Postgres, every batch:
+  - Registration (seller/buyer/lab) + admin approval workflow
+  - Login/logout, session cookies, portal role isolation
+  - Real per-portal dashboards on the actual vendor theme, real data
+    wired in (not a simplified shell) — admin preview shows genuine
+    platform-wide totals, not hidden/zero stats
+  - Admin can view any portal's dashboard directly (no re-login), with
+    a clear preview banner + header label ("Admin Portal · Previewing
+    X Portal")
+  - Admin has full oversight: /admin/companies (any status, drill-in
+    with listings/verification/passports or certificates),
+    /admin/users (every account), /admin/passports (approval queue) —
+    BRD §6.8
+  - Company-scoped pages (seller listings, lab verification) redirect
+    admin to the equivalent oversight view instead of a blunt 403
+  - Self-service profile: name, password, avatar upload/remove — any
+    logged-in user
+  - In-app notifications
+  - Seller product listings: create, list, view, edit (while draft/
+    failed_verification), per-company ownership enforcement
+  - Lab verification workflow end-to-end: request -> lock listing ->
+    lab issues Certificate (-> VERIFIED) or rejects (->
+    FAILED_VERIFICATION, editable again) -> notifications both ways
+  - Mineral Passport workflow end-to-end: seller requests on a
+    VERIFIED listing -> admin approves (generates passport number +
+    12-month validity) or rejects -> public no-login lookup at
+    /passports/verify confirms authenticity
+  - Both recurring theme 404s fixed (logo.png, bootstrap-icons.woff2)
+  - Git repo pushed to a private GitHub remote
+
+Known cleanup still pending (low priority, doesn't block anything):
+  - Delete app/templates/layouts/base_app.html and base_portal.html
+  - Delete app/modules/seller/routes.py (stray unused duplicate)
+
+Deliberate scope boundaries (not gaps — noted so they don't get
+re-litigated by accident):
+  - Email is not editable from /my-profile or /admin/users
+  - Company role is not editable anywhere
+  - Passport validity period (365 days) is a hardcoded constant, no
+    admin-configurable policy UI
+
+──────────────────────────────────────────────────────────────
+WHAT'S NEXT
+──────────────────────────────────────────────────────────────
+This closes the seller listing lifecycle (draft -> verify -> passport)
+that's been the throughline since Product was introduced. From here:
+
+Phase 2 (weeks 7-14) — the Buyer Portal's first real features:
+  - Buyer-side browse/search of VERIFIED listings (the first thing
+    that actually uses Product.status = VERIFIED for its intended
+    purpose — buyer visibility)
+  - RFQ creation, matching to verified sellers
+  - Identity-protected negotiation (buyer/seller concealed until order
+    confirmed) — this is where core/identity_guard.py finally gets built
+  - Quotations, comparison
+  - Order lifecycle through to completion
+
+Batch after Phase 2 groundwork — Localization: localization.py, AR
+  translations, RTL pass.
+
+Batch after that — Hardening: 2FA, password reset, CSRF tokens, cookie
+  `secure` flag, seed data script, full test pass before Phase 1/2
+  sign-off.
+
+Phase 3 (weeks 15-20): ZATCA invoicing, escrow/settlement logic,
+  subscription billing enforcement, disputes, audit logging.
+
+Phase 4 (weeks 21-30): inventory, logistics, document management,
+  analytics, admin/monitoring, mobile pass.

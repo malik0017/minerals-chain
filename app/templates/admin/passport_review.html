@@ -1,0 +1,55 @@
+{% extends "layouts/base.html" %}
+{% block title %}Review Passport Request{% endblock %}
+{% block content %}
+
+<a href="{{ url_for('admin_passports_list') }}" class="text-secondary text-decoration-none small">&larr; Back to queue</a>
+
+<h4 class="mt-2 mb-4">{{ passport.product.mineral_type }} — {{ passport.seller_company.company_name }}</h4>
+
+{% if error %}
+<div class="alert alert-danger py-2">{{ error }}</div>
+{% endif %}
+
+<div class="card adminuiux-card mb-3">
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Scope requested</dt>
+      <dd class="col-sm-9">{{ passport.scope.value | replace("_", " ") | capitalize }}</dd>
+
+      <dt class="col-sm-3">Mineral</dt>
+      <dd class="col-sm-9">{{ passport.product.mineral_type }}{% if passport.product.grade %} · {{ passport.product.grade }}{% endif %}</dd>
+
+      <dt class="col-sm-3">Listing status</dt>
+      <dd class="col-sm-9">
+        {% if passport.product.status.value == "verified" %}<span class="badge bg-success-subtle text-success">Verified</span>
+        {% else %}<span class="badge bg-secondary-subtle text-secondary">{{ passport.product.status.value }}</span>{% endif %}
+      </dd>
+
+      <dt class="col-sm-3">Requested</dt>
+      <dd class="col-sm-9">{{ passport.created_at.strftime("%Y-%m-%d %H:%M UTC") }}</dd>
+    </dl>
+  </div>
+</div>
+
+<div class="d-flex gap-2 mb-4">
+  <form method="post" action="{{ url_for('admin_passport_approve', passport_id=passport.id) }}">
+    <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Approve</button>
+  </form>
+  <button type="button" class="btn btn-outline-danger" data-bs-toggle="collapse" data-bs-target="#reject-form">
+    <i class="bi bi-x-circle"></i> Reject
+  </button>
+</div>
+
+<div class="collapse" id="reject-form">
+  <div class="card border-danger-subtle">
+    <div class="card-body">
+      <form method="post" action="{{ url_for('admin_passport_reject', passport_id=passport.id) }}">
+        <label class="form-label" for="reason">Reason for rejection (shown to the seller)</label>
+        <textarea class="form-control mb-3" id="reason" name="reason" rows="3" required></textarea>
+        <button type="submit" class="btn btn-danger">Confirm rejection</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

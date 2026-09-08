@@ -1,0 +1,159 @@
+{% extends "layouts/base.html" %}
+{% block title %}{{ product.mineral_type }}{% endblock %}
+{% block content %}
+
+<a href="{{ url_for('seller_listings_index') }}" class="text-secondary text-decoration-none small">&larr; Back to listings</a>
+
+<div class="d-flex align-items-center justify-content-between mt-2 mb-4">
+  <div>
+    <h4 class="mb-1">{{ product.mineral_type }}{% if product.grade %} · {{ product.grade }}{% endif %}</h4>
+    {% if product.status.value == "draft" %}<span class="badge bg-secondary-subtle text-secondary">Draft</span>
+    {% elif product.status.value == "under_verification" %}<span class="badge bg-warning-subtle text-warning">Under verification</span>
+    {% elif product.status.value == "verified" %}<span class="badge bg-success-subtle text-success">Verified</span>
+    {% elif product.status.value == "failed_verification" %}<span class="badge bg-danger-subtle text-danger">Failed verification</span>
+    {% else %}<span class="badge bg-secondary-subtle text-secondary">Suspended</span>
+    {% endif %}
+  </div>
+  {% if product.status.value in ("draft", "failed_verification") %}
+  <a href="{{ url_for('seller_listing_edit_form', product_id=product.id) }}" class="btn btn-outline-theme">
+    <i class="bi bi-pencil"></i> Edit
+  </a>
+  {% endif %}
+</div>
+
+<div class="card adminuiux-card mb-3">
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Quantity</dt>
+      <dd class="col-sm-9">{{ product.quantity_value }} {{ product.quantity_unit }}</dd>
+
+      <dt class="col-sm-3">Price</dt>
+      <dd class="col-sm-9">
+        {% if product.price_value is not none %}
+          {{ product.price_currency }} {{ product.price_value }}{% if product.price_unit %} <span class="text-secondary">{{ product.price_unit }}</span>{% endif %}
+        {% else %}
+          <span class="text-secondary">Contact for price</span>
+        {% endif %}
+      </dd>
+
+      <dt class="col-sm-3">Packaging</dt>
+      <dd class="col-sm-9">{{ product.packaging or "—" }}</dd>
+
+      <dt class="col-sm-3">Trade terms</dt>
+      <dd class="col-sm-9">{{ product.trade_terms or "—" }}</dd>
+
+      <dt class="col-sm-3">Specifications</dt>
+      <dd class="col-sm-9" style="white-space: pre-line;">{{ product.specifications_notes or "—" }}</dd>
+
+      <dt class="col-sm-3">Created</dt>
+      <dd class="col-sm-9">{{ product.created_at.strftime("%Y-%m-%d %H:%M UTC") }}</dd>
+    </dl>
+  </div>
+</div>
+
+{% if error %}
+<div class="alert alert-danger py-2">{{ error }}</div>
+{% endif %}
+
+<div class="card adminuiux-card">
+  <div class="card-body">
+    <h6 class="mb-3"><i class="bi bi-eyedropper"></i> Lab verification</h6>
+
+    {% if product.status.value in ("draft", "failed_verification") %}
+      {% if not available_labs %}
+      <p class="text-secondary mb-0">No approved testing labs are registered on the platform yet.</p>
+      {% else %}
+      <form method="post" action="{{ url_for('seller_listing_request_verification', product_id=product.id) }}" class="d-flex gap-2">
+        <select name="lab_company_id" class="form-select w-auto" required>
+          <option value="" disabled selected>Choose a lab...</option>
+          {% for lab in available_labs %}
+          <option value="{{ lab.id }}">{{ lab.company_name }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-theme">
+          <i class="bi bi-send"></i> Request verification
+        </button>
+      </form>
+      {% endif %}
+    {% elif product.status.value == "under_verification" %}
+      <p class="text-secondary mb-0">Verification is in progress — this listing can't be edited until the lab responds.</p>
+    {% elif product.status.value == "verified" %}
+      <p class="text-success mb-0"><i class="bi bi-patch-check-fill"></i> This listing is verified and eligible for buyer visibility.</p>
+      {% if certificate %}
+      <div class="mt-2 small text-secondary">
+        Certificate <strong>{{ certificate.certificate_number }}</strong> — issued {{ certificate.issued_at.strftime("%Y-%m-%d") }}
+      </div>
+      {% endif %}
+    {% endif %}
+
+    {% if verification_history %}
+    <hr class="my-3" />
+    <h6 class="small text-secondary text-uppercase mb-2">History</h6>
+    <ul class="list-unstyled mb-0">
+      {% for vr in verification_history %}
+      <li class="mb-2">
+        {% if vr.status.value == "completed" %}<span class="badge bg-success-subtle text-success">Completed</span>
+        {% elif vr.status.value == "failed" %}<span class="badge bg-danger-subtle text-danger">Failed</span>
+        {% else %}<span class="badge bg-warning-subtle text-warning">{{ vr.status.value | replace("_", " ") | capitalize }}</span>
+        {% endif %}
+        with <strong>{{ vr.lab_company.company_name }}</strong>
+        <span class="text-secondary small">— {{ vr.created_at.strftime("%Y-%m-%d") }}</span>
+        {% if vr.rejection_reason %}<div class="text-secondary small">Reason: {{ vr.rejection_reason }}</div>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card adminuiux-card mt-3">
+  <div class="card-body">
+    <h6 class="mb-3"><i class="bi bi-shield-check"></i> Mineral Passport</h6>
+
+    {% if product.status.value == "verified" %}
+      {% set active_passport = passport_history | selectattr("is_currently_valid") | first %}
+      {% set pending_passport = passport_history | selectattr("status.value", "equalto", "pending") | first %}
+      {% if active_passport %}
+        <p class="text-success mb-1"><i class="bi bi-patch-check-fill"></i> Active passport: <strong>{{ active_passport.passport_number }}</strong></p>
+        <p class="text-secondary small mb-0">{{ active_passport.scope.value | replace("_", " ") | capitalize }} · valid until {{ active_passport.valid_until }}</p>
+      {% elif pending_passport %}
+        <p class="text-secondary mb-0"><i class="bi bi-hourglass-split"></i> A {{ pending_passport.scope.value | replace("_", " ") }} passport request is awaiting admin review.</p>
+      {% else %}
+        <form method="post" action="{{ url_for('seller_listing_request_passport', product_id=product.id) }}" class="d-flex gap-2">
+          <select name="scope" class="form-select w-auto" required>
+            <option value="" disabled selected>Choose trade scope...</option>
+            <option value="domestic">Domestic</option>
+            <option value="gcc_export">GCC export</option>
+            <option value="international_export">International export</option>
+          </select>
+          <button type="submit" class="btn btn-theme"><i class="bi bi-send"></i> Request passport</button>
+        </form>
+      {% endif %}
+    {% else %}
+      <p class="text-secondary mb-0">Only a verified listing can request a Mineral Passport.</p>
+    {% endif %}
+
+    {% if passport_history %}
+    <hr class="my-3" />
+    <h6 class="small text-secondary text-uppercase mb-2">History</h6>
+    <ul class="list-unstyled mb-0">
+      {% for p in passport_history %}
+      <li class="mb-2">
+        {% if p.status.value == "approved" %}
+          {% if p.is_currently_valid %}<span class="badge bg-success-subtle text-success">Active</span>
+          {% else %}<span class="badge bg-secondary-subtle text-secondary">Expired</span>{% endif %}
+        {% elif p.status.value == "rejected" %}<span class="badge bg-danger-subtle text-danger">Rejected</span>
+        {% else %}<span class="badge bg-warning-subtle text-warning">Pending</span>
+        {% endif %}
+        {{ p.scope.value | replace("_", " ") | capitalize }}
+        {% if p.passport_number %}— <strong>{{ p.passport_number }}</strong>{% endif %}
+        <span class="text-secondary small">— {{ p.created_at.strftime("%Y-%m-%d") }}</span>
+        {% if p.rejection_reason %}<div class="text-secondary small">Reason: {{ p.rejection_reason }}</div>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

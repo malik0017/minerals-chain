@@ -1,46 +1,30 @@
 """
 app/core/portal_nav.py
-
-Builds the context every "real app" page (seller/buyer/lab/admin
-dashboards, notifications) needs to render layouts/base.html correctly:
-portal_label, nav_items (drives partials/sidebar.html), current_user
-(drives both sidebar.html and partials/header.html's profile dropdown).
-
-One place for this instead of duplicating a near-identical dict in
-five different route files — when a portal's nav grows in a later
-batch (Batch 5's listings, etc.), it changes here once.
-
-`portal_role` is the portal being VIEWED — each route passes its own
-role explicitly (e.g. seller/dashboard/routes.py always passes
-UserRole.SELLER). This is deliberately separate from `user.role`
-(who's actually logged in), because an admin can now open any portal
-dashboard directly (see core/permissions.py's require_active_portal).
-When those two differ, the sidebar/nav shown match the portal being
-PREVIEWED, while current_user still reflects who's really logged in —
-and `is_admin_preview` tells the template to show a banner so it's
-never ambiguous which mode you're in.
 """
 from app.models.user import User, UserRole
 
 _NAV_ITEMS = {
     UserRole.SELLER: [
         {"icon": "bi-columns-gap", "label": "Dashboard", "url": "/seller/dashboard"},
+        {"icon": "bi-diagram-3", "label": "My Listings", "url": "/seller/listings"},
     ],
     UserRole.BUYER: [
         {"icon": "bi-columns-gap", "label": "Dashboard", "url": "/buyer/dashboard"},
     ],
     UserRole.LAB: [
         {"icon": "bi-columns-gap", "label": "Dashboard", "url": "/lab/dashboard"},
+        {"icon": "bi-eyedropper", "label": "Verification Requests", "url": "/lab/verification-requests"},
     ],
     UserRole.ADMIN: [
         {"icon": "bi-inbox", "label": "Pending Approvals", "url": "/admin/approvals"},
+        {"icon": "bi-building", "label": "All Companies", "url": "/admin/companies"},
+        {"icon": "bi-people", "label": "Users", "url": "/admin/users"},
+        {"icon": "bi-shield-check", "label": "Mineral Passports", "url": "/admin/passports"},
     ],
 }
 
 _UPCOMING_ITEMS = {
     UserRole.SELLER: [
-        {"icon": "bi-diagram-3", "label": "My Listings"},
-        {"icon": "bi-eyedropper", "label": "Verification Requests"},
         {"icon": "bi-inbox", "label": "RFQ Inbox"},
         {"icon": "bi-box-seam", "label": "Orders"},
     ],
@@ -50,13 +34,9 @@ _UPCOMING_ITEMS = {
         {"icon": "bi-tags", "label": "Quotations"},
         {"icon": "bi-box-seam", "label": "Orders"},
     ],
-    UserRole.LAB: [
-        {"icon": "bi-eyedropper", "label": "Verification Requests"},
-        {"icon": "bi-patch-check", "label": "Certificates Issued"},
-    ],
+    UserRole.LAB: [],
     UserRole.ADMIN: [
         {"icon": "bi-flag", "label": "Disputes"},
-        {"icon": "bi-shield-check", "label": "Mineral Passports"},
         {"icon": "bi-graph-up", "label": "Reports"},
     ],
 }
@@ -91,19 +71,31 @@ def build_portal_context(user: User, portal_role: UserRole, active_path: str | N
     """
     is_admin_preview = user.role == UserRole.ADMIN and portal_role != UserRole.ADMIN
 
+    # Batch 7: when admin is previewing another portal, the header
+    # subtitle now says so explicitly ("Admin Portal · Previewing
+    # Lab") instead of just "Lab Portal" — the preview banner already
+    # explained this, but the header itself looking identical to a
+    # real lab session was confusing on its own, out of banner-reading
+    # context (e.g. a screenshot of just the header).
+    if is_admin_preview:
+        portal_label = f"Admin Portal · Previewing {_PORTAL_LABEL[portal_role]}"
+    else:
+        portal_label = _PORTAL_LABEL[portal_role]
+
     nav_items = [
         {**item, "active": item["url"] == active_path} for item in _NAV_ITEMS[portal_role]
     ]
 
     context = {
-        "portal_label": _PORTAL_LABEL[portal_role],
+        "portal_label": portal_label,
         "lang": user.preferred_language,
         "nav_items": nav_items,
         "upcoming_items": _UPCOMING_ITEMS[portal_role],
         "current_user": {
             "full_name": user.full_name,
+            "email": user.email,
             "company_name": user.company.company_name if user.company else "Platform Administration",
-            "avatar_url": "/static/img/logo-512.png",
+            "avatar_url": f"/static/uploads/avatars/{user.avatar_filename}" if user.avatar_filename else "/static/img/logo-512.png",
         },
         "notifications": [],
         "unread_notifications": 0,

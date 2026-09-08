@@ -31,7 +31,7 @@
         </div>
         <div class="text-center collapse" id="usersidebarprofile">
           <figure class="avatar avatar-100 rounded-circle coverimg my-3">
-            <img src="{{ url_for('static', path='img/modern-ai-image/user-6.jpg') }}" alt="" />
+            <img src="{{ current_user.avatar_url | default('/static/img/logo-512.png') }}" alt="" />
           </figure>
           <h5 class="mb-1 fw-medium">{{ current_user.full_name | default('') }}</h5>
           <p class="small">{{ current_user.company_name | default('') }}</p>
