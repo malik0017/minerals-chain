@@ -97,6 +97,41 @@
       </div>
     </div>
   </div>
+
+  <div class="col-md-6">
+    <div class="card adminuiux-card h-100">
+      <div class="card-body">
+        <h6 class="mb-3">Two-factor authentication</h6>
+
+        {% if two_factor_errors %}
+        <div class="alert alert-danger py-2">
+          {% for err in two_factor_errors %}<div>{{ err }}</div>{% endfor %}
+        </div>
+        {% endif %}
+
+        {% if current_user.totp_enabled %}
+        <p class="mb-3"><span class="badge bg-success-subtle text-success"><i class="bi bi-shield-check"></i> Enabled</span></p>
+        <p class="text-secondary small mb-3">Disabling requires your current password and a valid code from your authenticator app.</p>
+        <form method="post" action="{{ url_for('my_profile_2fa_disable') }}">
+          <div class="mb-2">
+            <input class="form-control form-control-sm" type="password" name="current_password" placeholder="Current password" required />
+          </div>
+          <div class="mb-2">
+            <input class="form-control form-control-sm" type="text" name="code" placeholder="6-digit code"
+                   inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required />
+          </div>
+          <button type="submit" class="btn btn-sm btn-outline-danger">Disable 2FA</button>
+        </form>
+        {% else %}
+        <p class="mb-3"><span class="badge bg-secondary-subtle text-secondary">Not enabled</span></p>
+        <p class="text-secondary small mb-3">Add an extra layer of security using an authenticator app (Google Authenticator, Authy, 1Password...).</p>
+        <a href="{{ url_for('my_profile_2fa_setup') }}" class="btn btn-sm btn-theme">
+          <i class="bi bi-shield-plus"></i> Enable 2FA
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 </div>
 
 {% endblock %}

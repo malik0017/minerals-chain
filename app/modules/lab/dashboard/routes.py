@@ -31,9 +31,6 @@ def lab_dashboard(
         context["pending_count"] = sum(1 for r in requests if r.status in _ACTIVE)
         context["stats_are_platform_wide"] = False
     else:
-        # Batch 8: admin previewing the Lab Portal — platform-wide
-        # totals across every lab, same reasoning as the seller
-        # dashboard (see its routes.py comment).
         context["request_count"] = verification_repository.count_all(db)
         context["pending_count"] = verification_repository.count_active(db)
         context["stats_are_platform_wide"] = True

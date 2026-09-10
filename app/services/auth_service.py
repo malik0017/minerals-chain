@@ -1,6 +1,7 @@
 """
 app/services/auth_service.py
 """
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.orm import Session
 from app.models.company import ApprovalStatus, Company, CompanyRole, SubscriptionTier
@@ -14,6 +15,9 @@ _ROLE_MAP = {
     "buyer": (CompanyRole.BUYER, UserRole.BUYER),
     "lab": (CompanyRole.LAB, UserRole.LAB),
 }
+
+LOCKOUT_THRESHOLD = 5
+LOCKOUT_DURATION = timedelta(minutes=30)
 
 
 class RegistrationError(ValueError):
@@ -62,8 +66,37 @@ def register_new_company_user(db: Session, payload: RegisterRequest) -> User:
 
 def authenticate_user(db: Session, email: str, password: str) -> User:
     user = user_repository.get_by_email(db, email)
-    if user is None or not verify_password(password, user.hashed_password):
+    if user is None:
         raise AuthenticationError("Incorrect email or password.")
+
+    now = datetime.now(timezone.utc)
+
+    if user.locked_until is not None:
+        if user.locked_until > now:
+            remaining_minutes = max(1, int((user.locked_until - now).total_seconds() // 60) + 1)
+            raise AuthenticationError(
+                f"Too many failed attempts. This account is locked for another {remaining_minutes} minute(s)."
+            )
+        # Lock has expired — auto-unlock and fall through to a normal check.
+        user.locked_until = None
+        user.failed_login_attempts = 0
+
+    if not verify_password(password, user.hashed_password):
+        user.failed_login_attempts += 1
+        if user.failed_login_attempts >= LOCKOUT_THRESHOLD:
+            user.locked_until = now + LOCKOUT_DURATION
+            user.failed_login_attempts = 0
+            db.commit()
+            raise AuthenticationError("Too many failed attempts. This account is now locked for 30 minutes.")
+        db.commit()
+        raise AuthenticationError("Incorrect email or password.")
+
+    # Correct password — reset the counter regardless of what happens next.
+    user.failed_login_attempts = 0
+    user.locked_until = None
+    db.commit()
+
     if not user.is_active:
         raise AuthenticationError("This account is disabled. Contact the platform administrator.")
+
     return user

@@ -15,6 +15,7 @@
           <th>Role</th>
           <th>Company</th>
           <th>Status</th>
+          <th>2FA</th>
           <th></th>
         </tr>
       </thead>
@@ -26,9 +27,13 @@
           <td><span class="badge bg-secondary-subtle text-secondary">{{ u.role.value }}</span></td>
           <td>{{ u.company.company_name if u.company else "—" }}</td>
           <td>
-            {% if u.is_active %}<span class="badge bg-success-subtle text-success">Active</span>
+            {% if u.locked_until and u.locked_until > now %}<span class="badge bg-danger-subtle text-danger">Locked</span>
+            {% elif u.is_active %}<span class="badge bg-success-subtle text-success">Active</span>
             {% else %}<span class="badge bg-danger-subtle text-danger">Disabled</span>
             {% endif %}
+          </td>
+          <td>
+            {% if u.totp_enabled %}<i class="bi bi-shield-check text-success"></i>{% else %}<span class="text-secondary">—</span>{% endif %}
           </td>
           <td class="text-end">
             <a href="{{ url_for('admin_user_detail', user_id=u.id) }}" class="btn btn-sm btn-outline-theme">View</a>

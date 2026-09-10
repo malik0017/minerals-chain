@@ -1,0 +1,44 @@
+{% extends "layouts/base.html" %}
+{% block title %}{{ product.mineral_type }}{% endblock %}
+{% block content %}
+
+<a href="{{ url_for('buyer_browse_index') }}" class="text-secondary text-decoration-none small">&larr; Back to browse</a>
+
+<div class="d-flex align-items-center justify-content-between mt-2 mb-4">
+  <h4 class="mb-0">{{ product.mineral_type }}{% if product.grade %} · {{ product.grade }}{% endif %}</h4>
+  <span class="badge bg-success-subtle text-success"><i class="bi bi-patch-check-fill"></i> Verified</span>
+</div>
+
+<div class="card adminuiux-card mb-3">
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Quantity</dt>
+      <dd class="col-sm-9">{{ product.quantity_value }} {{ product.quantity_unit }}</dd>
+
+      <dt class="col-sm-3">Price</dt>
+      <dd class="col-sm-9">
+        {% if product.price_value is not none %}
+          {{ product.price_currency }} {{ product.price_value }}{% if product.price_unit %} <span class="text-secondary">{{ product.price_unit }}</span>{% endif %}
+        {% else %}
+          <span class="text-secondary">Contact for price</span>
+        {% endif %}
+      </dd>
+
+      <dt class="col-sm-3">Packaging</dt>
+      <dd class="col-sm-9">{{ product.packaging or "—" }}</dd>
+
+      <dt class="col-sm-3">Trade terms</dt>
+      <dd class="col-sm-9">{{ product.trade_terms or "—" }}</dd>
+
+      <dt class="col-sm-3">Specifications</dt>
+      <dd class="col-sm-9" style="white-space: pre-line;">{{ product.specifications_notes or "—" }}</dd>
+    </dl>
+  </div>
+</div>
+
+<div class="alert alert-secondary d-flex align-items-center gap-2 mb-0">
+  <i class="bi bi-file-earmark-text"></i>
+  <div>Requesting a quote is coming in the next batch — sellers stay anonymous until you accept a quotation and confirm an order.</div>
+</div>
+
+{% endblock %}

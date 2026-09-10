@@ -1,15 +1,5 @@
 """
 app/modules/public/routes.py
-
-BRD §6.4: "The system shall support independent verification of a
-passport's authenticity (e.g., via a public reference lookup)." No
-login required — this is meant to be checked by a buyer, customs
-official, or anyone else holding a passport number, not just
-platform members. Deliberately minimal information disclosed: mineral
-type, scope, validity window, and issuing (seller) company name —
-nothing about the buyer side of any transaction, since there isn't
-one to disclose yet, and nothing internal (no user emails, no
-rejection reasons for other passports, etc).
 """
 from fastapi import APIRouter, Request
 from fastapi.templating import Jinja2Templates

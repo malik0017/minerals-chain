@@ -12,6 +12,7 @@ from app.modules.admin.companies.routes import router as admin_companies_router
 from app.modules.admin.passports.routes import router as admin_passports_router
 from app.modules.admin.users.routes import router as admin_users_router
 from app.modules.auth.routes import router as auth_router
+from app.modules.buyer.browse.routes import router as buyer_browse_router
 from app.modules.buyer.dashboard.routes import router as buyer_dashboard_router
 from app.modules.lab.dashboard.routes import router as lab_dashboard_router
 from app.modules.lab.verification.routes import router as lab_verification_router
@@ -38,6 +39,7 @@ app.include_router(public_router)
 app.include_router(seller_dashboard_router)
 app.include_router(seller_listings_router)
 app.include_router(buyer_dashboard_router)
+app.include_router(buyer_browse_router)
 app.include_router(lab_dashboard_router)
 app.include_router(lab_verification_router)
 

@@ -1,10 +1,5 @@
 """
 app/services/verification_service.py
-
-BRD §6.3. Each function does the full unit of work in one transaction:
-change status, and (for the terminal outcomes) create the Certificate
-or record the rejection reason, and notify the other side — mirroring
-the pattern already used in admin_service.py for approve/reject.
 """
 import secrets
 import uuid
@@ -68,9 +63,6 @@ def request_verification(db: Session, product: Product, lab_company: Company, re
 
 
 def get_owned_lab_request(db: Session, request_id: uuid.UUID, lab_company_id: uuid.UUID) -> VerificationRequest:
-    """Mirrors product_service.get_owned_listing — confirms a
-    verification request actually belongs to this lab's company
-    before any action is taken on it."""
     request = verification_repository.get_by_id(db, request_id)
     if request is None or request.lab_company_id != lab_company_id:
         raise VerificationActionError("Verification request not found.")

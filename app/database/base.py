@@ -20,7 +20,6 @@ SessionLocal = sessionmaker(
     expire_on_commit=False,
 )
 
-
 class Base(DeclarativeBase):
     """Declarative base every model inherits from."""
     pass

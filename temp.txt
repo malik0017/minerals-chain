@@ -6,7 +6,9 @@ minerals/
 │   │
 │   ├── core/
 │   │   ├── config.py              # pydantic-settings — reads .env
-│   │   ├── security.py            # Argon2 hashing, JWT session tokens
+│   │   ├── security.py            # Argon2 hashing, JWT session tokens +
+│   │   │                            short-lived pending-2FA token (distinct
+│   │   │                            purpose claim from the real session token)
 │   │   ├── auth.py                # get_current_user_optional / _required
 │   │   ├── permissions.py         # require_portal, require_approved_company,
 │   │   │                            require_active_portal (admin can preview any
@@ -69,7 +71,9 @@ minerals/
 │   ├── services/
 │   │   ├── auth_service.py
 │   │   ├── admin_service.py         # approve_company(), reject_company()
-│   │   ├── admin_user_service.py     # update_user() — name + active toggle only
+│   │   ├── admin_user_service.py     # update_user() name/active; + unlock_user(),
+│   │   │                              reset_password(), admin_disable_totp()
+│   │   ├── two_factor_service.py      # TOTP enrollment/confirm/verify/disable
 │   │   ├── profile_service.py         # update_profile(), change_password() —
 │   │   │                                works for ANY logged-in user
 │   │   ├── avatar_service.py           # save_avatar()/remove_avatar() — validates
@@ -92,12 +96,15 @@ minerals/
 │   │   │   │                             passport history, or lab certificates —
 │   │   │   │                             BRD §6.8 full admin visibility
 │   │   │   ├── users/routes.py           # /admin/users — every account, edit
-│   │   │   │                              name/active-status
+│   │   │   │                              name/active-status; + unlock,
+│   │   │   │                              reset-password, disable-2fa actions
 │   │   │   └── passports/routes.py        # /admin/passports — pending queue,
 │   │   │                                    review, approve/reject
 │   │   ├── shared/
 │   │   │   ├── routes.py                # /notifications
 │   │   │   └── profile/routes.py         # /my-profile: name, password, avatar
+│   │   │                                  upload/remove, 2FA setup/confirm/
+│   │   │                                  disable/QR — any logged-in user
 │   │   │                                  upload/remove — any logged-in user
 │   │   ├── public/routes.py               # /passports/verify — NO login required,
 │   │   │                                   BRD §6.4 authenticity lookup
@@ -112,9 +119,14 @@ minerals/
 │   │   │   NOTE: app/modules/seller/routes.py (no subfolder) is a stray unused
 │   │   │   duplicate, not imported anywhere — safe to delete, still not removed.
 │   │   ├── buyer/
-│   │   │   ├── dashboard/routes.py    # GET /buyer/dashboard — still placeholder,
-│   │   │   │                           no real buyer feature exists yet (phase 2)
-│   │   │   ├── rfq/routes.py          # [phase 2]
+│   │   │   ├── dashboard/routes.py    # GET /buyer/dashboard — real verified-
+│   │   │   │                           listing count (Phase 2 Batch 1)
+│   │   │   ├── browse/routes.py       # Phase 2 Batch 1 — GET /buyer/browse
+│   │   │   │                           (search+list), GET .../{id} (detail) —
+│   │   │   │                           VERIFIED listings only, seller identity
+│   │   │   │                           NEVER shown (templates never reference
+│   │   │   │                           product.seller_company)
+│   │   │   ├── rfq/routes.py          # [phase 2, next]
 │   │   │   ├── quotations/routes.py   # [phase 2]
 │   │   │   └── orders/routes.py       # [phase 2]
 │   │   └── lab/
@@ -156,7 +168,9 @@ minerals/
 │   │   │   │                             platform-wide for admin preview)
 │   │   │   ├── listings_index.html, listing_form.html
 │   │   │   └── listing_detail.html      # verification section + passport section
-│   │   ├── buyer/dashboard.html
+│   │   ├── buyer/
+│   │   │   ├── dashboard.html            # stat card + Browse button
+│   │   │   └── browse_index.html, browse_detail.html  # Phase 2 Batch 1
 │   │   ├── lab/dashboard.html
 │   │   └── auth/login.html, register.html, account_status.html
 │   │
@@ -179,76 +193,3 @@ minerals/
 ├── .gitignore                     # .env, venv/, __pycache__/, uploaded avatars
 ├── .env.example
 └── .env
-
-──────────────────────────────────────────────────────────────
-CURRENT STATE
-──────────────────────────────────────────────────────────────
-Working end-to-end, verified against real Postgres, every batch:
-  - Registration (seller/buyer/lab) + admin approval workflow
-  - Login/logout, session cookies, portal role isolation
-  - Real per-portal dashboards on the actual vendor theme, real data
-    wired in (not a simplified shell) — admin preview shows genuine
-    platform-wide totals, not hidden/zero stats
-  - Admin can view any portal's dashboard directly (no re-login), with
-    a clear preview banner + header label ("Admin Portal · Previewing
-    X Portal")
-  - Admin has full oversight: /admin/companies (any status, drill-in
-    with listings/verification/passports or certificates),
-    /admin/users (every account), /admin/passports (approval queue) —
-    BRD §6.8
-  - Company-scoped pages (seller listings, lab verification) redirect
-    admin to the equivalent oversight view instead of a blunt 403
-  - Self-service profile: name, password, avatar upload/remove — any
-    logged-in user
-  - In-app notifications
-  - Seller product listings: create, list, view, edit (while draft/
-    failed_verification), per-company ownership enforcement
-  - Lab verification workflow end-to-end: request -> lock listing ->
-    lab issues Certificate (-> VERIFIED) or rejects (->
-    FAILED_VERIFICATION, editable again) -> notifications both ways
-  - Mineral Passport workflow end-to-end: seller requests on a
-    VERIFIED listing -> admin approves (generates passport number +
-    12-month validity) or rejects -> public no-login lookup at
-    /passports/verify confirms authenticity
-  - Both recurring theme 404s fixed (logo.png, bootstrap-icons.woff2)
-  - Git repo pushed to a private GitHub remote
-
-Known cleanup still pending (low priority, doesn't block anything):
-  - Delete app/templates/layouts/base_app.html and base_portal.html
-  - Delete app/modules/seller/routes.py (stray unused duplicate)
-
-Deliberate scope boundaries (not gaps — noted so they don't get
-re-litigated by accident):
-  - Email is not editable from /my-profile or /admin/users
-  - Company role is not editable anywhere
-  - Passport validity period (365 days) is a hardcoded constant, no
-    admin-configurable policy UI
-
-──────────────────────────────────────────────────────────────
-WHAT'S NEXT
-──────────────────────────────────────────────────────────────
-This closes the seller listing lifecycle (draft -> verify -> passport)
-that's been the throughline since Product was introduced. From here:
-
-Phase 2 (weeks 7-14) — the Buyer Portal's first real features:
-  - Buyer-side browse/search of VERIFIED listings (the first thing
-    that actually uses Product.status = VERIFIED for its intended
-    purpose — buyer visibility)
-  - RFQ creation, matching to verified sellers
-  - Identity-protected negotiation (buyer/seller concealed until order
-    confirmed) — this is where core/identity_guard.py finally gets built
-  - Quotations, comparison
-  - Order lifecycle through to completion
-
-Batch after Phase 2 groundwork — Localization: localization.py, AR
-  translations, RTL pass.
-
-Batch after that — Hardening: 2FA, password reset, CSRF tokens, cookie
-  `secure` flag, seed data script, full test pass before Phase 1/2
-  sign-off.
-
-Phase 3 (weeks 15-20): ZATCA invoicing, escrow/settlement logic,
-  subscription billing enforcement, disputes, audit logging.
-
-Phase 4 (weeks 21-30): inventory, logistics, document management,
-  analytics, admin/monitoring, mobile pass.

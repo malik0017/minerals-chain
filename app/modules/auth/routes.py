@@ -1,6 +1,7 @@
 """
 app/modules/auth/routes.py
 """
+import uuid
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
@@ -9,15 +10,19 @@ from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from app.core.auth import SESSION_COOKIE_NAME, get_current_user_optional, get_current_user_required
 from app.core.config import settings
-from app.core.security import create_access_token
+from app.core.security import create_access_token, create_pending_2fa_token, decode_pending_2fa_token
 from app.database.base import get_db
 from app.models.company import ApprovalStatus
 from app.models.user import User, UserRole
+from app.repositories import user_repository
 from app.schemas.auth import LoginRequest, RegisterRequest
 from app.services.auth_service import AuthenticationError, RegistrationError, authenticate_user, register_new_company_user
+from app.services.two_factor_service import verify_code
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
+
+PENDING_2FA_COOKIE_NAME = "mc_2fa_pending"
 
 
 def _set_session_cookie(response: RedirectResponse, user: User) -> None:
@@ -109,18 +114,63 @@ def login_submit(
     try:
         payload = LoginRequest(email=email, password=password)
         user = authenticate_user(db, payload.email, payload.password)
-    except (ValidationError, AuthenticationError):
-        # Same generic message for "no such email" and "wrong password" —
-        # deliberate, see AuthenticationError's docstring.
+    except ValidationError:
         return templates.TemplateResponse(
-            request,
-            "auth/login.html",
-            {"error": "Incorrect email or password.", "email": email},
-            status_code=400,
+            request, "auth/login.html", {"error": "Incorrect email or password.", "email": email}, status_code=400
+        )
+    except AuthenticationError as exc:
+        return templates.TemplateResponse(
+            request, "auth/login.html", {"error": str(exc), "email": email}, status_code=400
+        )
+
+    if user.totp_enabled:
+        token = create_pending_2fa_token(user_id=str(user.id))
+        response = RedirectResponse(url=request.url_for("login_2fa_form"), status_code=303)
+        response.set_cookie(
+            key=PENDING_2FA_COOKIE_NAME, value=token, httponly=True, samesite="lax", max_age=5 * 60,
+        )
+        return response
+
+    response = RedirectResponse(url=request.url_for("home"), status_code=303)
+    _set_session_cookie(response, user)
+    return response
+
+
+def _pending_2fa_user(request: Request, db: Session) -> User | None:
+    token = request.cookies.get(PENDING_2FA_COOKIE_NAME)
+    if not token:
+        return None
+    user_id = decode_pending_2fa_token(token)
+    if not user_id:
+        return None
+    try:
+        return user_repository.get_by_id(db, uuid.UUID(user_id))
+    except ValueError:
+        return None
+
+
+@router.get("/login/2fa", name="login_2fa_form")
+def login_2fa_form(request: Request, db: Session = Depends(get_db)):
+    user = _pending_2fa_user(request, db)
+    if user is None or not user.totp_enabled:
+        return RedirectResponse(url=request.url_for("login_form"), status_code=303)
+    return templates.TemplateResponse(request, "auth/login_2fa.html", {"error": None})
+
+
+@router.post("/login/2fa", name="login_2fa_submit")
+def login_2fa_submit(request: Request, db: Session = Depends(get_db), code: str = Form(...)):
+    user = _pending_2fa_user(request, db)
+    if user is None or not user.totp_enabled:
+        return RedirectResponse(url=request.url_for("login_form"), status_code=303)
+
+    if not verify_code(user.totp_secret, code):
+        return templates.TemplateResponse(
+            request, "auth/login_2fa.html", {"error": "That code didn't match. Try again."}, status_code=400
         )
 
     response = RedirectResponse(url=request.url_for("home"), status_code=303)
     _set_session_cookie(response, user)
+    response.delete_cookie(PENDING_2FA_COOKIE_NAME)
     return response
 
 
@@ -128,6 +178,7 @@ def login_submit(
 def logout(request: Request):
     response = RedirectResponse(url=request.url_for("login_form"), status_code=303)
     response.delete_cookie(SESSION_COOKIE_NAME)
+    response.delete_cookie(PENDING_2FA_COOKIE_NAME)
     return response
 
 
@@ -149,8 +200,6 @@ def home(request: Request, user: User = Depends(get_current_user_required)):
             },
         )
 
-    # Batch 4: approved seller/buyer/lab users go to their real portal
-    # dashboard now instead of the generic dashboard-test page.
     portal_route = {
         UserRole.SELLER: "seller_dashboard",
         UserRole.BUYER: "buyer_dashboard",

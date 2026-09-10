@@ -1,9 +1,5 @@
 """
 app/modules/lab/verification/routes.py
-
-The lab portal's first real feature. Every route gated by
-require_lab_company — real lab, approved company only, no admin
-bypass (same reasoning as require_seller_company).
 """
 import uuid
 

@@ -1,14 +1,5 @@
 """
 app/services/avatar_service.py
-
-Handles profile picture upload for the "My Profile" page. Files are
-stored on local disk under app/static/uploads/avatars/ — the same
-StaticFiles mount that already serves everything else under /static/
-serves these too, no extra wiring needed. This is fine for a single-
-server dev/early-production setup; if this app ever runs on multiple
-app servers behind a load balancer, avatars would need to move to
-shared/object storage (S3 etc.) instead — noted here since it's an
-easy thing to trip over later, not because it needs solving now.
 """
 import uuid
 from pathlib import Path
@@ -43,15 +34,11 @@ def save_avatar(db: Session, user: User, file: UploadFile, contents: bytes) -> U
 
     AVATAR_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Delete any previous avatar file first — the extension may differ
-    # from the new upload, so this can't just be an overwrite.
     if user.avatar_filename:
         old_path = AVATAR_DIR / user.avatar_filename
         old_path.unlink(missing_ok=True)
 
     ext = ALLOWED_CONTENT_TYPES[file.content_type]
-    # A fresh random filename per upload (not just user.id) means an old
-    # cached copy in someone's browser can never collide with a new one.
     new_filename = f"{user.id}-{uuid.uuid4().hex[:8]}.{ext}"
     (AVATAR_DIR / new_filename).write_bytes(contents)
 

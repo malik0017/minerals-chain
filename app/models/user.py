@@ -5,7 +5,7 @@ app/models/user.py
 import enum
 import uuid
 from datetime import datetime
-from sqlalchemy import Boolean, DateTime, Enum as SAEnum, ForeignKey, String
+from sqlalchemy import Boolean, DateTime, Enum as SAEnum, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database.base import Base, TimestampMixin
@@ -42,13 +42,12 @@ class User(Base, TimestampMixin):
 
     # BRD §6.10 Localization — per-user language preference, drives dir="rtl" in base.html.
     preferred_language: Mapped[str] = mapped_column(String(2), nullable=False, default="en")
-
-    # Batch 8: just the filename (e.g. "3f2a...-c9.png"), not a full path —
-    # the upload route (services/avatar_service.py) controls where files
-    # actually live on disk (app/static/uploads/avatars/). NULL means "no
-    # custom avatar", and every template falls back to a default
-    # placeholder image rather than treating NULL as an error.
     avatar_filename: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    failed_login_attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    totp_secret: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    totp_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 

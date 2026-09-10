@@ -1,38 +1,14 @@
 """
 app/models/product.py
 
-BRD §6.2 (Product Management — Seller):
-  - mineral type, grade, quantity terms, pricing, packaging, trade terms
-  - mineral-specific spec parameters (varies by mineral — silica needs
-    purity/iron-oxide, barite needs density/sulfate, etc.)
-  - status lifecycle: draft, under verification, verified, failed
-    verification, suspended
-  - "A product shall not be visible or discoverable by buyers until it
-    has passed independent lab verification" — enforced by ProductStatus,
-    checked wherever buyer-facing browsing is built (not this batch)
-
-Design note on `specifications_notes`: BRD explicitly says the
-chemical/physical parameters that matter are DIFFERENT per mineral
-type. A fully structured per-mineral-type schema (e.g. a
-mineral_type -> {field name -> data type} mapping, with dynamic form
-generation) is a real feature in its own right — building it now, with
-no buyer-side search/filtering to actually use structured values yet,
-would be speculative complexity with nothing to validate it against.
-For this batch specifications are a free-text field the seller fills
-in prose ("Purity 99.5%, iron oxide <0.02%, particle size 100-200
-mesh..."). Revisit as a structured JSONB field once buyer search
-needs to filter/sort by specific spec values.
 """
 import enum
 import uuid
 from decimal import Decimal
-
 from sqlalchemy import Enum as SAEnum, ForeignKey, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 from app.database.base import Base, TimestampMixin
-
 
 class ProductStatus(str, enum.Enum):
     DRAFT = "draft"

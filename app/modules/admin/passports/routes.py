@@ -1,9 +1,5 @@
 """
 app/modules/admin/passports/routes.py
-
-Same shape as admin/approvals/routes.py — pending queue, review one,
-approve/reject. Gated by require_portal(UserRole.ADMIN), same as the
-rest of /admin/*.
 """
 import uuid
 

@@ -1,11 +1,5 @@
 """
 app/services/profile_service.py
-
-Works for any logged-in user (admin included) — "My Profile" is a
-self-service page, not portal-specific. Email is deliberately not
-editable here: it's the login identifier and touches uniqueness
-constraints + (eventually) verification — changing it is a real
-feature in its own right, not a one-line addition to a name-edit form.
 """
 from sqlalchemy.orm import Session
 

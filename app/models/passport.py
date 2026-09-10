@@ -1,26 +1,5 @@
 """
 app/models/passport.py
-
-BRD §6.4 (Mineral Passport):
-  - seller requests a formal passport for a VERIFIED product,
-    selecting trade scope: domestic, GCC export, international export
-  - passport requests require admin review and approval before issuance
-  - an issued passport has a defined validity period, after which
-    renewal is required
-  - the system supports independent verification of a passport's
-    authenticity via a public reference lookup
-
-Validity period assumption: 12 months from approval date. BRD doesn't
-specify an exact duration, and there's no admin-configurable policy
-UI for it yet — a fixed 12-month window is a reasonable default that's
-easy to find and change in one place (passport_service.py) once a
-real policy exists. Not something to build a settings screen for on
-a guess.
-
-Requesting again after a REJECTED or EXPIRED passport is just a new
-row — no special "resubmit" flow needed, unlike VerificationRequest
-(which locks the underlying Product while active). A passport request
-doesn't lock anything on the product itself.
 """
 import enum
 import uuid
@@ -82,9 +61,6 @@ class MineralPassport(Base, TimestampMixin):
 
     @property
     def is_currently_valid(self) -> bool:
-        """Approved AND within its validity window. Not a DB column —
-        computed from status + valid_until so there's never a stale
-        'expired but still marked approved' row to reconcile."""
         if self.status != PassportStatus.APPROVED or self.valid_until is None:
             return False
         return date.today() <= self.valid_until

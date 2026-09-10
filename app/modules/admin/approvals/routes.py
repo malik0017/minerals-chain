@@ -1,9 +1,5 @@
 """
 app/modules/admin/approvals/routes.py
-
-Every route here is behind require_portal(UserRole.ADMIN) — only real
-admins, no preview bypass (that's only for VIEWING other portals, not
-the reverse).
 """
 import uuid
 from fastapi import APIRouter, Depends, Form, Request

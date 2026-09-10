@@ -1,10 +1,7 @@
 """app/repositories/passport_repository.py"""
 import uuid
-
 from sqlalchemy.orm import Session
-
 from app.models.passport import MineralPassport, PassportStatus
-
 
 def create(db: Session, passport: MineralPassport) -> MineralPassport:
     db.add(passport)
@@ -28,7 +25,6 @@ def list_for_product(db: Session, product_id: uuid.UUID) -> list[MineralPassport
         .all()
     )
 
-
 def list_for_company(db: Session, seller_company_id: uuid.UUID) -> list[MineralPassport]:
     return (
         db.query(MineralPassport)
@@ -37,7 +33,6 @@ def list_for_company(db: Session, seller_company_id: uuid.UUID) -> list[MineralP
         .all()
     )
 
-
 def list_pending(db: Session) -> list[MineralPassport]:
     return (
         db.query(MineralPassport)
@@ -45,7 +40,6 @@ def list_pending(db: Session) -> list[MineralPassport]:
         .order_by(MineralPassport.created_at.asc())
         .all()
     )
-
 
 def has_pending_or_active(db: Session, product_id: uuid.UUID) -> bool:
     """Stops a seller from filing a second passport request while one

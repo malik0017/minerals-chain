@@ -1,10 +1,7 @@
 """app/repositories/certificate_repository.py"""
 import uuid
-
 from sqlalchemy.orm import Session
-
 from app.models.certificate import Certificate
-
 
 def create(db: Session, certificate: Certificate) -> Certificate:
     db.add(certificate)

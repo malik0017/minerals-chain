@@ -1,12 +1,8 @@
 """
 app/modules/admin/users/routes.py
-
-Every user on the platform, admin included, with basic edit
-(name, active/disabled). Separate from /admin/companies — that page
-is about companies and their business data (listings etc); this one
-is about individual login accounts.
 """
 import uuid
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
@@ -18,7 +14,13 @@ from app.core.portal_nav import build_portal_context
 from app.database.base import get_db
 from app.models.user import User, UserRole
 from app.repositories import user_repository
-from app.services.admin_user_service import AdminUserActionError, update_user
+from app.services.admin_user_service import (
+    AdminUserActionError,
+    admin_disable_totp,
+    reset_password,
+    unlock_user,
+    update_user,
+)
 
 router = APIRouter(prefix="/admin/users", tags=["admin-users"])
 templates = Jinja2Templates(directory="app/templates")
@@ -33,6 +35,7 @@ def users_list(
     users = user_repository.list_all(db)
     context = build_portal_context(admin, UserRole.ADMIN, active_path=request.url.path)
     context["users"] = users
+    context["now"] = datetime.now(timezone.utc)
     return templates.TemplateResponse(request, "admin/users_list.html", context)
 
 
@@ -43,13 +46,23 @@ def user_detail(
     db: Session = Depends(get_db),
     admin: User = Depends(require_portal(UserRole.ADMIN)),
     error: str | None = None,
+    reset_success: bool = False,
 ):
     target = user_repository.get_by_id(db, user_id)
     if target is None:
         return RedirectResponse(url=request.url_for("admin_users_list"), status_code=303)
 
+    now = datetime.now(timezone.utc)
+    is_locked = target.locked_until is not None and target.locked_until > now
+    locked_minutes_remaining = (
+        max(1, int((target.locked_until - now).total_seconds() // 60) + 1) if is_locked else 0
+    )
+
     context = build_portal_context(admin, UserRole.ADMIN, active_path="/admin/users")
-    context.update({"target": target, "error": error, "is_self": target.id == admin.id})
+    context.update({
+        "target": target, "error": error, "is_self": target.id == admin.id, "reset_success": reset_success,
+        "is_locked": is_locked, "locked_minutes_remaining": locked_minutes_remaining,
+    })
     return templates.TemplateResponse(request, "admin/user_detail.html", context)
 
 
@@ -66,10 +79,6 @@ def user_edit(
     if target is None:
         return RedirectResponse(url=request.url_for("admin_users_list"), status_code=303)
 
-    # Disabled checkboxes never submit a value — when editing your own
-    # account the "active" checkbox is disabled in the template (you
-    # can't deactivate yourself), so treat that case as always active
-    # rather than reading a value the browser never sent.
     is_active_value = True if target.id == admin.id else bool(is_active)
 
     try:
@@ -80,4 +89,63 @@ def user_edit(
             url=f"{request.url_for('admin_user_detail', user_id=user_id)}?error={exc}",
             status_code=303,
         )
+    return RedirectResponse(url=request.url_for("admin_user_detail", user_id=user_id), status_code=303)
+
+
+@router.post("/{user_id}/unlock", name="admin_user_unlock")
+def user_unlock(
+    request: Request,
+    user_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_portal(UserRole.ADMIN)),
+):
+    target = user_repository.get_by_id(db, user_id)
+    if target is None:
+        return RedirectResponse(url=request.url_for("admin_users_list"), status_code=303)
+    unlock_user(db, target)
+    return RedirectResponse(url=request.url_for("admin_user_detail", user_id=user_id), status_code=303)
+
+
+@router.post("/{user_id}/reset-password", name="admin_user_reset_password")
+def user_reset_password(
+    request: Request,
+    user_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_portal(UserRole.ADMIN)),
+    new_password: str = Form(...),
+    confirm_password: str = Form(...),
+):
+    target = user_repository.get_by_id(db, user_id)
+    if target is None:
+        return RedirectResponse(url=request.url_for("admin_users_list"), status_code=303)
+
+    if new_password != confirm_password:
+        return RedirectResponse(
+            url=f"{request.url_for('admin_user_detail', user_id=user_id)}?error=Passwords do not match.",
+            status_code=303,
+        )
+    try:
+        reset_password(db, target, new_password)
+    except AdminUserActionError as exc:
+        db.rollback()
+        return RedirectResponse(
+            url=f"{request.url_for('admin_user_detail', user_id=user_id)}?error={exc}",
+            status_code=303,
+        )
+    return RedirectResponse(
+        url=f"{request.url_for('admin_user_detail', user_id=user_id)}?reset_success=true", status_code=303
+    )
+
+
+@router.post("/{user_id}/disable-2fa", name="admin_user_disable_2fa")
+def user_disable_2fa(
+    request: Request,
+    user_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_portal(UserRole.ADMIN)),
+):
+    target = user_repository.get_by_id(db, user_id)
+    if target is None:
+        return RedirectResponse(url=request.url_for("admin_users_list"), status_code=303)
+    admin_disable_totp(db, target)
     return RedirectResponse(url=request.url_for("admin_user_detail", user_id=user_id), status_code=303)

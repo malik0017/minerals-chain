@@ -1,11 +1,5 @@
 """
 app/modules/seller/dashboard/routes.py
-
-Renders via layouts/base.html (full vendor-themed shell). Admins can
-now open this directly too (see core/permissions.py) — portal_role is
-passed explicitly so the nav/label always say "Seller Portal" here,
-regardless of whether the real logged-in user is a seller or an admin
-previewing it.
 """
 from fastapi import APIRouter, Depends, Request
 from fastapi.templating import Jinja2Templates

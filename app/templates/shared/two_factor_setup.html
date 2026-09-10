@@ -1,0 +1,36 @@
+{% extends "layouts/base.html" %}
+{% block title %}Set up two-factor authentication{% endblock %}
+{% block content %}
+
+<a href="{{ url_for('my_profile') }}" class="text-secondary text-decoration-none small">&larr; Back to profile</a>
+
+<h4 class="mt-2 mb-4">Set up two-factor authentication</h4>
+
+{% if error %}
+<div class="alert alert-danger py-2">{{ error }}</div>
+{% endif %}
+
+<div class="card adminuiux-card">
+  <div class="card-body">
+    <div class="row g-4 align-items-center">
+      <div class="col-md-5 text-center">
+        <img src="{{ url_for('my_profile_2fa_qr') }}" alt="QR code" class="border rounded p-2" style="max-width:220px;" />
+        <p class="text-secondary small mt-2 mb-0">Scan with Google Authenticator, Authy, 1Password, or any TOTP app.</p>
+      </div>
+      <div class="col-md-7">
+        <ol class="mb-4">
+          <li class="mb-2">Open your authenticator app and scan the QR code, or enter the key manually.</li>
+          <li class="mb-2">Enter the 6-digit code it generates below to confirm setup.</li>
+        </ol>
+        <form method="post" action="{{ url_for('my_profile_2fa_confirm') }}">
+          <label class="form-label" for="code">Confirmation code</label>
+          <input class="form-control text-center fs-4 mb-3" type="text" id="code" name="code"
+                 inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autofocus />
+          <button type="submit" class="btn btn-theme">Confirm and enable</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,19 +1,5 @@
 """
 app/modules/admin/companies/routes.py
-
-BRD §6.8: "An administrator shall have full visibility into all
-companies, products, RFQs, orders, and disputes, including identities
-that are otherwise hidden from counterparties."
-
-This is the admin-oversight counterpart to Batch 5/6/9's seller
-listings, lab verification, and passport work: where /admin/approvals
-only ever shows PENDING companies (it's an action queue), this shows
-every company regardless of status, and drilling into one shows
-everything relevant to it — seller listing catalog + verification
-history + issued passports, or a lab's issued certificates. Read-only
-— admin doesn't act on any of this from here, only sees it.
-Approve/reject stays on /admin/approvals; passport approve/reject
-stays on /admin/passports.
 """
 import uuid
 

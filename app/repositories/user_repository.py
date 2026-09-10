@@ -14,9 +14,6 @@ def get_by_id(db: Session, user_id: uuid.UUID) -> User | None:
 
 
 def list_all(db: Session) -> list[User]:
-    """Batch 7 — the admin user management list (BRD-adjacent: admin
-    needs to see and manage individual accounts, not just companies).
-    Newest first."""
     return db.query(User).order_by(User.created_at.desc()).all()
 
 

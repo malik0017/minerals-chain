@@ -10,3 +10,6 @@ pydantic==2.13.5
 pydantic-settings==2.15.0
 python-multipart==0.0.32
 email-validator==2.2.0
+pyotp==2.9.0
+qrcode==7.4.2
+Pillow==10.4.0

@@ -25,7 +25,73 @@
       </dd>
       <dt class="col-sm-3">Registered</dt>
       <dd class="col-sm-9">{{ target.created_at.strftime("%Y-%m-%d %H:%M UTC") }}</dd>
+
+      <dt class="col-sm-3">Login status</dt>
+      <dd class="col-sm-9">
+        {% if is_locked %}
+        <span class="badge bg-danger-subtle text-danger">Locked ({{ locked_minutes_remaining }} min remaining)</span>
+        {% elif not target.is_active %}
+        <span class="badge bg-secondary-subtle text-secondary">Disabled</span>
+        {% else %}
+        <span class="badge bg-success-subtle text-success">Active</span>
+        {% endif %}
+      </dd>
+
+      <dt class="col-sm-3">Two-factor auth</dt>
+      <dd class="col-sm-9">
+        {% if target.totp_enabled %}
+        <span class="badge bg-success-subtle text-success">Enabled</span>
+        {% else %}
+        <span class="badge bg-secondary-subtle text-secondary">Not enabled</span>
+        {% endif %}
+      </dd>
     </dl>
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  {% if is_locked %}
+  <div class="col-md-4">
+    <div class="card adminuiux-card h-100">
+      <div class="card-body">
+        <h6 class="mb-2"><i class="bi bi-unlock"></i> Account locked</h6>
+        <p class="text-secondary small mb-3">Too many failed login attempts. Locked for {{ locked_minutes_remaining }} more minute(s).</p>
+        <form method="post" action="{{ url_for('admin_user_unlock', user_id=target.id) }}">
+          <button type="submit" class="btn btn-sm btn-theme">Unlock now</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if target.totp_enabled %}
+  <div class="col-md-4">
+    <div class="card adminuiux-card h-100">
+      <div class="card-body">
+        <h6 class="mb-2"><i class="bi bi-shield-x"></i> Two-factor authentication</h6>
+        <p class="text-secondary small mb-3">If this user lost access to their authenticator app, disable 2FA so they can log in and re-enroll.</p>
+        <form method="post" action="{{ url_for('admin_user_disable_2fa', user_id=target.id) }}">
+          <button type="submit" class="btn btn-sm btn-outline-danger">Disable 2FA</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="col-md-4">
+    <div class="card adminuiux-card h-100">
+      <div class="card-body">
+        <h6 class="mb-2"><i class="bi bi-key"></i> Reset password</h6>
+        {% if reset_success %}
+        <div class="alert alert-success py-2 mb-2">Password reset.</div>
+        {% endif %}
+        <form method="post" action="{{ url_for('admin_user_reset_password', user_id=target.id) }}">
+          <input class="form-control form-control-sm mb-2" type="password" name="new_password" placeholder="New password" minlength="8" required />
+          <input class="form-control form-control-sm mb-2" type="password" name="confirm_password" placeholder="Confirm new password" minlength="8" required />
+          <button type="submit" class="btn btn-sm btn-outline-theme">Set new password</button>
+        </form>
+      </div>
+    </div>
   </div>
 </div>
 

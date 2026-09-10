@@ -1,28 +1,11 @@
 """
 app/models/certificate.py
-
-BRD §6.3: "Upon successful verification, the lab shall issue a
-Certificate of Analysis documenting tested parameters against
-required thresholds." §6.6/§10.6: retained as a permanent, auditable
-record.
-
-`product_id` and `lab_company_id` are denormalized here (also
-reachable via verification_request) on purpose — a certificate is a
-permanent legal-ish document; querying it shouldn't depend on
-traversing through a request row that, in principle, is a workflow
-object and not the record of truth. `tested_parameters_notes` mirrors
-Product.specifications_notes' free-text approach for the same reason
-(see product.py's docstring) — a structured schema of expected vs.
-measured values per mineral type is real future work, not speculative
-scope for this batch.
 """
 import uuid
 from datetime import datetime, timezone
-
 from sqlalchemy import DateTime, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 from app.database.base import Base
 
 

@@ -31,12 +31,7 @@ def list_all(
     role: CompanyRole | None = None,
     status: ApprovalStatus | None = None,
 ) -> list[Company]:
-    """
-    BRD §6.8 — admin oversight across every company, regardless of
-    status. Optional role/status filters back the admin companies
-    list's dropdown filters; newest first, since that's usually what
-    an admin browsing the whole platform wants to see.
-    """
+   
     query = db.query(Company)
     if role is not None:
         query = query.filter(Company.role == role)

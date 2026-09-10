@@ -1,9 +1,5 @@
 """
 app/modules/shared/routes.py
-
-"Shared" because every portal (seller/buyer/lab/admin) uses the same
-notifications list. portal_role = the viewer's own role here — no
-admin-preview concept on this page.
 """
 from datetime import datetime, timezone
 

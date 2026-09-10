@@ -1,8 +1,6 @@
 """app/repositories/verification_repository.py"""
 import uuid
-
 from sqlalchemy.orm import Session
-
 from app.models.verification import VerificationRequest, VerificationStatus
 
 _ACTIVE_STATUSES = (VerificationStatus.REQUESTED, VerificationStatus.SAMPLE_SCHEDULED, VerificationStatus.TESTING_IN_PROGRESS)

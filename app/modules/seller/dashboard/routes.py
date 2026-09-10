@@ -31,10 +31,6 @@ def seller_dashboard(
         context["draft_count"] = sum(1 for p in products if p.status == ProductStatus.DRAFT)
         context["stats_are_platform_wide"] = False
     else:
-        # Batch 8: admin previewing the Seller Portal has no company of
-        # their own to show stats for — rather than hiding the summary
-        # cards entirely (which read as "broken"/"nothing to see"),
-        # show real platform-wide totals across every seller instead.
         context["listing_count"] = product_repository.count_all(db)
         context["draft_count"] = product_repository.count_by_status(db, ProductStatus.DRAFT)
         context["stats_are_platform_wide"] = True
