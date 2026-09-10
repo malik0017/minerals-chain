@@ -1,0 +1,54 @@
+{% extends "layouts/base.html" %}
+{% block title %}My Quotations{% endblock %}
+{% block content %}
+
+<h4 class="mb-1">My Quotations</h4>
+<p class="text-secondary mb-4">Every quote you've submitted on an RFQ.</p>
+
+{% if not quotations %}
+<div class="card adminuiux-card">
+  <div class="card-body text-center py-5">
+    <i class="bi bi-tags fs-1 text-secondary opacity-50"></i>
+    <p class="text-secondary mt-3 mb-3">You haven't submitted any quotations yet.</p>
+    <a href="{{ url_for('seller_rfq_inbox_index') }}" class="btn btn-theme">
+      <i class="bi bi-inbox"></i> Browse the RFQ inbox
+    </a>
+  </div>
+</div>
+{% else %}
+<div class="card adminuiux-card">
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Mineral</th>
+          <th>Your price</th>
+          <th>Lead time</th>
+          <th>Status</th>
+          <th>Submitted</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for q in quotations %}
+        <tr>
+          <td>{{ q.rfq.mineral_type }}</td>
+          <td>{{ q.price_currency }} {{ q.price_value }}{% if q.price_unit %} <span class="text-secondary small">{{ q.price_unit }}</span>{% endif %}</td>
+          <td>{{ q.lead_time_days }} day(s)</td>
+          <td>
+            {% if q.status.value == "accepted" %}<span class="badge bg-success-subtle text-success">Accepted</span>
+            {% else %}<span class="badge bg-secondary-subtle text-secondary">Submitted</span>{% endif %}
+          </td>
+          <td class="text-secondary small">{{ q.created_at.strftime("%Y-%m-%d") }}</td>
+          <td class="text-end">
+            <a href="{{ url_for('seller_rfq_inbox_detail', rfq_id=q.rfq_id) }}" class="btn btn-sm btn-outline-theme">View RFQ</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

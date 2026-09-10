@@ -13,16 +13,20 @@ minerals/
 │   │   ├── permissions.py         # require_portal, require_approved_company,
 │   │   │                            require_active_portal (admin can preview any
 │   │   │                            dashboard), require_seller_company /
-│   │   │                            require_lab_company (strict — redirect admin
-│   │   │                            to /admin/companies instead of 403)
+│   │   │                            require_lab_company / require_buyer_company
+│   │   │                            (strict — redirect admin to /admin/companies
+│   │   │                            instead of 403)
 │   │   ├── exceptions.py          # NotAuthenticatedException, ForbiddenException,
 │   │   │                            CompanyNotApprovedException, AdminRedirectException
 │   │   ├── portal_nav.py          # build_portal_context(user, portal_role,
 │   │   │                            active_path) — ONE place building nav_items/
 │   │   │                            portal_label/upcoming_items/current_user/
 │   │   │                            is_admin_preview/avatar_url for every real page
-│   │   ├── identity_guard.py      # [not yet built — needed once RFQ/order models
-│   │   │                            exist, enforces buyer/seller identity concealment]
+│   │   ├── identity_guard.py      # is_identity_revealed(order), counterparty_company()
+│   │   │                            — the ONE place BRD §7's concealment/reveal rule
+│   │   │                            lives, enforced at data-access level (routes
+│   │   │                            never fetch the other party's Company unless
+│   │   │                            revealed) — Phase 2 Batch 4
 │   │   └── localization.py        # [not yet built — AR/EN, RTL]
 │   │
 │   ├── database/                  # base.py (engine/session/Base/TimestampMixin),
@@ -31,7 +35,9 @@ minerals/
 │   ├── models/
 │   │   ├── __init__.py            # imports every model — required for Alembic
 │   │   ├── company.py             # Company, CompanyRole, ApprovalStatus, SubscriptionTier
-│   │   ├── user.py                # User, UserRole, avatar_filename
+│   │   ├── user.py                # User, UserRole, avatar_filename, lockout fields
+│   │   │                            (failed_login_attempts, locked_until), TOTP
+│   │   │                            fields (totp_secret, totp_enabled)
 │   │   ├── notification.py        # in-app notifications (BRD §6.9)
 │   │   ├── audit_log.py           # admin action trail (BRD §6.8)
 │   │   ├── product.py             # Product, ProductStatus (BRD §6.2)
@@ -39,9 +45,13 @@ minerals/
 │   │   ├── certificate.py         # Certificate (BRD §6.3)
 │   │   ├── passport.py            # MineralPassport, PassportScope, PassportStatus
 │   │   │                            (BRD §6.4) — is_currently_valid property
-│   │   ├── rfq.py                 # [phase 2]
-│   │   ├── quotation.py           # [phase 2]
-│   │   ├── order.py               # [phase 2]
+│   │   ├── rfq.py                 # RFQ, RFQStatus (open/closed) — Phase 2 Batch 2
+│   │   ├── quotation.py           # Quotation, QuotationStatus (submitted/accepted)
+│   │   │                            — Phase 2 Batch 3
+│   │   ├── order.py               # Order, OrderStatus (5 stages: pending_
+│   │   │                            confirmation/confirmed/in_transit/delivered/
+│   │   │                            completed — no "invoiced" stage, see docstring)
+│   │   │                            — Phase 2 Batch 4, closes Phase 2
 │   │   ├── dispute.py             # [phase 3]
 │   │   ├── subscription.py        # tier ENUM already lives on Company
 │   │   └── invoice.py             # [phase 3]
@@ -49,27 +59,40 @@ minerals/
 │   ├── schemas/
 │   │   ├── auth.py                # RegisterRequest (role: seller|buyer|lab only), LoginRequest
 │   │   ├── profile.py             # ProfileUpdateRequest, PasswordChangeRequest
+│   │   ├── two_factor.py          # TotpConfirmRequest, TotpDisableRequest
 │   │   ├── product.py             # ProductRequest
 │   │   ├── verification.py        # VerificationRequestCreate, IssueCertificateRequest,
 │   │   │                            RejectVerificationRequest
-│   │   └── passport.py            # PassportRequestCreate, PassportRejectRequest
+│   │   ├── passport.py            # PassportRequestCreate, PassportRejectRequest
+│   │   ├── rfq.py                 # RFQRequest — Phase 2 Batch 2
+│   │   └── quotation.py           # QuotationRequest — Phase 2 Batch 3
 │   │
 │   ├── repositories/
 │   │   ├── company_repository.py  # + list_all() for admin oversight
 │   │   ├── user_repository.py     # + get_by_id(), list_all()
 │   │   ├── notification_repository.py
 │   │   ├── audit_log_repository.py
-│   │   ├── product_repository.py  # + count_all(), count_by_status() — admin
-│   │   │                            platform-wide stats when previewing Seller Portal
+│   │   ├── product_repository.py  # + count_all(), count_by_status(), list_verified(),
+│   │   │                            get_verified_by_id() — buyer browse (Phase 2 Batch 1)
 │   │   ├── verification_repository.py  # + count_all(), count_active() — same,
 │   │   │                                 Lab Portal
 │   │   ├── certificate_repository.py    # + list_for_lab_company()
-│   │   └── passport_repository.py        # list_for_product/company/pending,
-│   │                                        has_pending_or_active(), get_by_number()
-│   │                                        (used by the public lookup)
+│   │   ├── passport_repository.py        # list_for_product/company/pending,
+│   │   │                                    has_pending_or_active(), get_by_number()
+│   │   │                                    (used by the public lookup)
+│   │   ├── rfq_repository.py               # create, get_by_id, list_for_company,
+│   │   │                                    list_open() (seller inbox feed),
+│   │   │                                    count_open(), count_all() — Phase 2 Batch 2
+│   │   ├── quotation_repository.py          # create, get_by_id, list_for_rfq()
+│   │   │                                    (price-sorted), list_for_seller_company(),
+│   │   │                                    get_by_rfq_and_seller() (dup-quote guard),
+│   │   │                                    count_for_rfq() — Phase 2 Batch 3
+│   │   └── order_repository.py               # create, get_by_id, get_by_quotation_id(),
+│   │                                        list_for_buyer_company(),
+│   │                                        list_for_seller_company() — Phase 2 Batch 4
 │   │
 │   ├── services/
-│   │   ├── auth_service.py
+│   │   ├── auth_service.py         # + account lockout logic (5 fails -> 30 min lock)
 │   │   ├── admin_service.py         # approve_company(), reject_company()
 │   │   ├── admin_user_service.py     # update_user() name/active; + unlock_user(),
 │   │   │                              reset_password(), admin_disable_totp()
@@ -82,12 +105,22 @@ minerals/
 │   │   │                                  get_owned_listing()
 │   │   ├── verification_service.py       # request_verification(), issue_certificate(),
 │   │   │                                   reject_verification()
-│   │   └── passport_service.py            # request_passport(), approve_passport(),
-│   │                                        reject_passport() — VALIDITY_PERIOD_DAYS=365
-│   │                                        constant, see its docstring for why
+│   │   ├── passport_service.py            # request_passport(), approve_passport(),
+│   │   │                                    reject_passport() — VALIDITY_PERIOD_DAYS=365
+│   │   │                                    constant, see its docstring for why
+│   │   ├── rfq_service.py                  # create_rfq(), get_owned_rfq() — Phase 2 Batch 2
+│   │   ├── quotation_service.py             # submit_quotation() — one quote per
+│   │   │                                    seller per RFQ, RFQ must be OPEN —
+│   │   │                                    get_owned_quotation() — Phase 2 Batch 3
+│   │   └── order_service.py                  # accept_quotation() (creates Order,
+│   │                                        closes RFQ), confirm_order() (sets
+│   │                                        confirmed_at — THE identity-reveal
+│   │                                        trigger), mark_shipped(),
+│   │                                        mark_delivered(), confirm_receipt()
+│   │                                        — Phase 2 Batch 4
 │   │
 │   ├── modules/
-│   │   ├── auth/routes.py         # /register, /login, /logout, /home
+│   │   ├── auth/routes.py         # /register, /login, /login/2fa, /logout, /home
 │   │   ├── admin/
 │   │   │   ├── approvals/routes.py     # company approve/reject queue
 │   │   │   ├── companies/routes.py      # /admin/companies — ALL companies any
@@ -105,7 +138,6 @@ minerals/
 │   │   │   └── profile/routes.py         # /my-profile: name, password, avatar
 │   │   │                                  upload/remove, 2FA setup/confirm/
 │   │   │                                  disable/QR — any logged-in user
-│   │   │                                  upload/remove — any logged-in user
 │   │   ├── public/routes.py               # /passports/verify — NO login required,
 │   │   │                                   BRD §6.4 authenticity lookup
 │   │   ├── seller/
@@ -114,8 +146,17 @@ minerals/
 │   │   │   │                             hidden/zero
 │   │   │   ├── listings/routes.py       # full CRUD + request-verification +
 │   │   │   │                             request-passport actions
-│   │   │   ├── rfq_inbox/routes.py    # [phase 2]
-│   │   │   └── orders/routes.py       # [phase 2]
+│   │   │   ├── rfq_inbox/routes.py    # Phase 2 Batch 2 — /seller/rfq-inbox
+│   │   │   │                           (list + detail, broadcast model, every
+│   │   │   │                           open RFQ visible to every approved
+│   │   │   │                           seller, no matching engine yet). Buyer
+│   │   │   │                           identity NEVER shown. Phase 2 Batch 3:
+│   │   │   │                           + POST .../{id}/quote (submit a quotation)
+│   │   │   ├── quotations/routes.py     # Phase 2 Batch 3 — /seller/quotations,
+│   │   │   │                            read-only list of own submitted quotes
+│   │   │   └── orders/routes.py       # Phase 2 Batch 4 — /seller/orders (list +
+│   │   │                               detail), POST .../confirm (THE identity-
+│   │   │                               reveal trigger), .../ship, .../mark-delivered
 │   │   │   NOTE: app/modules/seller/routes.py (no subfolder) is a stray unused
 │   │   │   duplicate, not imported anywhere — safe to delete, still not removed.
 │   │   ├── buyer/
@@ -126,9 +167,16 @@ minerals/
 │   │   │   │                           VERIFIED listings only, seller identity
 │   │   │   │                           NEVER shown (templates never reference
 │   │   │   │                           product.seller_company)
-│   │   │   ├── rfq/routes.py          # [phase 2, next]
-│   │   │   ├── quotations/routes.py   # [phase 2]
-│   │   │   └── orders/routes.py       # [phase 2]
+│   │   │   ├── rfq/routes.py          # Phase 2 Batch 2 — /buyer/rfqs
+│   │   │   │                           (list/create/detail), ownership-checked.
+│   │   │   │                           Phase 2 Batch 3: detail view now also
+│   │   │   │                           shows the quotation comparison (no
+│   │   │   │                           separate buyer/quotations module — folded
+│   │   │   │                           into this route)
+│   │   │   └── orders/routes.py       # Phase 2 Batch 4 — /buyer/orders (list +
+│   │   │                               detail), POST .../confirm-receipt.
+│   │   │                               rfq/routes.py also gained POST
+│   │   │                               .../quotations/{id}/accept (creates the Order)
 │   │   └── lab/
 │   │       ├── dashboard/routes.py    # real request counts; admin preview shows
 │   │       │                           platform-wide totals
@@ -139,8 +187,8 @@ minerals/
 │   │   │   ├── base.html              # THE real shell — every seller/buyer/lab/admin
 │   │   │   │                           page + dashboard-test extends this
 │   │   │   ├── base_auth.html         # login / account_status / public passport
-│   │   │   │                           lookup (centered card, no login required
-│   │   │   │                           to view — content decides what's shown)
+│   │   │   │                           lookup / 2FA code entry (centered card, no
+│   │   │   │                           login required to view — content decides)
 │   │   │   └── base_auth_split.html   # register only (two-column reference design)
 │   │   │   UNUSED, flagged for deletion (nothing extends these anymore):
 │   │   │     base_app.html, base_portal.html
@@ -155,24 +203,44 @@ minerals/
 │   │   ├── errors/403.html
 │   │   ├── shared/
 │   │   │   ├── notifications.html
-│   │   │   └── profile.html            # name form + password form + avatar card
+│   │   │   ├── profile.html            # name form + password form + avatar card
+│   │   │   │                           + 2FA card
+│   │   │   └── two_factor_setup.html    # QR code + confirmation code
 │   │   ├── admin/
 │   │   │   ├── approvals_list.html, approvals_review.html
 │   │   │   ├── companies_list.html, company_detail.html
-│   │   │   ├── users_list.html, user_detail.html
+│   │   │   ├── users_list.html, user_detail.html   # + lockout/2FA status,
+│   │   │   │                                          unlock/reset-pw/disable-2fa
 │   │   │   └── passports_list.html, passport_review.html
 │   │   ├── public/
 │   │   │   └── passport_lookup.html    # no-login authenticity check
 │   │   ├── seller/
-│   │   │   ├── dashboard.html           # listing/draft counts (real or
+│   │   │   ├── dashboard.html           # listing/draft/open-RFQ counts (real or
 │   │   │   │                             platform-wide for admin preview)
 │   │   │   ├── listings_index.html, listing_form.html
-│   │   │   └── listing_detail.html      # verification section + passport section
+│   │   │   ├── listing_detail.html      # verification section + passport section
+│   │   │   ├── rfq_inbox_index.html      # Phase 2 Batch 2 — buyer identity NEVER shown
+│   │   │   ├── rfq_inbox_detail.html      # + quote submission form / already-
+│   │   │   │                             submitted / RFQ-closed states (Batch 3)
+│   │   │   ├── quotations_index.html       # Phase 2 Batch 3 — "My Quotations"
+│   │   │   └── orders_index.html, order_detail.html  # Phase 2 Batch 4 — confirm/
+│   │   │                                    ship/mark-delivered actions; identity
+│   │   │                                    reveal shown once order.confirmed_at is set
 │   │   ├── buyer/
-│   │   │   ├── dashboard.html            # stat card + Browse button
-│   │   │   └── browse_index.html, browse_detail.html  # Phase 2 Batch 1
+│   │   │   ├── dashboard.html            # stat cards + Browse/My RFQs buttons
+│   │   │   ├── browse_index.html, browse_detail.html  # Phase 2 Batch 1
+│   │   │   ├── rfq_index.html, rfq_form.html  # Phase 2 Batch 2
+│   │   │   ├── rfq_detail.html                # + quotation comparison table,
+│   │   │   │                                   price-sorted, seller identity NEVER
+│   │   │   │                                   shown (Batch 3); Accept button now
+│   │   │   │                                   live, posts to accept-quotation (Batch 4)
+│   │   │   └── orders_index.html, order_detail.html  # Phase 2 Batch 4 —
+│   │   │                                    confirm-receipt action; identity reveal
+│   │   │                                    shown once order.confirmed_at is set
 │   │   ├── lab/dashboard.html
-│   │   └── auth/login.html, register.html, account_status.html
+│   │   └── auth/
+│   │       ├── login.html, register.html, account_status.html
+│   │       └── login_2fa.html            # 2-step login, code entry
 │   │
 │   ├── static/
 │   │   └── uploads/avatars/            # user-uploaded profile pictures,
@@ -186,10 +254,106 @@ minerals/
 │   ├── 0003_products.py
 │   ├── 0004_verification.py
 │   ├── 0005_user_avatar.py
-│   └── 0006_mineral_passports.py
+│   ├── 0006_mineral_passports.py
+│   └── 0007_lockout_2fa.py         # <-- was missing from this file before;
+│                                       adds failed_login_attempts, locked_until,
+│                                       totp_secret, totp_enabled to users.
+│                                       THIS is what caused "column
+│                                       users.failed_login_attempts does not
+│                                       exist" — the migration file existed on
+│                                       disk but `alembic upgrade head` was never
+│                                       re-run after copying it in. Always run
+│                                       that command after applying any delivery
+│                                       that includes a new alembic/versions/ file.
+│   ├── 0008_rfqs.py                # rfqs table — Phase 2 Batch 2
+│   ├── 0009_quotations.py          # quotations table — Phase 2 Batch 3
+│   └── 0010_orders.py              # orders table — Phase 2 Batch 4, closes Phase 2
 ├── alembic.ini
 ├── requirements.txt
 ├── README.md
 ├── .gitignore                     # .env, venv/, __pycache__/, uploaded avatars
 ├── .env.example
 └── .env
+
+──────────────────────────────────────────────────────────────
+CURRENT STATE
+──────────────────────────────────────────────────────────────
+Phase 1 (Core Foundation): COMPLETE. Every route re-verified today
+(43-point test across every portal) against your exact current project
+code — registration, admin approval, seller listing CRUD, lab
+verification, Mineral Passport (request through public lookup), buyer
+browse, notifications, profile, full admin oversight, account lockout,
+2FA, and role isolation all confirmed working.
+
+Phase 2 (Marketplace Trading Engine): COMPLETE.
+  Batch 1 [DONE] — buyer browse of VERIFIED listings, identity-concealed
+  Batch 2 [DONE] — RFQ creation (buyer) + seller RFQ inbox (broadcast
+    model, read-only — see rfq.py's docstring), buyer identity
+    concealed from sellers too (BRD §7 is bidirectional)
+  Batch 3 [DONE] — Quotations: seller responds to an open RFQ (price,
+    lead time, terms), one quote per seller per RFQ; buyer sees a
+    price-sorted comparison list, zero seller identity leaked.
+  Batch 4 [DONE] — Order lifecycle: accepting a quotation creates an
+    order and closes the RFQ; status progresses through seller
+    confirmation (core/identity_guard.py's is_identity_revealed() —
+    identities reveal to each other only at this point, per BRD §6.6)
+    -> in transit -> delivered -> buyer confirms receipt -> completed.
+    Tested end-to-end including two competing sellers quoting the same
+    RFQ, confirming the non-accepted seller can't see the resulting
+    order at all.
+
+The full BRD §6.5-6.6 marketplace trading loop is now built and
+tested: browse -> RFQ -> quotations -> order -> identity reveal ->
+delivery -> completion.
+
+Known cleanup still pending (low priority, doesn't block anything):
+  - Delete app/templates/layouts/base_app.html and base_portal.html
+  - Delete app/modules/seller/routes.py (stray unused duplicate)
+
+Deliberate scope boundaries (not gaps — noted so they don't get
+re-litigated by accident):
+  - Email is not editable from /my-profile or /admin/users
+  - Company role is not editable anywhere
+  - Passport validity period (365 days) is a hardcoded constant
+  - No 2FA backup codes — recovery path is admin disabling 2FA
+  - Session cookies still aren't marked `secure` — TODO in
+    modules/auth/routes.py, enable once served over HTTPS
+  - Buyer browse search is mineral-type match only, no other filters
+  - RFQ inbox is a broadcast feed, not an automated matching engine
+  - No RFQ cancellation yet (enum has room for it when needed)
+  - No quotation revision — one shot per seller per RFQ, no edit path
+  - No "verification status" comparison column on quotations — see
+    quotation.py's docstring for why that doesn't map cleanly onto
+    an RFQ-based (not listing-based) quote
+  - No "invoiced" order status — real invoicing is Phase 3 (ZATCA);
+    5 stages instead of BRD's example 6, see order.py's docstring
+  - No seller "reject" path for an order after quoting — deferred
+    with disputes (Phase 3), needs cancellation/refund logic thought
+    through properly rather than bolted on now
+
+──────────────────────────────────────────────────────────────
+WHAT'S NEXT
+──────────────────────────────────────────────────────────────
+Phase 2 is done. Immediate options: Phase 3 (payments & compliance —
+ZATCA invoicing, escrow/settlement, subscription billing enforcement,
+disputes, audit logging), or the remaining hardening items
+(Localization AR/EN+RTL, CSRF tokens, cookie `secure` flag, seed data
+script beyond create_admin.py).
+
+Phase 3 (weeks 15-20): ZATCA invoicing, escrow/settlement logic,
+  subscription billing enforcement, disputes, audit logging.
+
+Phase 4 (weeks 21-30): inventory, logistics, document management,
+  analytics, admin/monitoring, mobile pass.
+
+──────────────────────────────────────────────────────────────
+OPERATIONAL REMINDER (learned the hard way — see the 0007 note above)
+──────────────────────────────────────────────────────────────
+Every delivery that includes a new file under alembic/versions/ needs
+`alembic upgrade head` run against the actual database after copying
+the files in. Copying the migration file alone does NOT apply it — if
+you see a "column ... does not exist" error right after applying a
+batch, this is almost always the cause. Check `alembic current` vs the
+latest filename in alembic/versions/ to confirm before doing anything
+else.
+

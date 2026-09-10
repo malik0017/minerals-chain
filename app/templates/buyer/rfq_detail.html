@@ -1,0 +1,91 @@
+{% extends "layouts/base.html" %}
+{% block title %}{{ rfq.mineral_type }} RFQ{% endblock %}
+{% block content %}
+
+<a href="{{ url_for('buyer_rfqs_index') }}" class="text-secondary text-decoration-none small">&larr; Back to RFQs</a>
+
+{% if error %}
+<div class="alert alert-danger py-2 mt-2">{{ error }}</div>
+{% endif %}
+
+<div class="d-flex align-items-center justify-content-between mt-2 mb-4">
+  <h4 class="mb-0">{{ rfq.mineral_type }}</h4>
+  {% if rfq.status.value == "open" %}<span class="badge bg-success-subtle text-success">Open</span>
+  {% else %}<span class="badge bg-secondary-subtle text-secondary">Closed</span>{% endif %}
+</div>
+
+<div class="card adminuiux-card mb-3">
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Quantity</dt>
+      <dd class="col-sm-9">{{ rfq.quantity_value }} {{ rfq.quantity_unit }}</dd>
+
+      <dt class="col-sm-3">Delivery location</dt>
+      <dd class="col-sm-9">{{ rfq.delivery_location }}</dd>
+
+      <dt class="col-sm-3">Delivery timeframe</dt>
+      <dd class="col-sm-9">{{ rfq.delivery_timeframe }}</dd>
+
+      <dt class="col-sm-3">Specifications</dt>
+      <dd class="col-sm-9" style="white-space: pre-line;">{{ rfq.specifications_notes or "—" }}</dd>
+
+      <dt class="col-sm-3">Commercial terms</dt>
+      <dd class="col-sm-9" style="white-space: pre-line;">{{ rfq.commercial_terms_notes or "—" }}</dd>
+
+      <dt class="col-sm-3">Posted</dt>
+      <dd class="col-sm-9">{{ rfq.created_at.strftime("%Y-%m-%d %H:%M UTC") }}</dd>
+    </dl>
+  </div>
+</div>
+
+<h6 class="mb-3"><i class="bi bi-tags"></i> Quotations ({{ quotations | length }})</h6>
+
+{% if not quotations %}
+<div class="card adminuiux-card">
+  <div class="card-body text-center py-4">
+    <i class="bi bi-hourglass-split fs-1 text-secondary opacity-50"></i>
+    <p class="text-secondary mt-3 mb-0">No quotations yet — sellers will respond here as they come in.</p>
+  </div>
+</div>
+{% else %}
+<div class="card adminuiux-card mb-3">
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Price</th>
+          <th>Lead time</th>
+          <th>Terms</th>
+          <th>Received</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for q in quotations %}
+        <tr>
+          <td class="fw-semibold">{{ q.price_currency }} {{ q.price_value }}{% if q.price_unit %} <span class="text-secondary small fw-normal">{{ q.price_unit }}</span>{% endif %}</td>
+          <td>{{ q.lead_time_days }} day(s)</td>
+          <td class="text-secondary small" style="max-width: 260px; white-space: pre-line;">{{ q.terms_notes or "—" }}</td>
+          <td class="text-secondary small">{{ q.created_at.strftime("%Y-%m-%d") }}</td>
+          <td class="text-end">
+            {% if rfq.status.value == "open" %}
+            <form method="post" action="{{ url_for('buyer_rfq_accept_quotation', rfq_id=rfq.id, quotation_id=q.id) }}"
+                  onsubmit="return confirm('Accept this quotation? This closes the RFQ to further quotes and creates an order.');">
+              <button type="submit" class="btn btn-sm btn-theme">Accept</button>
+            </form>
+            {% elif q.status.value == "accepted" %}
+            <span class="badge bg-success-subtle text-success">Accepted</span>
+            {% else %}
+            <span class="text-secondary small">Closed</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<p class="text-secondary small">Sorted by price, lowest first. Seller identity stays hidden until you accept a quotation — accepting creates an order and reveals both sides to each other once the seller confirms it.</p>
+{% endif %}
+
+{% endblock %}

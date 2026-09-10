@@ -9,8 +9,11 @@ Batch 3: Notification, AuditLog.
 Batch 5: Product.
 Batch 6: VerificationRequest, Certificate.
 Batch 9: MineralPassport.
-Later batches will add: RFQ, Quotation, Order, Dispute, Invoice — add
-each new model's import here as it's created.
+Phase 2 Batch 2: RFQ.
+Phase 2 Batch 3: Quotation.
+Phase 2 Batch 4: Order — closes out Phase 2.
+Later batches will add: Dispute, Invoice — add each new model's
+import here as it's created.
 """
 from app.models.company import Company  # noqa: F401
 from app.models.user import User  # noqa: F401
@@ -20,3 +23,6 @@ from app.models.product import Product  # noqa: F401
 from app.models.verification import VerificationRequest  # noqa: F401
 from app.models.certificate import Certificate  # noqa: F401
 from app.models.passport import MineralPassport  # noqa: F401
+from app.models.rfq import RFQ  # noqa: F401
+from app.models.quotation import Quotation  # noqa: F401
+from app.models.order import Order  # noqa: F401

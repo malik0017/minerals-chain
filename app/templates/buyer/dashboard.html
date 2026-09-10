@@ -31,20 +31,35 @@
       </div>
     </div>
   </div>
+  <div class="col-md-6">
+    <div class="card adminuiux-card h-100">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-secondary small">{% if rfq_stats_are_platform_wide %}RFQs posted (all buyers){% else %}My RFQs{% endif %}</div>
+          <div class="fs-3 fw-semibold">{{ my_rfq_count }}</div>
+        </div>
+        <i class="bi bi-file-earmark-text fs-1 text-primary opacity-50"></i>
+      </div>
+    </div>
+  </div>
 </div>
 <div class="mb-3">
   <a href="{{ url_for('buyer_browse_index') }}" class="btn btn-theme">
     <i class="bi bi-search"></i> Browse minerals
   </a>
+  {% if not rfq_stats_are_platform_wide %}
+  <a href="{{ url_for('buyer_rfqs_index') }}" class="btn btn-outline-theme">
+    <i class="bi bi-file-earmark-text"></i> My RFQs
+  </a>
+  {% endif %}
 </div>
 
 <div class="card adminuiux-card">
   <div class="card-body">
     <h6 class="mb-2"><i class="bi bi-signpost-split text-primary"></i> What's next for your portal</h6>
     <p class="text-secondary mb-0">
-      Creating RFQs and comparing quotations are on the roadmap — you'll
-      see them appear in the sidebar as they ship. Browsing verified
-      listings is live now — try it from the button above.
+      Comparing quotations is on the roadmap. Browsing verified listings
+      and creating RFQs are both live now.
     </p>
   </div>
 </div>

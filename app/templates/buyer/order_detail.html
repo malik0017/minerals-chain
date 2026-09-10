@@ -1,0 +1,68 @@
+{% extends "layouts/base.html" %}
+{% block title %}Order — {{ order.rfq.mineral_type }}{% endblock %}
+{% block content %}
+
+<a href="{{ url_for('buyer_orders_index') }}" class="text-secondary text-decoration-none small">&larr; Back to orders</a>
+
+<div class="d-flex align-items-center justify-content-between mt-2 mb-4">
+  <h4 class="mb-0">{{ order.rfq.mineral_type }}</h4>
+  {% if order.status.value == "pending_confirmation" %}<span class="badge bg-warning-subtle text-warning">Awaiting seller confirmation</span>
+  {% elif order.status.value == "confirmed" %}<span class="badge bg-info-subtle text-info">Confirmed</span>
+  {% elif order.status.value == "in_transit" %}<span class="badge bg-primary-subtle text-primary">In transit</span>
+  {% elif order.status.value == "delivered" %}<span class="badge bg-primary-subtle text-primary">Delivered</span>
+  {% else %}<span class="badge bg-success-subtle text-success">Completed</span>{% endif %}
+</div>
+
+{% if error %}
+<div class="alert alert-danger py-2">{{ error }}</div>
+{% endif %}
+
+{% if not revealed %}
+<div class="alert alert-secondary d-flex align-items-center gap-2 mb-3">
+  <i class="bi bi-eye-slash"></i>
+  <div>The seller's identity stays hidden until they confirm this order.</div>
+</div>
+{% else %}
+<div class="alert alert-success d-flex align-items-center gap-2 mb-3">
+  <i class="bi bi-eye"></i>
+  <div>Seller confirmed — you're now trading with <strong>{{ seller_company.company_name }}</strong> ({{ seller_company.contact_email }}{% if seller_company.contact_phone %} · {{ seller_company.contact_phone }}{% endif %}).</div>
+</div>
+{% endif %}
+
+<div class="card adminuiux-card mb-3">
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Quantity</dt>
+      <dd class="col-sm-9">{{ order.rfq.quantity_value }} {{ order.rfq.quantity_unit }}</dd>
+
+      <dt class="col-sm-3">Delivery location</dt>
+      <dd class="col-sm-9">{{ order.rfq.delivery_location }}</dd>
+
+      <dt class="col-sm-3">Price</dt>
+      <dd class="col-sm-9">{{ order.quotation.price_currency }} {{ order.quotation.price_value }}{% if order.quotation.price_unit %} <span class="text-secondary">{{ order.quotation.price_unit }}</span>{% endif %}</dd>
+
+      <dt class="col-sm-3">Lead time</dt>
+      <dd class="col-sm-9">{{ order.quotation.lead_time_days }} day(s)</dd>
+
+      <dt class="col-sm-3">Terms</dt>
+      <dd class="col-sm-9" style="white-space: pre-line;">{{ order.quotation.terms_notes or "—" }}</dd>
+
+      <dt class="col-sm-3">Order created</dt>
+      <dd class="col-sm-9">{{ order.created_at.strftime("%Y-%m-%d %H:%M UTC") }}</dd>
+    </dl>
+  </div>
+</div>
+
+{% if order.status.value == "delivered" %}
+<div class="card adminuiux-card">
+  <div class="card-body">
+    <h6 class="mb-2"><i class="bi bi-check-circle"></i> Confirm receipt</h6>
+    <p class="text-secondary small mb-3">Confirming marks this order complete.</p>
+    <form method="post" action="{{ url_for('buyer_order_confirm_receipt', order_id=order.id) }}">
+      <button type="submit" class="btn btn-theme">Confirm receipt</button>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "layouts/base.html" %}
+{% block title %}My Orders{% endblock %}
+{% block content %}
+
+<h4 class="mb-1">My Orders</h4>
+<p class="text-secondary mb-4">Orders created from accepted quotations.</p>
+
+{% if not orders %}
+<div class="card adminuiux-card">
+  <div class="card-body text-center py-5">
+    <i class="bi bi-box-seam fs-1 text-secondary opacity-50"></i>
+    <p class="text-secondary mt-3 mb-0">No orders yet — accept a quotation on one of your RFQs to create one.</p>
+  </div>
+</div>
+{% else %}
+<div class="card adminuiux-card">
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Mineral</th>
+          <th>Price</th>
+          <th>Seller</th>
+          <th>Status</th>
+          <th>Created</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order, revealed in orders %}
+        <tr>
+          <td>{{ order.rfq.mineral_type }}</td>
+          <td>{{ order.quotation.price_currency }} {{ order.quotation.price_value }}</td>
+          <td>
+            {% if revealed %}{{ order.seller_company.company_name }}
+            {% else %}<span class="text-secondary">Hidden until confirmed</span>{% endif %}
+          </td>
+          <td>
+            {% if order.status.value == "pending_confirmation" %}<span class="badge bg-warning-subtle text-warning">Awaiting confirmation</span>
+            {% elif order.status.value == "confirmed" %}<span class="badge bg-info-subtle text-info">Confirmed</span>
+            {% elif order.status.value == "in_transit" %}<span class="badge bg-primary-subtle text-primary">In transit</span>
+            {% elif order.status.value == "delivered" %}<span class="badge bg-primary-subtle text-primary">Delivered</span>
+            {% else %}<span class="badge bg-success-subtle text-success">Completed</span>{% endif %}
+          </td>
+          <td class="text-secondary small">{{ order.created_at.strftime("%Y-%m-%d") }}</td>
+          <td class="text-end">
+            <a href="{{ url_for('buyer_order_detail', order_id=order.id) }}" class="btn btn-sm btn-outline-theme">View</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

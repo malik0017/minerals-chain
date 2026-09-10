@@ -1,0 +1,84 @@
+{% extends "layouts/base.html" %}
+{% block title %}{{ rfq.mineral_type }} RFQ{% endblock %}
+{% block content %}
+
+<a href="{{ url_for('seller_rfq_inbox_index') }}" class="text-secondary text-decoration-none small">&larr; Back to inbox</a>
+
+<h4 class="mt-2 mb-4">{{ rfq.mineral_type }}</h4>
+
+<div class="card adminuiux-card mb-3">
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Quantity</dt>
+      <dd class="col-sm-9">{{ rfq.quantity_value }} {{ rfq.quantity_unit }}</dd>
+
+      <dt class="col-sm-3">Delivery location</dt>
+      <dd class="col-sm-9">{{ rfq.delivery_location }}</dd>
+
+      <dt class="col-sm-3">Delivery timeframe</dt>
+      <dd class="col-sm-9">{{ rfq.delivery_timeframe }}</dd>
+
+      <dt class="col-sm-3">Specifications</dt>
+      <dd class="col-sm-9" style="white-space: pre-line;">{{ rfq.specifications_notes or "—" }}</dd>
+
+      <dt class="col-sm-3">Commercial terms</dt>
+      <dd class="col-sm-9" style="white-space: pre-line;">{{ rfq.commercial_terms_notes or "—" }}</dd>
+
+      <dt class="col-sm-3">Posted</dt>
+      <dd class="col-sm-9">{{ rfq.created_at.strftime("%Y-%m-%d %H:%M UTC") }}</dd>
+    </dl>
+  </div>
+</div>
+
+{% if error %}
+<div class="alert alert-danger py-2">{{ error }}</div>
+{% endif %}
+
+<div class="card adminuiux-card">
+  <div class="card-body">
+    <h6 class="mb-3"><i class="bi bi-tags"></i> Your quotation</h6>
+
+    {% if my_quotation %}
+      <p class="text-success mb-1"><i class="bi bi-check-circle-fill"></i> Submitted</p>
+      <dl class="row mb-0">
+        <dt class="col-sm-3">Price</dt>
+        <dd class="col-sm-9">{{ my_quotation.price_currency }} {{ my_quotation.price_value }}{% if my_quotation.price_unit %} <span class="text-secondary">{{ my_quotation.price_unit }}</span>{% endif %}</dd>
+        <dt class="col-sm-3">Lead time</dt>
+        <dd class="col-sm-9">{{ my_quotation.lead_time_days }} day(s)</dd>
+        <dt class="col-sm-3">Terms</dt>
+        <dd class="col-sm-9" style="white-space: pre-line;">{{ my_quotation.terms_notes or "—" }}</dd>
+      </dl>
+    {% elif rfq.status.value != "open" %}
+      <p class="text-secondary mb-0">This RFQ is closed and no longer accepting quotations.</p>
+    {% else %}
+      <form method="post" action="{{ url_for('seller_rfq_submit_quote', rfq_id=rfq.id) }}">
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <label class="form-label" for="price_value">Price</label>
+            <input class="form-control" type="number" step="0.01" min="0.01" id="price_value" name="price_value" required />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="price_currency">Currency</label>
+            <input class="form-control" id="price_currency" name="price_currency" value="SAR" required />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="price_unit">Unit <span class="text-secondary">(optional)</span></label>
+            <input class="form-control" id="price_unit" name="price_unit" placeholder="e.g. per MT" />
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="lead_time_days">Lead time (days)</label>
+          <input class="form-control" type="number" min="1" step="1" id="lead_time_days" name="lead_time_days" required />
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="terms_notes">Terms <span class="text-secondary">(optional)</span></label>
+          <textarea class="form-control" id="terms_notes" name="terms_notes" rows="3" placeholder="Payment terms, Incoterms, packaging, etc."></textarea>
+        </div>
+        <button type="submit" class="btn btn-theme"><i class="bi bi-send"></i> Submit quotation</button>
+        <p class="text-secondary small mt-2 mb-0">The buyer sees your quote but not your company — your identity stays hidden until an order is confirmed.</p>
+      </form>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

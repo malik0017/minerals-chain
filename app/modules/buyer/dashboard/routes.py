@@ -7,7 +7,7 @@ from app.core.permissions import require_active_portal
 from app.core.portal_nav import build_portal_context
 from app.database.base import get_db
 from app.models.user import User, UserRole
-from app.repositories import product_repository
+from app.repositories import product_repository, rfq_repository
 
 router = APIRouter(prefix="/buyer", tags=["buyer"])
 templates = Jinja2Templates(directory="app/templates")
@@ -21,5 +21,16 @@ def buyer_dashboard(
 ):
     context = build_portal_context(user, UserRole.BUYER, active_path=request.url.path)
     context["company"] = user.company
+    # Batch 11: this is a platform-wide number for EVERY buyer (and
+    # admin preview) alike — there's no "my listings" concept for a
+    # buyer, unlike the seller/lab dashboards' company-scoped counts.
     context["verified_listing_count"] = len(product_repository.list_verified(db))
+
+    if user.company is not None:
+        context["my_rfq_count"] = len(rfq_repository.list_for_company(db, user.company_id))
+        context["rfq_stats_are_platform_wide"] = False
+    else:
+        context["my_rfq_count"] = rfq_repository.count_all(db)
+        context["rfq_stats_are_platform_wide"] = True
+
     return templates.TemplateResponse(request, "buyer/dashboard.html", context)

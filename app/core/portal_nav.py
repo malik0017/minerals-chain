@@ -7,10 +7,15 @@ _NAV_ITEMS = {
     UserRole.SELLER: [
         {"icon": "bi-columns-gap", "label": "Dashboard", "url": "/seller/dashboard"},
         {"icon": "bi-diagram-3", "label": "My Listings", "url": "/seller/listings"},
+        {"icon": "bi-inbox", "label": "RFQ Inbox", "url": "/seller/rfq-inbox"},
+        {"icon": "bi-tags", "label": "My Quotations", "url": "/seller/quotations"},
+        {"icon": "bi-box-seam", "label": "Orders", "url": "/seller/orders"},
     ],
     UserRole.BUYER: [
         {"icon": "bi-columns-gap", "label": "Dashboard", "url": "/buyer/dashboard"},
         {"icon": "bi-search", "label": "Browse Minerals", "url": "/buyer/browse"},
+        {"icon": "bi-file-earmark-text", "label": "My RFQs", "url": "/buyer/rfqs"},
+        {"icon": "bi-box-seam", "label": "Orders", "url": "/buyer/orders"},
     ],
     UserRole.LAB: [
         {"icon": "bi-columns-gap", "label": "Dashboard", "url": "/lab/dashboard"},
@@ -25,15 +30,8 @@ _NAV_ITEMS = {
 }
 
 _UPCOMING_ITEMS = {
-    UserRole.SELLER: [
-        {"icon": "bi-inbox", "label": "RFQ Inbox"},
-        {"icon": "bi-box-seam", "label": "Orders"},
-    ],
-    UserRole.BUYER: [
-        {"icon": "bi-file-earmark-text", "label": "My RFQs"},
-        {"icon": "bi-tags", "label": "Quotations"},
-        {"icon": "bi-box-seam", "label": "Orders"},
-    ],
+    UserRole.SELLER: [],
+    UserRole.BUYER: [],
     UserRole.LAB: [],
     UserRole.ADMIN: [
         {"icon": "bi-flag", "label": "Disputes"},
@@ -59,9 +57,24 @@ _ADMIN_PREVIEW_LINKS = [
 
 
 def build_portal_context(user: User, portal_role: UserRole, active_path: str | None = None) -> dict:
- 
+    """
+    portal_role: which portal's page is being rendered (drives nav_items/
+    portal_label/upcoming_items). Pass the route's own role explicitly —
+    e.g. seller/dashboard/routes.py always passes UserRole.SELLER, even
+    when an admin is the one viewing it.
+
+    active_path: the current request path (e.g. request.url.path) —
+    used to mark the matching nav item active. Pass None (e.g. from
+    the shared /notifications page) and nothing gets marked active.
+    """
     is_admin_preview = user.role == UserRole.ADMIN and portal_role != UserRole.ADMIN
 
+    # Batch 7: when admin is previewing another portal, the header
+    # subtitle now says so explicitly ("Admin Portal · Previewing
+    # Lab") instead of just "Lab Portal" — the preview banner already
+    # explained this, but the header itself looking identical to a
+    # real lab session was confusing on its own, out of banner-reading
+    # context (e.g. a screenshot of just the header).
     if is_admin_preview:
         portal_label = f"Admin Portal · Previewing {_PORTAL_LABEL[portal_role]}"
     else:
@@ -88,6 +101,8 @@ def build_portal_context(user: User, portal_role: UserRole, active_path: str | N
         "is_admin_preview": is_admin_preview,
     }
 
+    # Every real page an admin can see also gets quick links to every
+    # portal — the "view all portals without logging in again" ask.
     if user.role == UserRole.ADMIN:
         context["admin_preview_links"] = [
             {**item, "active": item["url"] == active_path} for item in _ADMIN_PREVIEW_LINKS

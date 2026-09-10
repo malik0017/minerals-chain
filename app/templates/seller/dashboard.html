@@ -59,15 +59,18 @@
     <i class="bi bi-diagram-3"></i> Manage my listings
   </a>
   {% endif %}
+  <a href="{{ url_for('seller_rfq_inbox_index') }}" class="btn btn-outline-theme">
+    <i class="bi bi-inbox"></i> RFQ Inbox ({{ open_rfq_count }} open)
+  </a>
 </div>
 
 <div class="card adminuiux-card">
   <div class="card-body">
     <h6 class="mb-2"><i class="bi bi-signpost-split text-primary"></i> What's next for your portal</h6>
     <p class="text-secondary mb-0">
-      Lab verification requests and RFQ management are on the roadmap —
-      you'll see them appear in the sidebar as they ship. Product listings
-      are live now — create one from the button above.
+      Submitting quotations on RFQs is on the roadmap. Product listings,
+      lab verification, mineral passports, and browsing open RFQs are all
+      live now.
     </p>
   </div>
 </div>

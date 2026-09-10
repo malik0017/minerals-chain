@@ -14,11 +14,16 @@ from app.modules.admin.users.routes import router as admin_users_router
 from app.modules.auth.routes import router as auth_router
 from app.modules.buyer.browse.routes import router as buyer_browse_router
 from app.modules.buyer.dashboard.routes import router as buyer_dashboard_router
+from app.modules.buyer.rfq.routes import router as buyer_rfq_router
+from app.modules.buyer.orders.routes import router as buyer_orders_router
 from app.modules.lab.dashboard.routes import router as lab_dashboard_router
 from app.modules.lab.verification.routes import router as lab_verification_router
 from app.modules.public.routes import router as public_router
 from app.modules.seller.dashboard.routes import router as seller_dashboard_router
 from app.modules.seller.listings.routes import router as seller_listings_router
+from app.modules.seller.rfq_inbox.routes import router as seller_rfq_inbox_router
+from app.modules.seller.quotations.routes import router as seller_quotations_router
+from app.modules.seller.orders.routes import router as seller_orders_router
 from app.modules.shared.profile.routes import router as profile_router
 from app.modules.shared.routes import router as shared_router
 
@@ -38,8 +43,13 @@ app.include_router(profile_router)
 app.include_router(public_router)
 app.include_router(seller_dashboard_router)
 app.include_router(seller_listings_router)
+app.include_router(seller_rfq_inbox_router)
+app.include_router(seller_quotations_router)
+app.include_router(seller_orders_router)
 app.include_router(buyer_dashboard_router)
 app.include_router(buyer_browse_router)
+app.include_router(buyer_rfq_router)
+app.include_router(buyer_orders_router)
 app.include_router(lab_dashboard_router)
 app.include_router(lab_verification_router)
 
