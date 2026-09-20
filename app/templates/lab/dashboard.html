@@ -1,5 +1,5 @@
 {% extends "layouts/base.html" %}
-{% block title %}Lab Dashboard{% endblock %}
+{% block title %}{{ t('nav.dashboard') }}{% endblock %}
 {% block content %}
 
 {% if is_admin_preview %}
@@ -9,14 +9,18 @@
 </div>
 {% endif %}
 
-<div class="d-flex align-items-center justify-content-between mb-4">
-  <div>
-    <h4 class="mb-1">Welcome, {{ current_user.full_name }}</h4>
-    <p class="text-secondary mb-0">{{ current_user.company_name }} · Testing Laboratory</p>
+<div class="card adminuiux-card mb-4" style="background: linear-gradient(135deg, var(--adminuiux-theme-1, #5840ef), var(--adminuiux-theme-2, #0049e8)); color: #fff;">
+  <div class="card-body py-4">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <h4 class="mb-1 text-white">{{ t('common.welcome') }}, {{ current_user.full_name }}</h4>
+        <p class="mb-0 opacity-75">{{ current_user.company_name }} · Testing Laboratory</p>
+      </div>
+      <span class="badge bg-white text-success px-3 py-2">
+        <i class="bi bi-patch-check-fill"></i> Approved
+      </span>
+    </div>
   </div>
-  <span class="badge bg-success-subtle text-success px-3 py-2">
-    <i class="bi bi-patch-check-fill"></i> Approved
-  </span>
 </div>
 
 {% if stats_are_platform_wide %}
@@ -26,49 +30,93 @@
 {% endif %}
 
 <div class="row g-3 mb-3">
-  <div class="col-md-6">
+  <div class="col-6 col-md-3">
     <div class="card adminuiux-card h-100">
-      <div class="card-body d-flex align-items-center justify-content-between">
-        <div>
-          <div class="text-secondary small">{% if stats_are_platform_wide %}Total requests (all labs){% else %}Total requests{% endif %}</div>
-          <div class="fs-3 fw-semibold">{{ request_count }}</div>
-        </div>
-        <i class="bi bi-eyedropper fs-1 text-primary opacity-50"></i>
+      <div class="card-body">
+        <div class="text-secondary small">{% if stats_are_platform_wide %}Requests (all labs){% else %}Total requests{% endif %}</div>
+        <div class="fs-3 fw-semibold">{{ request_count }}</div>
+        <i class="bi bi-eyedropper text-primary"></i>
       </div>
     </div>
   </div>
-  <div class="col-md-6">
+  <div class="col-6 col-md-3">
     <div class="card adminuiux-card h-100">
-      <div class="card-body d-flex align-items-center justify-content-between">
-        <div>
-          <div class="text-secondary small">{% if stats_are_platform_wide %}Awaiting review (all labs){% else %}Awaiting your review{% endif %}</div>
-          <div class="fs-3 fw-semibold">{{ pending_count }}</div>
-        </div>
-        <i class="bi bi-hourglass-split fs-1 text-warning opacity-50"></i>
+      <div class="card-body">
+        <div class="text-secondary small">{% if stats_are_platform_wide %}Awaiting review (all labs){% else %}Awaiting your review{% endif %}</div>
+        <div class="fs-3 fw-semibold text-warning">{{ pending_count }}</div>
+        <i class="bi bi-hourglass-split text-warning"></i>
       </div>
     </div>
   </div>
-</div>
-<div class="mb-3">
-  {% if stats_are_platform_wide %}
-  <a href="{{ url_for('admin_companies_list') }}?role=lab" class="btn btn-theme">
-    <i class="bi bi-building"></i> Browse lab companies
-  </a>
-  {% else %}
-  <a href="{{ url_for('lab_verification_index') }}" class="btn btn-theme">
-    <i class="bi bi-eyedropper"></i> View verification requests
-  </a>
-  {% endif %}
+  <div class="col-6 col-md-3">
+    <div class="card adminuiux-card h-100">
+      <div class="card-body">
+        {% if completed_count is not none %}
+        <div class="text-secondary small">Completed</div>
+        <div class="fs-3 fw-semibold text-success">{{ completed_count }}</div>
+        <i class="bi bi-patch-check text-success"></i>
+        {% else %}
+        <div class="text-secondary small">Completed</div>
+        <div class="fs-6 text-secondary mt-2">Not available in preview</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card adminuiux-card h-100">
+      <div class="card-body">
+        {% if failed_count is not none %}
+        <div class="text-secondary small">Failed</div>
+        <div class="fs-3 fw-semibold text-danger">{{ failed_count }}</div>
+        <i class="bi bi-x-circle text-danger"></i>
+        {% else %}
+        <div class="text-secondary small">Failed</div>
+        <div class="fs-6 text-secondary mt-2">Not available in preview</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="card adminuiux-card">
-  <div class="card-body">
-    <h6 class="mb-2"><i class="bi bi-signpost-split text-primary"></i> What's next for your portal</h6>
-    <p class="text-secondary mb-0">
-      Verification requests are live now — sellers can request testing on
-      their listings, and you'll see them appear above. Certificate history
-      is available from each request's detail page.
-    </p>
+<div class="row g-3 mb-3">
+  <div class="col-md-5">
+    <div class="card adminuiux-card h-100">
+      <div class="card-body">
+        <h6 class="mb-3">Request status breakdown</h6>
+        {% if verification_donut and verification_donut.total > 0 %}
+        <div class="d-flex align-items-center gap-4">
+          <div style="width:120px;height:120px;border-radius:50%;background:conic-gradient({{ verification_donut.gradient }});flex-shrink:0;"></div>
+          <ul class="list-unstyled mb-0 small">
+            {% for seg in verification_donut.legend %}
+            <li class="mb-1"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:{{ seg.color }};" class="me-2"></span>{{ seg.label }} — {{ seg.count }} ({{ seg.pct }}%)</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% elif stats_are_platform_wide %}
+        <p class="text-secondary mb-0">Not available in admin preview — this breaks down one lab's requests.</p>
+        {% else %}
+        <p class="text-secondary mb-0">No verification requests yet — sellers will send them your way once they list a product.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-7">
+    <div class="card adminuiux-card h-100">
+      <div class="card-body">
+        <h6 class="mb-3">Quick actions</h6>
+        <div class="d-flex flex-wrap gap-2">
+          {% if stats_are_platform_wide %}
+          <a href="{{ url_for('admin_companies_list') }}?role=lab" class="btn btn-theme">
+            <i class="bi bi-building"></i> Browse lab companies
+          </a>
+          {% else %}
+          <a href="{{ url_for('lab_verification_index') }}" class="btn btn-theme">
+            <i class="bi bi-eyedropper"></i> View verification requests
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 

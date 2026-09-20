@@ -1,5 +1,5 @@
 {% extends "layouts/base.html" %}
-{% block title %}Buyer Dashboard{% endblock %}
+{% block title %}{{ t('nav.dashboard') }}{% endblock %}
 {% block content %}
 
 {% if is_admin_preview %}
@@ -9,58 +9,105 @@
 </div>
 {% endif %}
 
-<div class="d-flex align-items-center justify-content-between mb-4">
-  <div>
-    <h4 class="mb-1">Welcome, {{ current_user.full_name }}</h4>
-    <p class="text-secondary mb-0">{{ current_user.company_name }} · Industrial Buyer</p>
+<div class="card adminuiux-card mb-4" style="background: linear-gradient(135deg, var(--adminuiux-theme-1, #5840ef), var(--adminuiux-theme-2, #0049e8)); color: #fff;">
+  <div class="card-body py-4">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <h4 class="mb-1 text-white">{{ t('common.welcome') }}, {{ current_user.full_name }}</h4>
+        <p class="mb-0 opacity-75">{{ current_user.company_name }} · Industrial Buyer</p>
+      </div>
+      <span class="badge bg-white text-success px-3 py-2">
+        <i class="bi bi-patch-check-fill"></i> Approved
+      </span>
+    </div>
   </div>
-  <span class="badge bg-success-subtle text-success px-3 py-2">
-    <i class="bi bi-patch-check-fill"></i> Approved
-  </span>
+</div>
+
+{% if rfq_stats_are_platform_wide %}
+<div class="alert alert-secondary py-2 mb-3">
+  <i class="bi bi-bar-chart"></i> Showing platform-wide totals across every buyer (admin view) — not a single company's data.
+</div>
+{% endif %}
+
+<div class="row g-3 mb-3">
+  <div class="col-6 col-md-3">
+    <div class="card adminuiux-card h-100">
+      <div class="card-body">
+        <div class="text-secondary small">Verified listings available</div>
+        <div class="fs-3 fw-semibold text-success">{{ verified_listing_count }}</div>
+        <i class="bi bi-patch-check text-success"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card adminuiux-card h-100">
+      <div class="card-body">
+        <div class="text-secondary small">{% if rfq_stats_are_platform_wide %}RFQs (all buyers){% else %}My RFQs{% endif %}</div>
+        <div class="fs-3 fw-semibold">{{ my_rfq_count }}</div>
+        <i class="bi bi-file-earmark-text text-primary"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-6">
+    <div class="card adminuiux-card h-100">
+      <div class="card-body">
+        {% if order_count is not none %}
+        <div class="text-secondary small">Orders in progress</div>
+        <div class="fs-3 fw-semibold">{{ orders_in_progress }} <span class="fs-6 text-secondary fw-normal">/ {{ order_count }}</span></div>
+        <i class="bi bi-box-seam text-primary"></i>
+        {% else %}
+        <div class="text-secondary small">Orders</div>
+        <div class="fs-6 text-secondary mt-2">Not available in preview</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="row g-3 mb-3">
-  <div class="col-md-6">
+  <div class="col-md-5">
     <div class="card adminuiux-card h-100">
-      <div class="card-body d-flex align-items-center justify-content-between">
-        <div>
-          <div class="text-secondary small">Verified listings available</div>
-          <div class="fs-3 fw-semibold">{{ verified_listing_count }}</div>
+      <div class="card-body">
+        <h6 class="mb-3">My RFQ status breakdown</h6>
+        {% if rfq_donut and rfq_donut.total > 0 %}
+        <div class="d-flex align-items-center gap-4">
+          <div style="width:120px;height:120px;border-radius:50%;background:conic-gradient({{ rfq_donut.gradient }});flex-shrink:0;"></div>
+          <ul class="list-unstyled mb-0 small">
+            {% for seg in rfq_donut.legend %}
+            <li class="mb-1"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:{{ seg.color }};" class="me-2"></span>{{ seg.label }} — {{ seg.count }} ({{ seg.pct }}%)</li>
+            {% endfor %}
+          </ul>
         </div>
-        <i class="bi bi-patch-check fs-1 text-success opacity-50"></i>
+        {% elif rfq_stats_are_platform_wide %}
+        <p class="text-secondary mb-0">Not available in admin preview — this breaks down one company's RFQs.</p>
+        {% else %}
+        <p class="text-secondary mb-0">No RFQs yet — <a href="{{ url_for('buyer_rfq_new') }}">post your first one</a>.</p>
+        {% endif %}
       </div>
     </div>
   </div>
-  <div class="col-md-6">
+  <div class="col-md-7">
     <div class="card adminuiux-card h-100">
-      <div class="card-body d-flex align-items-center justify-content-between">
-        <div>
-          <div class="text-secondary small">{% if rfq_stats_are_platform_wide %}RFQs posted (all buyers){% else %}My RFQs{% endif %}</div>
-          <div class="fs-3 fw-semibold">{{ my_rfq_count }}</div>
+      <div class="card-body">
+        <h6 class="mb-3">Quick actions</h6>
+        <div class="d-flex flex-wrap gap-2">
+          <a href="{{ url_for('buyer_browse_index') }}" class="btn btn-theme">
+            <i class="bi bi-search"></i> Browse minerals
+          </a>
+          {% if not rfq_stats_are_platform_wide %}
+          <a href="{{ url_for('buyer_rfq_new') }}" class="btn btn-outline-theme">
+            <i class="bi bi-plus-lg"></i> New RFQ
+          </a>
+          <a href="{{ url_for('buyer_rfqs_index') }}" class="btn btn-outline-theme">
+            <i class="bi bi-file-earmark-text"></i> My RFQs
+          </a>
+          <a href="{{ url_for('buyer_orders_index') }}" class="btn btn-outline-theme">
+            <i class="bi bi-box-seam"></i> Orders ({{ order_count }})
+          </a>
+          {% endif %}
         </div>
-        <i class="bi bi-file-earmark-text fs-1 text-primary opacity-50"></i>
       </div>
     </div>
-  </div>
-</div>
-<div class="mb-3">
-  <a href="{{ url_for('buyer_browse_index') }}" class="btn btn-theme">
-    <i class="bi bi-search"></i> Browse minerals
-  </a>
-  {% if not rfq_stats_are_platform_wide %}
-  <a href="{{ url_for('buyer_rfqs_index') }}" class="btn btn-outline-theme">
-    <i class="bi bi-file-earmark-text"></i> My RFQs
-  </a>
-  {% endif %}
-</div>
-
-<div class="card adminuiux-card">
-  <div class="card-body">
-    <h6 class="mb-2"><i class="bi bi-signpost-split text-primary"></i> What's next for your portal</h6>
-    <p class="text-secondary mb-0">
-      Comparing quotations is on the roadmap. Browsing verified listings
-      and creating RFQs are both live now.
-    </p>
   </div>
 </div>
 

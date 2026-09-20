@@ -9,7 +9,6 @@ import uuid
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
@@ -22,7 +21,7 @@ from app.schemas.quotation import QuotationRequest
 from app.services.quotation_service import QuotationActionError, submit_quotation
 
 router = APIRouter(prefix="/seller/rfq-inbox", tags=["seller-rfq-inbox"])
-templates = Jinja2Templates(directory="app/templates")
+from app.core.templates import templates
 
 
 @router.get("", name="seller_rfq_inbox_index")

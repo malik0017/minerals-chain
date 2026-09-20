@@ -56,16 +56,19 @@
     <h6 class="mb-2"><i class="bi bi-check-circle"></i> Confirm this order</h6>
     <p class="text-secondary small mb-3">Confirming reveals the buyer's identity to you (and yours to them) and locks in the order.</p>
     <form method="post" action="{{ url_for('seller_order_confirm', order_id=order.id) }}">
+  {{ csrf_field() }}
       <button type="submit" class="btn btn-theme">Confirm order</button>
     </form>
     {% elif order.status.value == "confirmed" %}
     <h6 class="mb-2"><i class="bi bi-truck"></i> Mark as shipped</h6>
     <form method="post" action="{{ url_for('seller_order_ship', order_id=order.id) }}">
+  {{ csrf_field() }}
       <button type="submit" class="btn btn-theme">Mark in transit</button>
     </form>
     {% elif order.status.value == "in_transit" %}
     <h6 class="mb-2"><i class="bi bi-box-seam"></i> Mark as delivered</h6>
     <form method="post" action="{{ url_for('seller_order_mark_delivered', order_id=order.id) }}">
+  {{ csrf_field() }}
       <button type="submit" class="btn btn-theme">Mark delivered</button>
     </form>
     {% elif order.status.value == "delivered" %}

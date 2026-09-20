@@ -2,14 +2,13 @@
 app/modules/seller/dashboard/routes.py
 """
 from fastapi import APIRouter, Depends, Request
-from fastapi.templating import Jinja2Templates
 
 from app.core.permissions import require_active_portal
 from app.core.portal_nav import build_portal_context
 from app.models.user import User, UserRole
 
 router = APIRouter(prefix="/seller", tags=["seller"])
-templates = Jinja2Templates(directory="app/templates")
+from app.core.templates import templates
 
 
 @router.get("/dashboard", name="seller_dashboard")

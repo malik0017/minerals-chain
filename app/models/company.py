@@ -25,7 +25,11 @@ class ApprovalStatus(str, enum.Enum):
     SUSPENDED = "suspended"   # admin can suspend a previously-approved company (§6.8)
 
 class SubscriptionTier(str, enum.Enum):
-    """BRD §6.11 — applies to seller/buyer companies. Labs: see open question in BRD, left nullable."""
+    """BRD §6.11 — applies to seller/buyer companies. Labs: see open question in BRD, left nullable.
+    Batch A: this enum is still the fast-access "what tier is this company on right now"
+    cache on Company itself — but app/models/subscription.py's Subscription table is now
+    the real source of truth for history/start-end dates/attributes. Keep both in sync via
+    services/subscription_service.py, never write one without the other."""
     ENTRY = "entry"
     MID = "mid"
     PREMIUM = "premium"
@@ -47,8 +51,25 @@ class Company(Base, TimestampMixin):
 
     # --- Legal credentials (BRD §7: mandatory before activation) ---
     cr_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
-    # Mine licence (sellers) or lab accreditation number (labs). Buyers: nullable.
-    license_or_accreditation_number: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    # Batch B: license/accreditation number is now MANDATORY for every role, not just
+    # seller/lab — per explicit direction: apply the same registration conditions
+    # uniformly across buyer, seller, and lab. (Previously nullable for buyers only.)
+    # A buyer's value here is whatever trade/business licence they hold, not a mine
+    # licence specifically — the field's meaning is role-dependent, its presence isn't.
+    license_or_accreditation_number: Mapped[str] = mapped_column(String(100), nullable=False)
+    # Batch B: the two supporting documents, mandatory alongside the numbers above —
+    # just the filename (matches the avatar_filename pattern), not a full path. Files
+    # live in app/static/uploads/company_documents/, written by
+    # services/document_upload_service.py during registration, AFTER the company row
+    # exists (needs company.id for the filename) — see auth_service.py.
+    cr_document_filename: Mapped[str] = mapped_column(String(255), nullable=False)
+    license_document_filename: Mapped[str] = mapped_column(String(255), nullable=False)
+    # Batch A: VAT Registration Number — needed for ZATCA e-invoicing (Phase 3) on every
+    # invoice line, but the field belongs on the company record itself, not deferred until
+    # invoicing is built. Nullable — not every registrant has one yet at signup time (a
+    # newly-formed company may still be completing VAT registration with ZATCA); required
+    # before an order can be invoiced is a Phase 3 enforcement point, not a registration one.
+    vat_registration_number: Mapped[str | None] = mapped_column(String(30), nullable=True)
 
     # --- Approval workflow (BRD §6.1) ---
     status: Mapped[ApprovalStatus] = mapped_column(
@@ -62,6 +83,7 @@ class Company(Base, TimestampMixin):
     )
 
     # --- Subscription (BRD §6.11) ---
+    # See the SubscriptionTier docstring above — this is now a cache, not the source of truth.
     subscription_tier: Mapped[SubscriptionTier | None] = mapped_column(
         SAEnum(SubscriptionTier, name="subscription_tier", values_callable=lambda e: [m.value for m in e]),
         nullable=True,

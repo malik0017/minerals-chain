@@ -1,5 +1,5 @@
 {% extends "layouts/base_auth_split.html" %}
-{% block title %}Register{% endblock %}
+{% block title %}{{ t('auth.register.title') }}{% endblock %}
 {% block content %}
 
 <div class="d-flex align-items-center gap-2 mb-1">
@@ -7,8 +7,8 @@
     <i class="bi bi-person-plus text-primary"></i>
   </span>
   <div>
-    <h4 class="mb-0">Create your account</h4>
-    <p class="text-secondary mb-0 small">Register as a mine operator, buyer, or testing lab</p>
+    <h4 class="mb-0">{{ t('auth.register.title') }}</h4>
+    <p class="text-secondary mb-0 small">{{ t('auth.register.subtitle') }}</p>
   </div>
 </div>
 
@@ -20,101 +20,134 @@
 </div>
 {% endif %}
 
-<form method="post" action="{{ url_for('register_submit') }}" id="register-form" class="mt-4">
+<form method="post" action="{{ url_for('register_submit') }}" id="register-form" class="mt-4" enctype="multipart/form-data">
+  {{ csrf_field() }}
 
-  <label class="form-label">I am registering as a...</label>
+  <label class="form-label">{{ t('auth.register.role_label') }}</label>
   <div class="btn-group w-100 mb-4" role="group">
-    {% for value, label, icon in [("seller", "Mine Operator", "bi-diagram-3"), ("buyer", "Buyer", "bi-cart3"), ("lab", "Testing Lab", "bi-eyedropper")] %}
+    {% for value, label, icon in [("seller", t('auth.register.role_seller'), "bi-diagram-3"), ("buyer", t('auth.register.role_buyer'), "bi-cart3"), ("lab", t('auth.register.role_lab'), "bi-eyedropper")] %}
     <input type="radio" class="btn-check" name="role" id="role-{{ value }}" value="{{ value }}"
-           {% if form.role == value or (not form.role and value == "seller") %}checked{% endif %}
-           onchange="toggleLicenceField()" />
+           {% if form.role == value or (not form.role and value == "seller") %}checked{% endif %} />
     <label class="btn btn-outline-theme" for="role-{{ value }}"><i class="bi {{ icon }} me-1"></i>{{ label }}</label>
     {% endfor %}
   </div>
 
-  <div class="section-eyebrow mb-3"><i class="bi bi-building"></i> Company details</div>
+  <div class="section-eyebrow mb-3"><i class="bi bi-envelope-check"></i> {{ t('auth.register.verify_email_heading') }}</div>
+  <p class="text-secondary small mb-3">
+    Verifying your email up front means you won't need to re-attach documents later —
+    file selections don't survive a page reload, so this step comes before them on purpose.
+  </p>
 
   <div class="mb-3">
-    <label class="form-icon-label form-label" for="company_name"><i class="bi bi-building"></i> Company name</label>
-    <input class="form-control" id="company_name" name="company_name" value="{{ form.company_name or '' }}"
-           placeholder="Enter your company name" required />
-  </div>
-
-  <div class="mb-3">
-    <label class="form-icon-label form-label" for="cr_number"><i class="bi bi-file-earmark-text"></i> Commercial Registration (CR) number</label>
-    <input class="form-control" id="cr_number" name="cr_number" value="{{ form.cr_number or '' }}"
-           placeholder="Enter CR number" required />
-  </div>
-
-  <div class="mb-3" id="licence-field">
-    <label class="form-icon-label form-label" id="licence-label" for="license_or_accreditation_number">
-      <i class="bi bi-award"></i> Mine licence number
-    </label>
-    <input class="form-control" id="license_or_accreditation_number" name="license_or_accreditation_number"
-           value="{{ form.license_or_accreditation_number or '' }}" placeholder="Enter licence or accreditation number" />
-  </div>
-
-  <div class="mb-4">
-    <label class="form-icon-label form-label" for="contact_phone"><i class="bi bi-telephone"></i> Contact phone <span class="text-secondary fw-normal">(optional)</span></label>
-    <input class="form-control" id="contact_phone" name="contact_phone" value="{{ form.contact_phone or '' }}"
-           placeholder="Enter contact phone number" />
-  </div>
-
-  <div class="section-eyebrow mb-3"><i class="bi bi-person"></i> Your account</div>
-
-  <div class="mb-3">
-    <label class="form-icon-label form-label" for="full_name"><i class="bi bi-person"></i> Your full name</label>
+    <label class="form-icon-label form-label" for="full_name"><i class="bi bi-person"></i> {{ t('auth.register.full_name') }}</label>
     <input class="form-control" id="full_name" name="full_name" value="{{ form.full_name or '' }}"
            placeholder="Enter your full name" required />
   </div>
 
   <div class="mb-3">
-    <label class="form-icon-label form-label" for="email"><i class="bi bi-envelope"></i> Email</label>
-    <input class="form-control" type="email" id="email" name="email" value="{{ form.email or '' }}"
-           placeholder="you@example.com" required />
+    <label class="form-icon-label form-label" for="email"><i class="bi bi-envelope"></i> {{ t('auth.register.email') }}</label>
+    <div class="d-flex gap-2">
+      <input class="form-control" type="email" id="email" name="email" value="{{ form.email or '' }}"
+             placeholder="you@example.com" required {% if email_is_verified %}readonly{% endif %} />
+      {% if not email_is_verified %}
+      <button type="submit" formaction="{{ url_for('register_send_otp') }}" formnovalidate class="btn btn-outline-theme text-nowrap">
+        {% if otp_sent %}{{ t('auth.register.resend_code') }}{% else %}{{ t('auth.register.send_code') }}{% endif %}
+      </button>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if email_is_verified %}
+  <div class="alert alert-success py-2 d-flex align-items-center gap-2 mb-4">
+    <i class="bi bi-patch-check-fill"></i> {{ t('auth.register.email_verified') }}
+  </div>
+  {% elif otp_sent %}
+  <div class="mb-4">
+    <label class="form-icon-label form-label" for="otp_code"><i class="bi bi-shield-lock"></i> Verification code</label>
+    <div class="d-flex gap-2">
+      <input class="form-control" id="otp_code" name="otp_code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
+             placeholder="6-digit code" />
+      <button type="submit" formaction="{{ url_for('register_verify_otp') }}" formnovalidate class="btn btn-theme text-nowrap">{{ t('auth.register.verify') }}</button>
+    </div>
+    <div class="form-text">We sent a code to {{ form.email }} — it expires in 10 minutes.</div>
+  </div>
+  {% else %}
+  <div class="mb-4"></div>
+  {% endif %}
+
+  <div class="section-eyebrow mb-3"><i class="bi bi-building"></i> {{ t('auth.register.company_details') }}</div>
+
+  <div class="mb-3">
+    <label class="form-icon-label form-label" for="company_name"><i class="bi bi-building"></i> {{ t('auth.register.company_name') }}</label>
+    <input class="form-control" id="company_name" name="company_name" value="{{ form.company_name or '' }}"
+           placeholder="Enter your company name" required />
+  </div>
+
+  <div class="mb-3">
+    <label class="form-icon-label form-label" for="cr_number"><i class="bi bi-file-earmark-text"></i> {{ t('auth.register.cr_number') }}</label>
+    <input class="form-control" id="cr_number" name="cr_number" value="{{ form.cr_number or '' }}"
+           placeholder="Enter CR number" required />
+  </div>
+  <div class="mb-3">
+    <label class="form-icon-label form-label" for="cr_document"><i class="bi bi-paperclip"></i> {{ t('auth.register.cr_document') }}</label>
+    <input class="form-control" type="file" id="cr_document" name="cr_document" accept=".pdf,.jpg,.jpeg,.png" required />
+    <div class="form-text">PDF, JPG, or PNG — 5MB max.</div>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-icon-label form-label" id="licence-label" for="license_or_accreditation_number">
+      <i class="bi bi-award"></i> {{ t('auth.register.license_number') }}
+    </label>
+    <input class="form-control" id="license_or_accreditation_number" name="license_or_accreditation_number"
+           value="{{ form.license_or_accreditation_number or '' }}" placeholder="Enter licence or accreditation number" required />
+  </div>
+  <div class="mb-4">
+    <label class="form-icon-label form-label" for="license_document"><i class="bi bi-paperclip"></i> {{ t('auth.register.license_document') }}</label>
+    <input class="form-control" type="file" id="license_document" name="license_document" accept=".pdf,.jpg,.jpeg,.png" required />
+    <div class="form-text">PDF, JPG, or PNG — 5MB max.</div>
+  </div>
+
+  <div class="mb-4">
+    <label class="form-icon-label form-label" for="contact_phone_number"><i class="bi bi-telephone"></i> {{ t('auth.register.contact_phone') }}</label>
+    <div class="d-flex gap-2">
+      <select class="form-select" name="contact_phone_country_code" style="max-width: 160px;">
+        {% for c in phone_country_codes %}
+        <option value="{{ c.dial }}" {% if form.contact_phone_country_code == c.dial or (not form.contact_phone_country_code and c.dial == '+966') %}selected{% endif %}>
+          {{ c.flag }} {{ c.dial }}
+        </option>
+        {% endfor %}
+      </select>
+      <input class="form-control" id="contact_phone_number" name="contact_phone_number" value="{{ form.contact_phone_number or '' }}"
+             inputmode="numeric" pattern="[0-9]*" placeholder="Digits only, e.g. 501234567" required />
+    </div>
   </div>
 
   <div class="row g-3 mb-4">
     <div class="col-sm-6">
-      <label class="form-icon-label form-label" for="password"><i class="bi bi-lock"></i> Password</label>
+      <label class="form-icon-label form-label" for="password"><i class="bi bi-lock"></i> {{ t('auth.register.password') }}</label>
       <input class="form-control" type="password" id="password" name="password" minlength="8"
              placeholder="Create a password" required />
     </div>
     <div class="col-sm-6">
-      <label class="form-icon-label form-label" for="confirm_password"><i class="bi bi-lock"></i> Confirm password</label>
+      <label class="form-icon-label form-label" for="confirm_password"><i class="bi bi-lock"></i> {{ t('auth.register.confirm_password') }}</label>
       <input class="form-control" type="password" id="confirm_password" name="confirm_password" minlength="8"
              placeholder="Confirm your password" required />
     </div>
   </div>
 
-  <button type="submit" class="btn btn-theme w-100 d-flex align-items-center justify-content-center gap-2">
-    Submit registration <i class="bi bi-arrow-right"></i>
+  {% if not email_is_verified %}
+  <div class="alert alert-secondary py-2 mb-3">
+    <i class="bi bi-info-circle"></i> {{ t('auth.register.verify_first_notice') }}
+  </div>
+  {% endif %}
+
+  <button type="submit" class="btn btn-theme w-100 d-flex align-items-center justify-content-center gap-2" {% if not email_is_verified %}disabled{% endif %}>
+    {{ t('auth.register.submit') }} <i class="bi bi-arrow-right"></i>
   </button>
 </form>
 
 <p class="text-center text-secondary mt-4 mb-0">
-  Already have an account? <a href="{{ url_for('login_form') }}">Log in</a>
+  {{ t('auth.register.have_account') }} <a href="{{ url_for('login_form') }}">{{ t('auth.register.login_link') }}</a>
 </p>
 
-{% endblock %}
-
-{% block extra_js %}
-<script>
-  function toggleLicenceField() {
-    const role = document.querySelector('input[name="role"]:checked').value;
-    const label = document.getElementById('licence-label');
-    const input = document.getElementById('license_or_accreditation_number');
-    if (role === 'buyer') {
-      label.innerHTML = '<i class="bi bi-award"></i> Licence / accreditation number (not required for buyers)';
-      input.required = false;
-    } else if (role === 'lab') {
-      label.innerHTML = '<i class="bi bi-award"></i> Lab accreditation number';
-      input.required = true;
-    } else {
-      label.innerHTML = '<i class="bi bi-award"></i> Mine licence number';
-      input.required = true;
-    }
-  }
-  document.addEventListener('DOMContentLoaded', toggleLicenceField);
-</script>
 {% endblock %}

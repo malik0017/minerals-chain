@@ -5,24 +5,23 @@ import uuid
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from app.core.permissions import require_seller_company
 from app.core.portal_nav import build_portal_context
 from app.database.base import get_db
+from app.models.certification import CertificationType
 from app.models.company import ApprovalStatus, CompanyRole
-from app.models.passport import PassportScope
 from app.models.user import User, UserRole
-from app.repositories import certificate_repository, company_repository, passport_repository, product_repository, verification_repository
+from app.repositories import certification_repository, company_repository, product_repository, verification_repository
 from app.schemas.product import ProductRequest
-from app.services.passport_service import PassportActionError, request_passport
+from app.services.certification_service import CertificationActionError, request_passport
 from app.services.product_service import ProductActionError, create_listing, get_owned_listing, update_listing
 from app.services.verification_service import VerificationActionError, request_verification
 
 router = APIRouter(prefix="/seller/listings", tags=["seller-listings"])
-templates = Jinja2Templates(directory="app/templates")
+from app.core.templates import templates
 
 
 def _parse_form(
@@ -127,12 +126,9 @@ def listing_detail(
     context["error"] = error
     context["verification_history"] = verification_repository.list_for_product(db, product.id)
     context["available_labs"] = company_repository.list_all(db, role=CompanyRole.LAB, status=ApprovalStatus.APPROVED)
-    context["certificate"] = None
-    for vr in context["verification_history"]:
-        if vr.status.value == "completed":
-            context["certificate"] = certificate_repository.get_by_verification_request_id(db, vr.id)
-            break
-    context["passport_history"] = passport_repository.list_for_product(db, product.id)
+    lab_certs = certification_repository.list_for_product(db, product.id, cert_type=CertificationType.LAB_CERTIFICATE)
+    context["certificate"] = next((c for c in lab_certs if c.status.value == "approved"), None)
+    context["passport_history"] = certification_repository.list_for_product(db, product.id, cert_type=CertificationType.MINERAL_PASSPORT)
     return templates.TemplateResponse(request, "seller/listing_detail.html", context)
 
 
@@ -146,18 +142,11 @@ def listing_request_passport(
 ):
     try:
         product = get_owned_listing(db, product_id, user.company_id)
-        scope_value = PassportScope(scope)
-        request_passport(db, product, scope_value)
-    except (ProductActionError, PassportActionError) as exc:
+        request_passport(db, product, scope)
+    except (ProductActionError, CertificationActionError) as exc:
         db.rollback()
         return RedirectResponse(
             url=f"{request.url_for('seller_listing_detail', product_id=product_id)}?error={exc}",
-            status_code=303,
-        )
-    except ValueError:
-        db.rollback()
-        return RedirectResponse(
-            url=f"{request.url_for('seller_listing_detail', product_id=product_id)}?error=Invalid scope selected.",
             status_code=303,
         )
     return RedirectResponse(url=request.url_for("seller_listing_detail", product_id=product_id), status_code=303)

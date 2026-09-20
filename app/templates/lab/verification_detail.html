@@ -36,6 +36,7 @@
       <div class="card-body">
         <h6 class="mb-3 text-success"><i class="bi bi-patch-check"></i> Issue certificate (pass)</h6>
         <form method="post" action="{{ url_for('lab_verification_issue', request_id=vr.id) }}">
+  {{ csrf_field() }}
           <textarea class="form-control mb-2" name="tested_parameters_notes" rows="4"
                     placeholder="Tested parameters and results, e.g. Purity 99.6% (measured), iron oxide 0.015% (pass)" required></textarea>
           <button type="submit" class="btn btn-success">Issue Certificate</button>
@@ -48,6 +49,7 @@
       <div class="card-body">
         <h6 class="mb-3 text-danger"><i class="bi bi-x-circle"></i> Reject (fail)</h6>
         <form method="post" action="{{ url_for('lab_verification_reject', request_id=vr.id) }}">
+  {{ csrf_field() }}
           <textarea class="form-control mb-2" name="rejection_reason" rows="4"
                     placeholder="Reason for rejection, shown to the seller" required></textarea>
           <button type="submit" class="btn btn-danger">Reject</button>
@@ -65,9 +67,9 @@
       <dt class="col-sm-3">Certificate number</dt>
       <dd class="col-sm-9">{{ certificate.certificate_number }}</dd>
       <dt class="col-sm-3">Issued</dt>
-      <dd class="col-sm-9">{{ certificate.issued_at.strftime("%Y-%m-%d %H:%M UTC") }}</dd>
+      <dd class="col-sm-9">{{ certificate.issue_date.strftime("%Y-%m-%d") }}</dd>
       <dt class="col-sm-3">Tested parameters</dt>
-      <dd class="col-sm-9" style="white-space: pre-line;">{{ certificate.tested_parameters_notes }}</dd>
+      <dd class="col-sm-9" style="white-space: pre-line;">{{ certificate.notes }}</dd>
     </dl>
   </div>
 </div>

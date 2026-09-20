@@ -2,7 +2,6 @@
 app/modules/shared/profile/routes.py
 """
 from fastapi import APIRouter, Depends, Form, Request, Response, UploadFile
-from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
@@ -25,7 +24,7 @@ from app.services.two_factor_service import (
 )
 
 router = APIRouter(tags=["profile"])
-templates = Jinja2Templates(directory="app/templates")
+from app.core.templates import templates
 
 
 @router.get("/my-profile", name="my_profile")

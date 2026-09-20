@@ -5,7 +5,6 @@ import uuid
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
@@ -13,7 +12,7 @@ from app.core.permissions import require_lab_company
 from app.core.portal_nav import build_portal_context
 from app.database.base import get_db
 from app.models.user import User, UserRole
-from app.repositories import certificate_repository, verification_repository
+from app.repositories import certification_repository, verification_repository
 from app.schemas.verification import IssueCertificateRequest, RejectVerificationRequest
 from app.services.verification_service import (
     VerificationActionError,
@@ -23,7 +22,7 @@ from app.services.verification_service import (
 )
 
 router = APIRouter(prefix="/lab/verification-requests", tags=["lab-verification"])
-templates = Jinja2Templates(directory="app/templates")
+from app.core.templates import templates
 
 
 @router.get("", name="lab_verification_index")
@@ -51,7 +50,7 @@ def verification_detail(
     except VerificationActionError:
         return RedirectResponse(url=request.url_for("lab_verification_index"), status_code=303)
 
-    certificate = certificate_repository.get_by_verification_request_id(db, vr.id)
+    certificate = certification_repository.get_by_verification_request_id(db, vr.id)
 
     context = build_portal_context(user, UserRole.LAB, active_path="/lab/verification-requests")
     context.update({"vr": vr, "certificate": certificate, "error": error})

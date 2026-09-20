@@ -7,15 +7,27 @@
   user-avatar toggle, the "Quick Links" card, the theme's active-link
   styling) is unchanged from the vendor template — only the hardcoded
   investment-menu links were vendor placeholder content and are now
-  real. header.html, footer.html, and personalize_theme_color.html are
-  untouched.
+  real. header.html and footer.html are untouched.
+
+  Hotfix: partials/personalize_theme_color.html was the vendor's own
+  full demo copy of the Personalize page (its own main tag, breadcrumb,
+  "Do you love to see things..." heading, broken relative image URLs).
+  It was previously included directly into layouts/base.html's body
+  tag, on EVERY page, not just this one, and was never wrapped in an
+  offcanvas panel, so it just rendered as extra, non-functional,
+  broken-image markup stacked at the bottom of every page. Removed;
+  its useful ideas (background image gallery, sidebar/header layout
+  options) are now properly wired into the real page at
+  shared/personalize.html plus static/js/personalize.js, driven by
+  this app's own data-attribute/localStorage mechanism, not the
+  vendor's dead markup.
 -->
  <div class="adminuiux-sidebar">
     <div class="adminuiux-sidebar-inner">
       <div class="px-3 not-iconic mt-3">
         <div class="row">
           <div class="col align-self-center">
-            <h6 class="fw-medium">Main Menu</h6>
+            <h6 class="fw-medium">{{ t('nav.main_menu') }}</h6>
           </div>
           <div class="col-auto">
             <a
@@ -50,9 +62,18 @@
         {% endfor %}
       </ul>
 
+      {% if personalize_label %}
+      <div class="px-3 mt-3 mb-1">
+        <a href="{{ url_for('personalize_page') }}"
+           class="btn btn-theme w-100 d-flex align-items-center justify-content-center gap-2 {% if personalize_active %}active{% endif %}">
+          <i class="bi bi-palette"></i> {{ personalize_label }} <i class="bi bi-heart-fill text-danger"></i>
+        </a>
+      </div>
+      {% endif %}
+
       {% if upcoming_items %}
       <div class="px-3 mt-2 not-iconic">
-        <h6 class="mb-2 small text-secondary text-uppercase">Coming soon</h6>
+        <h6 class="mb-2 small text-secondary text-uppercase">{{ t('nav.coming_soon_heading') }}</h6>
       </div>
       <ul class="nav flex-column">
         {% for item in upcoming_items %}
@@ -68,7 +89,7 @@
 
       {% if admin_preview_links %}
       <div class="px-3 mt-2 not-iconic">
-        <h6 class="mb-2 small text-secondary text-uppercase">Admin: view portals</h6>
+        <h6 class="mb-2 small text-secondary text-uppercase">{{ t('nav.admin_view_portals_heading') }}</h6>
       </div>
       <ul class="nav flex-column">
         {% for item in admin_preview_links %}
@@ -85,7 +106,7 @@
       <div class="mt-auto"></div>
 
       <div class="px-3 mb-3 not-iconic">
-        <h6 class="mb-3 fw-medium">Quick Links</h6>
+        <h6 class="mb-3 fw-medium">{{ t('nav.quick_links') }}</h6>
         <div class="card adminuiux-card">
           <div class="card-body p-2">
             <div class="row gx-2">

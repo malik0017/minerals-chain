@@ -1,6 +1,7 @@
 """
 app/services/auth_service.py
 """
+import uuid
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.orm import Session
@@ -9,6 +10,7 @@ from app.models.user import User, UserRole
 from app.repositories import company_repository, user_repository
 from app.core.security import hash_password, verify_password
 from app.schemas.auth import RegisterRequest
+from app.services.document_upload_service import save_company_document
 
 _ROLE_MAP = {
     "seller": (CompanyRole.SELLER, UserRole.SELLER),
@@ -28,7 +30,15 @@ class AuthenticationError(ValueError):
     pass
 
 
-def register_new_company_user(db: Session, payload: RegisterRequest) -> User:
+def register_new_company_user(
+    db: Session,
+    payload: RegisterRequest,
+    *,
+    cr_document_contents: bytes,
+    cr_document_ext: str,
+    license_document_contents: bytes,
+    license_document_ext: str,
+) -> User:
     # --- BRD §6.1: uniqueness / duplicate checks before anything is created ---
     if user_repository.get_by_email(db, payload.email):
         raise RegistrationError("An account with this email already exists.")
@@ -37,11 +47,24 @@ def register_new_company_user(db: Session, payload: RegisterRequest) -> User:
 
     company_role, user_role = _ROLE_MAP[payload.role]
 
+    # Batch B: the company's id is generated here, in Python, BEFORE the row
+    # is ever inserted — specifically so the two document files can be saved
+    # (their filenames embed the company id) before the Company object is
+    # constructed, rather than needing a save-then-update-filename dance
+    # after the fact. See document_upload_service.save_company_document()'s
+    # docstring.
+    company_id = uuid.uuid4()
+    cr_document_filename = save_company_document(company_id, "cr", cr_document_contents, cr_document_ext)
+    license_document_filename = save_company_document(company_id, "license", license_document_contents, license_document_ext)
+
     company = Company(
+        id=company_id,
         company_name=payload.company_name,
         role=company_role,
         cr_number=payload.cr_number,
         license_or_accreditation_number=payload.license_or_accreditation_number,
+        cr_document_filename=cr_document_filename,
+        license_document_filename=license_document_filename,
         status=ApprovalStatus.PENDING,  # BRD §6.1: every new registration starts pending
         subscription_tier=SubscriptionTier.ENTRY if company_role != CompanyRole.LAB else None,
         contact_email=payload.email,

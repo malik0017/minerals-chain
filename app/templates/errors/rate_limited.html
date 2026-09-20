@@ -1,0 +1,16 @@
+{% extends "layouts/base_auth.html" %}
+{% block title %}Too many attempts{% endblock %}
+{% block content %}
+<h4 class="text-center mb-1"><i class="bi bi-hourglass-split text-warning"></i> Too many attempts</h4>
+<p class="text-secondary text-center mb-0">
+  For your account's security, we've temporarily limited this action.
+  {% if retry_after_minutes %}
+  Please try again in about {{ retry_after_minutes }} minute{{ 's' if retry_after_minutes != 1 else '' }}.
+  {% else %}
+  Please try again shortly.
+  {% endif %}
+</p>
+<div class="text-center mt-4">
+  <a href="{{ url_for('login_form') }}" class="btn btn-outline-theme">Back to login</a>
+</div>
+{% endblock %}

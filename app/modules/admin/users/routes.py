@@ -6,7 +6,6 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.core.permissions import require_portal
@@ -23,7 +22,7 @@ from app.services.admin_user_service import (
 )
 
 router = APIRouter(prefix="/admin/users", tags=["admin-users"])
-templates = Jinja2Templates(directory="app/templates")
+from app.core.templates import templates
 
 
 @router.get("", name="admin_users_list")
@@ -102,7 +101,7 @@ def user_unlock(
     target = user_repository.get_by_id(db, user_id)
     if target is None:
         return RedirectResponse(url=request.url_for("admin_users_list"), status_code=303)
-    unlock_user(db, target)
+    unlock_user(db, target, admin)
     return RedirectResponse(url=request.url_for("admin_user_detail", user_id=user_id), status_code=303)
 
 
@@ -125,7 +124,7 @@ def user_reset_password(
             status_code=303,
         )
     try:
-        reset_password(db, target, new_password)
+        reset_password(db, target, admin, new_password)
     except AdminUserActionError as exc:
         db.rollback()
         return RedirectResponse(
@@ -147,5 +146,5 @@ def user_disable_2fa(
     target = user_repository.get_by_id(db, user_id)
     if target is None:
         return RedirectResponse(url=request.url_for("admin_users_list"), status_code=303)
-    admin_disable_totp(db, target)
+    admin_disable_totp(db, target, admin)
     return RedirectResponse(url=request.url_for("admin_user_detail", user_id=user_id), status_code=303)

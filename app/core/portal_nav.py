@@ -1,31 +1,35 @@
 """
 app/core/portal_nav.py
 """
+from app.core.localization import t
 from app.models.user import User, UserRole
 
+# Keys reference app/core/localization.py's TRANSLATIONS dict — every
+# label below is a translation key now (Batch C), not literal English,
+# resolved via t(key, lang) inside build_portal_context().
 _NAV_ITEMS = {
     UserRole.SELLER: [
-        {"icon": "bi-columns-gap", "label": "Dashboard", "url": "/seller/dashboard"},
-        {"icon": "bi-diagram-3", "label": "My Listings", "url": "/seller/listings"},
-        {"icon": "bi-inbox", "label": "RFQ Inbox", "url": "/seller/rfq-inbox"},
-        {"icon": "bi-tags", "label": "My Quotations", "url": "/seller/quotations"},
-        {"icon": "bi-box-seam", "label": "Orders", "url": "/seller/orders"},
+        {"icon": "bi-columns-gap", "key": "nav.dashboard", "url": "/seller/dashboard"},
+        {"icon": "bi-diagram-3", "key": "nav.my_listings", "url": "/seller/listings"},
+        {"icon": "bi-inbox", "key": "nav.rfq_inbox", "url": "/seller/rfq-inbox"},
+        {"icon": "bi-tags", "key": "nav.my_quotations", "url": "/seller/quotations"},
+        {"icon": "bi-box-seam", "key": "nav.orders", "url": "/seller/orders"},
     ],
     UserRole.BUYER: [
-        {"icon": "bi-columns-gap", "label": "Dashboard", "url": "/buyer/dashboard"},
-        {"icon": "bi-search", "label": "Browse Minerals", "url": "/buyer/browse"},
-        {"icon": "bi-file-earmark-text", "label": "My RFQs", "url": "/buyer/rfqs"},
-        {"icon": "bi-box-seam", "label": "Orders", "url": "/buyer/orders"},
+        {"icon": "bi-columns-gap", "key": "nav.dashboard", "url": "/buyer/dashboard"},
+        {"icon": "bi-search", "key": "nav.browse_minerals", "url": "/buyer/browse"},
+        {"icon": "bi-file-earmark-text", "key": "nav.my_rfqs", "url": "/buyer/rfqs"},
+        {"icon": "bi-box-seam", "key": "nav.orders", "url": "/buyer/orders"},
     ],
     UserRole.LAB: [
-        {"icon": "bi-columns-gap", "label": "Dashboard", "url": "/lab/dashboard"},
-        {"icon": "bi-eyedropper", "label": "Verification Requests", "url": "/lab/verification-requests"},
+        {"icon": "bi-columns-gap", "key": "nav.dashboard", "url": "/lab/dashboard"},
+        {"icon": "bi-eyedropper", "key": "nav.verification_requests", "url": "/lab/verification-requests"},
     ],
     UserRole.ADMIN: [
-        {"icon": "bi-inbox", "label": "Pending Approvals", "url": "/admin/approvals"},
-        {"icon": "bi-building", "label": "All Companies", "url": "/admin/companies"},
-        {"icon": "bi-people", "label": "Users", "url": "/admin/users"},
-        {"icon": "bi-shield-check", "label": "Mineral Passports", "url": "/admin/passports"},
+        {"icon": "bi-inbox", "key": "nav.pending_approvals", "url": "/admin/approvals"},
+        {"icon": "bi-building", "key": "nav.all_companies", "url": "/admin/companies"},
+        {"icon": "bi-people", "key": "nav.users", "url": "/admin/users"},
+        {"icon": "bi-shield-check", "key": "nav.mineral_passports", "url": "/admin/passports"},
     ],
 }
 
@@ -34,25 +38,25 @@ _UPCOMING_ITEMS = {
     UserRole.BUYER: [],
     UserRole.LAB: [],
     UserRole.ADMIN: [
-        {"icon": "bi-flag", "label": "Disputes"},
-        {"icon": "bi-graph-up", "label": "Reports"},
+        {"icon": "bi-flag", "key": "nav.disputes"},
+        {"icon": "bi-graph-up", "key": "nav.reports"},
     ],
 }
 
-_PORTAL_LABEL = {
-    UserRole.SELLER: "Seller Portal",
-    UserRole.BUYER: "Buyer Portal",
-    UserRole.LAB: "Lab Portal",
-    UserRole.ADMIN: "Admin Portal",
+_PORTAL_LABEL_KEY = {
+    UserRole.SELLER: "portal.seller",
+    UserRole.BUYER: "portal.buyer",
+    UserRole.LAB: "portal.lab",
+    UserRole.ADMIN: "portal.admin",
 }
 
 # Real, working links admin sees on every portal page — lets an admin
 # jump straight to any portal's dashboard without logging out/in again.
 _ADMIN_PREVIEW_LINKS = [
-    {"icon": "bi-inbox", "label": "Pending Approvals", "url": "/admin/approvals"},
-    {"icon": "bi-columns-gap", "label": "Seller Dashboard", "url": "/seller/dashboard"},
-    {"icon": "bi-columns-gap", "label": "Buyer Dashboard", "url": "/buyer/dashboard"},
-    {"icon": "bi-columns-gap", "label": "Lab Dashboard", "url": "/lab/dashboard"},
+    {"icon": "bi-inbox", "key": "nav.pending_approvals", "url": "/admin/approvals"},
+    {"icon": "bi-columns-gap", "key": "nav.seller_dashboard", "url": "/seller/dashboard"},
+    {"icon": "bi-columns-gap", "key": "nav.buyer_dashboard", "url": "/buyer/dashboard"},
+    {"icon": "bi-columns-gap", "key": "nav.lab_dashboard", "url": "/lab/dashboard"},
 ]
 
 
@@ -68,6 +72,7 @@ def build_portal_context(user: User, portal_role: UserRole, active_path: str | N
     the shared /notifications page) and nothing gets marked active.
     """
     is_admin_preview = user.role == UserRole.ADMIN and portal_role != UserRole.ADMIN
+    lang = user.preferred_language
 
     # Batch 7: when admin is previewing another portal, the header
     # subtitle now says so explicitly ("Admin Portal · Previewing
@@ -76,19 +81,25 @@ def build_portal_context(user: User, portal_role: UserRole, active_path: str | N
     # real lab session was confusing on its own, out of banner-reading
     # context (e.g. a screenshot of just the header).
     if is_admin_preview:
-        portal_label = f"Admin Portal · Previewing {_PORTAL_LABEL[portal_role]}"
+        portal_label = f"{t('portal.admin', lang)} · {t('portal.previewing', lang)} {t(_PORTAL_LABEL_KEY[portal_role], lang)}"
     else:
-        portal_label = _PORTAL_LABEL[portal_role]
+        portal_label = t(_PORTAL_LABEL_KEY[portal_role], lang)
 
     nav_items = [
-        {**item, "active": item["url"] == active_path} for item in _NAV_ITEMS[portal_role]
+        {**item, "label": t(item["key"], lang), "active": item["url"] == active_path}
+        for item in _NAV_ITEMS[portal_role]
+    ]
+    upcoming_items = [
+        {**item, "label": t(item["key"], lang)} for item in _UPCOMING_ITEMS[portal_role]
     ]
 
     context = {
         "portal_label": portal_label,
-        "lang": user.preferred_language,
+        "lang": lang,
         "nav_items": nav_items,
-        "upcoming_items": _UPCOMING_ITEMS[portal_role],
+        "upcoming_items": upcoming_items,
+        "personalize_label": t("nav.personalize", lang),
+        "personalize_active": active_path == "/personalize",
         "current_user": {
             "full_name": user.full_name,
             "email": user.email,
@@ -105,7 +116,8 @@ def build_portal_context(user: User, portal_role: UserRole, active_path: str | N
     # portal — the "view all portals without logging in again" ask.
     if user.role == UserRole.ADMIN:
         context["admin_preview_links"] = [
-            {**item, "active": item["url"] == active_path} for item in _ADMIN_PREVIEW_LINKS
+            {**item, "label": t(item["key"], lang), "active": item["url"] == active_path}
+            for item in _ADMIN_PREVIEW_LINKS
         ]
 
     return context

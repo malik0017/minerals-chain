@@ -55,9 +55,9 @@
           </button>
           <ul class="dropdown-menu dropdown-menu-end">
             <li>
-              <a class="dropdown-item active" data-value="EN">EN - English</a>
+              <a class="dropdown-item{% if lang == 'en' %} active{% endif %}" href="{{ url_for('language_set') }}?lang=en&next={{ request.url.path }}">EN - English</a>
             </li>
-            <li><a class="dropdown-item" data-value="FR">AR - العربية</a></li>
+            <li><a class="dropdown-item{% if lang == 'ar' %} active{% endif %}" href="{{ url_for('language_set') }}?lang=ar&next={{ request.url.path }}">AR - العربية</a></li>
           </ul>
         </div>
         <div class="dropdown d-inline-block">
@@ -235,8 +235,7 @@
             <div class="px-2">
               <div>
                 <a class="dropdown-item" href="{{ url_for('my_profile') }}"
-                  ><i data-feather="user" class="avatar avatar-18 me-1"></i> My
-                  Profile</a
+                  ><i data-feather="user" class="avatar avatar-18 me-1"></i> {{ t('header.my_profile') }}</a
                 >
               </div>
              
@@ -269,7 +268,7 @@
                       Language
                     </div>
                     <div class="col-auto">
-                      <small class="vm">EN - English</small>
+                      <small class="vm">{{ 'AR - العربية' if lang == 'ar' else 'EN - English' }}</small>
                       <i class="bi bi-translate"></i>
                     </div>
                     <div class="col-auto">
@@ -279,25 +278,25 @@
                 </a>
                 <div class="dropdown-menu dropdown-menu-end">
                   <div>
-                    <a class="dropdown-item active" data-value="EN"
+                    <a class="dropdown-item{% if lang == 'en' %} active{% endif %}" href="{{ url_for('language_set') }}?lang=en&next={{ request.url.path }}"
                       >EN - English</a
                     >
                   </div>
                   <div>
-                    <a class="dropdown-item" data-value="AR">AR - العربية</a>
+                    <a class="dropdown-item{% if lang == 'ar' %} active{% endif %}" href="{{ url_for('language_set') }}?lang=ar&next={{ request.url.path }}">AR - العربية</a>
                   </div>
                 </div>
               </div>
               <div>
                 <a class="dropdown-item" href="{{ url_for('my_profile') }}"
                   ><i data-feather="settings" class="avatar avatar-18 me-1"></i>
-                  Account Setting</a
+                  {{ t('header.account_setting') }}</a
                 >
               </div>
               <div>
                 <a class="dropdown-item theme-red" href="{{ url_for('logout') }}"
                   ><i data-feather="power" class="avatar avatar-18 me-1"></i>
-                  Logout</a
+                  {{ t('header.logout') }}</a
                 >
               </div>
             </div>

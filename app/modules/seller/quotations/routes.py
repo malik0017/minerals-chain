@@ -1,6 +1,5 @@
 """app/modules/seller/quotations/routes.py — read-only list of the seller's own submitted quotations."""
 from fastapi import APIRouter, Depends, Request
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.core.permissions import require_seller_company
@@ -10,7 +9,7 @@ from app.models.user import User, UserRole
 from app.repositories import quotation_repository
 
 router = APIRouter(prefix="/seller/quotations", tags=["seller-quotations"])
-templates = Jinja2Templates(directory="app/templates")
+from app.core.templates import templates
 
 
 @router.get("", name="seller_quotations_index")

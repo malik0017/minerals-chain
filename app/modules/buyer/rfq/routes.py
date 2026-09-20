@@ -9,7 +9,6 @@ import uuid
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
@@ -23,7 +22,7 @@ from app.services.order_service import OrderActionError, accept_quotation
 from app.services.rfq_service import RFQActionError, get_owned_rfq, create_rfq
 
 router = APIRouter(prefix="/buyer/rfqs", tags=["buyer-rfq"])
-templates = Jinja2Templates(directory="app/templates")
+from app.core.templates import templates
 
 
 @router.get("", name="buyer_rfqs_index")

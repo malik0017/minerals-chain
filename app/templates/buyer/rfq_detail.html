@@ -71,6 +71,7 @@
             {% if rfq.status.value == "open" %}
             <form method="post" action="{{ url_for('buyer_rfq_accept_quotation', rfq_id=rfq.id, quotation_id=q.id) }}"
                   onsubmit="return confirm('Accept this quotation? This closes the RFQ to further quotes and creates an order.');">
+  {{ csrf_field() }}
               <button type="submit" class="btn btn-sm btn-theme">Accept</button>
             </form>
             {% elif q.status.value == "accepted" %}

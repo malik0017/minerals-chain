@@ -1,0 +1,14 @@
+{% extends "layouts/base_auth.html" %}
+{% block title %}Please try again{% endblock %}
+{% block content %}
+<h4 class="text-center mb-1"><i class="bi bi-arrow-clockwise text-warning"></i> Please try again</h4>
+<p class="text-secondary text-center mb-0">
+  That form took too long to submit, or was opened in another tab a while ago.
+  This is a routine security check, not a sign anything went wrong with your
+  account — just go back and submit it again.
+</p>
+<div class="text-center mt-4">
+  <a href="javascript:history.back()" class="btn btn-outline-theme">Go back</a>
+  <a href="{{ url_for('root') }}" class="btn btn-theme ms-2">Home</a>
+</div>
+{% endblock %}

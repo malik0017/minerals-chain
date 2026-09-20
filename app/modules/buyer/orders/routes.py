@@ -9,7 +9,6 @@ import uuid
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.core.identity_guard import is_identity_revealed
@@ -21,7 +20,7 @@ from app.repositories import order_repository
 from app.services.order_service import OrderActionError, confirm_receipt, get_owned_order
 
 router = APIRouter(prefix="/buyer/orders", tags=["buyer-orders"])
-templates = Jinja2Templates(directory="app/templates")
+from app.core.templates import templates
 
 
 @router.get("", name="buyer_orders_index")

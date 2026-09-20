@@ -9,6 +9,7 @@ from app.models.company import ApprovalStatus, Company
 from app.models.notification import Notification
 from app.models.user import User
 from app.repositories import audit_log_repository, company_repository, notification_repository
+from app.services.subscription_service import create_initial_subscription
 
 class AdminActionError(ValueError):
     pass
@@ -31,6 +32,9 @@ def approve_company(db: Session, company_id: uuid.UUID, admin: User) -> Company:
     company.status = ApprovalStatus.APPROVED
     company.reviewed_by_user_id = admin.id
     company.rejection_reason = None
+
+    # Batch A: real Subscription row from day one — see subscription_service.py's docstring.
+    create_initial_subscription(db, company)
 
     audit_log_repository.create(
         db,

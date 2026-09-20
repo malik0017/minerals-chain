@@ -1,225 +1,214 @@
-
+/*
+ * app/static/js/personalize.js
+ */
 (function () {
-  'use strict';
+  "use strict";
 
-  var KEYS = {
-    theme: 'adminuiuxtheme',
-    background: 'adminuiuxbackground',
-    sidebar: 'adminuiuxsidebarfilled',
-    layout: 'adminuiuxlayoutmode'
+  var STORAGE_KEY = "mc_personalize";
+  var THEME_COLORS = [
+    "blue", "indigo", "purple", "pink", "red", "orange", "yellow",
+    "green", "teal", "cyan", "grey", "brown", "chocolate", "black",
+  ];
+  var BACKGROUNDS = ["theme", "gradient-1", "gradient-2", "gradient-3", "gradient-4",
+    "gradient-5", "gradient-6", "gradient-7", "gradient-8", "gradient-9", "gradient-10"];
+  var SIDEBAR_FILLS = ["bg", "white", "theme", "accent"];
+  var HEADER_FILLS = ["bg", "white", "black", "theme", "accent"];
+  var SIDEBAR_LAYOUTS = ["iconic", "boxed", "iconic-boxed"];
+  var HEADER_LAYOUTS = ["boxed"];
+  var BG_IMAGE_BASE = "/static/img/backgorund-image/backgorund-image-";
+
+  function loadPrefs() {
+    try {
+      var raw = window.localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function savePrefs(prefs) {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+    } catch (e) {
+      /* localStorage unavailable (private browsing etc.) — preference
+         just won't persist across page loads; nothing else breaks. */
+    }
+  }
+
+  function removeClassesWithPrefix(el, prefix) {
+    var toRemove = [];
+    el.classList.forEach(function (c) {
+      if (c.indexOf(prefix) === 0) toRemove.push(c);
+    });
+    toRemove.forEach(function (c) {
+      el.classList.remove(c);
+    });
+  }
+
+  function applyPrefs(prefs) {
+    var html = document.documentElement;
+
+    removeClassesWithPrefix(html, "theme-");
+    if (prefs.themeColor && THEME_COLORS.indexOf(prefs.themeColor) !== -1) {
+      html.classList.add("theme-" + prefs.themeColor);
+    }
+
+    removeClassesWithPrefix(html, "bg-gradient-");
+    html.classList.remove("bg-r-gradient", "bg-white");
+    if (prefs.background && BACKGROUNDS.indexOf(prefs.background) !== -1) {
+      html.classList.add(
+        prefs.background === "theme" ? "bg-r-gradient" : "bg-" + prefs.background
+      );
+    } else if (prefs.background === "white") {
+      html.classList.add("bg-white");
+    }
+
+    removeClassesWithPrefix(html, "adminuiux-sidebar-fill-");
+    if (prefs.sidebarFill && SIDEBAR_FILLS.indexOf(prefs.sidebarFill) !== -1) {
+      html.classList.add("adminuiux-sidebar-fill-" + prefs.sidebarFill);
+    }
+
+    removeClassesWithPrefix(html, "adminuiux-header-fill-");
+    if (prefs.headerFill && HEADER_FILLS.indexOf(prefs.headerFill) !== -1) {
+      html.classList.add("adminuiux-header-fill-" + prefs.headerFill);
+    }
+
+    html.classList.remove("adminuiux-sidebar-iconic", "adminuiux-sidebar-boxed");
+    if (prefs.sidebarLayout && SIDEBAR_LAYOUTS.indexOf(prefs.sidebarLayout) !== -1) {
+      if (prefs.sidebarLayout === "iconic-boxed") {
+        html.classList.add("adminuiux-sidebar-iconic", "adminuiux-sidebar-boxed");
+      } else {
+        html.classList.add("adminuiux-sidebar-" + prefs.sidebarLayout);
+      }
+    }
+
+    removeClassesWithPrefix(html, "adminuiux-header-boxed");
+    if (prefs.headerLayout && HEADER_LAYOUTS.indexOf(prefs.headerLayout) !== -1) {
+      html.classList.add("adminuiux-header-" + prefs.headerLayout);
+    }
+
+    if (prefs.bgImage) {
+      html.style.setProperty("--adminuiux-main-bg", "url(" + BG_IMAGE_BASE + prefs.bgImage + ".jpg)");
+    } else {
+      html.style.removeProperty("--adminuiux-main-bg");
+    }
+
+    if (prefs.colorMode === "dark") {
+      html.classList.add("dark");
+      html.setAttribute("data-bs-theme", "dark");
+    } else {
+      html.classList.remove("dark");
+      html.setAttribute("data-bs-theme", "light");
+    }
+  }
+
+  // Apply as early as possible (called inline from base.html's <head>,
+  // before the rest of the page — including this file — has loaded).
+  window.__mcApplyPersonalize = function () {
+    applyPrefs(loadPrefs());
   };
 
-  // Every theme class AdminUIUX ships, plus ours. Used to clear before set.
-  var THEMES = [
-    'theme-blue', 'theme-indigo', 'theme-purple', 'theme-pink', 'theme-red',
-    'theme-orange', 'theme-yellow', 'theme-green', 'theme-teal', 'theme-cyan',
-    'theme-grey', 'theme-brown', 'theme-chocolate', 'theme-black',
-    'theme-rsr', 'theme-rsr-graphite', 'theme-rsr-midnight',
-    'theme-rsr-sand', 'theme-rsr-oxblood'
-  ];
-
-  var BACKGROUNDS = [
-    'bg-default', 'bg-white', 'bg-r-gradient',
-    'bg-gradient-1', 'bg-gradient-2', 'bg-gradient-3', 'bg-gradient-4',
-    'bg-gradient-5', 'bg-gradient-6', 'bg-gradient-7', 'bg-gradient-8',
-    'bg-gradient-9', 'bg-gradient-10'
-  ];
-
-  var SIDEBARS = [
-    'adminuiux-sidebar-standard',
-    'adminuiux-sidebar-iconic',
-    'adminuiux-sidebar-boxed'
-  ];
-
-  var DEFAULT_THEME = 'theme-rsr';
-
-  // ---- storage ------------------------------------------------------------
-  function save(key, value) {
-    try { localStorage.setItem(key, value); } catch (e) {}
-    // Keep the cookie in sync — app.js and any other script still read it.
-    try {
-      var d = new Date();
-      d.setFullYear(d.getFullYear() + 1);
-      document.cookie = key + '=' + encodeURIComponent(value) +
-                        ';expires=' + d.toUTCString() + ';path=/;SameSite=Lax';
-    } catch (e) {}
+  function setPreference(key, value) {
+    var prefs = loadPrefs();
+    prefs[key] = value;
+    savePrefs(prefs);
+    applyPrefs(prefs);
   }
 
-  function load(key) {
-    try {
-      var v = localStorage.getItem(key);
-      if (v !== null && v !== '') return v;
-    } catch (e) {}
-    var m = document.cookie.match('(^|;)\\s*' + key + '\\s*=\\s*([^;]+)');
-    return m ? decodeURIComponent(m.pop()) : null;
+  function resetPreference(key) {
+    var prefs = loadPrefs();
+    delete prefs[key];
+    savePrefs(prefs);
+    applyPrefs(prefs);
   }
 
-  // ---- helpers ------------------------------------------------------------
-  function body() { return document.body; }
+  // Wires up the Personalize page's swatches/buttons — only relevant
+  // on that page, but harmless to attach everywhere (no-ops if the
+  // elements aren't present).
+  document.addEventListener("DOMContentLoaded", function () {
+    var prefs = loadPrefs();
+    applyPrefs(prefs);
 
-  function clearClasses(el, list) {
-    list.forEach(function (c) {
-      c.split(/\s+/).forEach(function (part) {
-        if (part) el.classList.remove(part);
+    document.querySelectorAll("[data-personalize-theme-color]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var v = btn.getAttribute("data-personalize-theme-color");
+        v === "none" ? resetPreference("themeColor") : setPreference("themeColor", v);
+        markActive("[data-personalize-theme-color]", btn);
       });
     });
-  }
-
-  function addClasses(el, value) {
-    String(value || '').split(/\s+/).forEach(function (part) {
-      if (part) el.classList.add(part);
-    });
-  }
-
-  function markActive(container, value) {
-    var boxes = document.querySelectorAll(container + ' .select-box, ' +
-                                          container + ' .gradient-box');
-    Array.prototype.forEach.call(boxes, function (box) {
-      box.classList.toggle('active', box.getAttribute('data-title') === value);
-    });
-  }
-
-  function announce(name, value) {
-    // Charts and any other listener can react without polling.
-    document.dispatchEvent(new CustomEvent('rsr:personalize', {
-      detail: { setting: name, value: value }
-    }));
-  }
-
-  // ---- 1. colours ---------------------------------------------------------
-  function applyTheme(value, persist) {
-    var b = body();
-    clearClasses(b, THEMES);            // the fix: clear before adding
-    addClasses(b, value);
-    b.setAttribute('data-theme', value);
-    if (persist) save(KEYS.theme, value);
-    markActive('.theme-select', value);
-    announce('theme', value);
-  }
-
-  // ---- 2. backgrounds -----------------------------------------------------
-  function applyBackground(value, persist) {
-    var targets = document.querySelectorAll('.main-bg, body');
-    Array.prototype.forEach.call(targets, function (el) {
-      clearClasses(el, BACKGROUNDS);
-      if (value && value !== 'bg-default') addClasses(el, value);
-      // app.js sets an inline --adminuiux-main-bg with a broken relative
-      // url("../../..."). Clear it so the class-based gradients can show.
-      el.style.removeProperty('--adminuiux-main-bg');
-    });
-    if (persist) save(KEYS.background, value);
-    markActive('.theme-background', value);
-    announce('background', value);
-  }
-
-  // ---- 3. sidebar layout --------------------------------------------------
-  function applySidebar(value, persist) {
-    var b = body();
-    clearClasses(b, SIDEBARS);
-    addClasses(b, value);
-    b.setAttribute('data-sidebarlayout', value);
-    if (persist) save(KEYS.sidebar, value);
-    markActive('.sidebar-layout', value);
-    announce('sidebar', value);
-    window.dispatchEvent(new Event('resize'));  // let charts re-measure
-  }
-
-  // ---- 4. light / dark ----------------------------------------------------
-  function applyMode(value, persist) {
-    var mode = (value === 'dark-mode') ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-bs-theme', mode);
-    document.documentElement.classList.toggle('dark', mode === 'dark');
-    body().classList.toggle('dark-mode', mode === 'dark');
-    if (persist) save(KEYS.layout, value);
-    announce('mode', mode);
-  }
-
-  // ---- binding ------------------------------------------------------------
-  function bind(container, handler) {
-    var root = document.querySelector(container);
-    if (!root) return;
-
-    root.addEventListener('click', function (ev) {
-      var box = ev.target.closest('.select-box, .gradient-box');
-      if (!box || !root.contains(box)) return;
-      var value = box.getAttribute('data-title');
-      if (!value) return;
-      ev.preventDefault();
-      handler(value, true);
-    });
-  }
-
-  function restore() {
-    applyTheme(load(KEYS.theme) || body().getAttribute('data-theme') || DEFAULT_THEME, false);
-
-    var bg = load(KEYS.background);
-    if (bg) applyBackground(bg, false); else markActive('.theme-background', 'bg-default');
-
-    var sb = load(KEYS.sidebar);
-    if (sb) applySidebar(sb, false);
-
-    var mode = load(KEYS.layout);
-    if (mode) applyMode(mode, false);
-  }
-
-  function init() {
-    restore();
-
-    bind('.theme-select', applyTheme);
-    bind('.theme-background', applyBackground);
-    bind('.sidebar-layout', applySidebar);
-
-    document.querySelectorAll('.theme-select .select-box[data-title=""]')
-      .forEach(function (box) {
-        box.addEventListener('click', function () { applyTheme(DEFAULT_THEME, true); });
+    document.querySelectorAll("[data-personalize-background]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var v = btn.getAttribute("data-personalize-background");
+        v === "none" ? resetPreference("background") : setPreference("background", v);
+        markActive("[data-personalize-background]", btn);
       });
-
-
-    function syncModeFromBody() {
-      var dark = document.body.classList.contains('dark-mode');
-      document.documentElement.setAttribute('data-bs-theme', dark ? 'dark' : 'light');
-      document.documentElement.classList.toggle('dark', dark);
-      save(KEYS.layout, dark ? 'dark-mode' : 'light-mode');
-      announce('mode', dark ? 'dark' : 'light');
-    }
-
-    syncModeFromBody();
-
-    if (window.MutationObserver) {
-      try {
-        new window.MutationObserver(function () { syncModeFromBody(); })
-          .observe(document.body, { attributes: true, attributeFilter: ['class'] });
-      } catch (e) { /* fall back to the initial sync only */ }
-    }
-
-    // Keep multiple open tabs in step.
-    window.addEventListener('storage', function (ev) {
-      if (ev.key === KEYS.theme) applyTheme(ev.newValue, false);
-      if (ev.key === KEYS.background) applyBackground(ev.newValue, false);
-      if (ev.key === KEYS.sidebar) applySidebar(ev.newValue, false);
-      if (ev.key === KEYS.layout) applyMode(ev.newValue, false);
     });
-  }
+    document.querySelectorAll("[data-personalize-sidebar-fill]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var v = btn.getAttribute("data-personalize-sidebar-fill");
+        v === "none" ? resetPreference("sidebarFill") : setPreference("sidebarFill", v);
+        markActive("[data-personalize-sidebar-fill]", btn);
+      });
+    });
+    document.querySelectorAll("[data-personalize-header-fill]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var v = btn.getAttribute("data-personalize-header-fill");
+        v === "none" ? resetPreference("headerFill") : setPreference("headerFill", v);
+        markActive("[data-personalize-header-fill]", btn);
+      });
+    });
+    document.querySelectorAll("[data-personalize-sidebar-layout]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var v = btn.getAttribute("data-personalize-sidebar-layout");
+        v === "none" ? resetPreference("sidebarLayout") : setPreference("sidebarLayout", v);
+        markActive("[data-personalize-sidebar-layout]", btn);
+      });
+    });
+    document.querySelectorAll("[data-personalize-header-layout]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var v = btn.getAttribute("data-personalize-header-layout");
+        v === "none" ? resetPreference("headerLayout") : setPreference("headerLayout", v);
+        markActive("[data-personalize-header-layout]", btn);
+      });
+    });
+    document.querySelectorAll("[data-personalize-bg-image]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var v = btn.getAttribute("data-personalize-bg-image");
+        v === "none" ? resetPreference("bgImage") : setPreference("bgImage", v);
+        markActive("[data-personalize-bg-image]", btn);
+      });
+    });
 
-  // Run after app.js has had its turn, so our class cleanup is the last word.
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { setTimeout(init, 0); });
-  } else {
-    setTimeout(init, 0);
-  }
-
-  window.RSRPersonalize = {
-    setTheme: function (v) { applyTheme(v, true); },
-    setBackground: function (v) { applyBackground(v, true); },
-    setSidebar: function (v) { applySidebar(v, true); },
-    setMode: function (v) { applyMode(v, true); },
-    current: function () {
-      return {
-        theme: load(KEYS.theme),
-        background: load(KEYS.background),
-        sidebar: load(KEYS.sidebar),
-        mode: load(KEYS.layout)
-      };
+    var darkSwitch = document.getElementById("personalize-color-mode");
+    if (darkSwitch) {
+      darkSwitch.checked = prefs.colorMode === "dark";
+      darkSwitch.addEventListener("change", function () {
+        setPreference("colorMode", darkSwitch.checked ? "dark" : "light");
+      });
     }
-  };
+
+    // Reflect currently-active choices on page load (adds a visual
+    // "selected" ring to the matching swatch/button, if present).
+    ["themeColor", "background", "sidebarFill", "headerFill", "sidebarLayout", "headerLayout", "bgImage"].forEach(function (key) {
+      var attr = {
+        themeColor: "data-personalize-theme-color",
+        background: "data-personalize-background",
+        sidebarFill: "data-personalize-sidebar-fill",
+        headerFill: "data-personalize-header-fill",
+        sidebarLayout: "data-personalize-sidebar-layout",
+        headerLayout: "data-personalize-header-layout",
+        bgImage: "data-personalize-bg-image",
+      }[key];
+      var value = prefs[key] || "none";
+      var el = document.querySelector("[" + attr + '="' + value + '"]');
+      if (el) markActive(attr, el);
+    });
+
+    function markActive(selector, activeEl) {
+      document.querySelectorAll("[" + selector.replace(/[\[\]]/g, "") + "]").forEach(function (el) {
+        el.classList.remove("personalize-active");
+      });
+      activeEl.classList.add("personalize-active");
+    }
+  });
 })();

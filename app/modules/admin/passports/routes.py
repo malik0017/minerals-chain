@@ -5,18 +5,23 @@ import uuid
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.core.permissions import require_portal
 from app.core.portal_nav import build_portal_context
 from app.database.base import get_db
+from app.models.certification import CertificationType
 from app.models.user import User, UserRole
-from app.repositories import passport_repository
-from app.services.passport_service import PassportActionError, approve_passport, get_pending_passport, reject_passport
+from app.repositories import certification_repository
+from app.services.certification_service import (
+    CertificationActionError,
+    approve_passport,
+    get_pending_certification,
+    reject_passport,
+)
 
 router = APIRouter(prefix="/admin/passports", tags=["admin-passports"])
-templates = Jinja2Templates(directory="app/templates")
+from app.core.templates import templates
 
 
 @router.get("", name="admin_passports_list")
@@ -25,7 +30,7 @@ def passports_list(
     db: Session = Depends(get_db),
     admin: User = Depends(require_portal(UserRole.ADMIN)),
 ):
-    pending = passport_repository.list_pending(db)
+    pending = certification_repository.list_pending(db, cert_type=CertificationType.MINERAL_PASSPORT)
     context = build_portal_context(admin, UserRole.ADMIN, active_path=request.url.path)
     context["passports"] = pending
     return templates.TemplateResponse(request, "admin/passports_list.html", context)
@@ -40,8 +45,8 @@ def passport_review(
     error: str | None = None,
 ):
     try:
-        passport = get_pending_passport(db, passport_id)
-    except PassportActionError:
+        passport = get_pending_certification(db, passport_id)
+    except CertificationActionError:
         return RedirectResponse(url=request.url_for("admin_passports_list"), status_code=303)
 
     context = build_portal_context(admin, UserRole.ADMIN, active_path="/admin/passports")
@@ -57,9 +62,9 @@ def passport_approve(
     admin: User = Depends(require_portal(UserRole.ADMIN)),
 ):
     try:
-        passport = get_pending_passport(db, passport_id)
+        passport = get_pending_certification(db, passport_id)
         approve_passport(db, passport, admin)
-    except PassportActionError as exc:
+    except CertificationActionError as exc:
         db.rollback()
         return RedirectResponse(
             url=f"{request.url_for('admin_passport_review', passport_id=passport_id)}?error={exc}",
@@ -77,9 +82,9 @@ def passport_reject(
     reason: str = Form(...),
 ):
     try:
-        passport = get_pending_passport(db, passport_id)
+        passport = get_pending_certification(db, passport_id)
         reject_passport(db, passport, admin, reason)
-    except PassportActionError as exc:
+    except CertificationActionError as exc:
         db.rollback()
         return RedirectResponse(
             url=f"{request.url_for('admin_passport_review', passport_id=passport_id)}?error={exc}",

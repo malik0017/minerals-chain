@@ -64,6 +64,7 @@
       <p class="text-secondary mb-0">No approved testing labs are registered on the platform yet.</p>
       {% else %}
       <form method="post" action="{{ url_for('seller_listing_request_verification', product_id=product.id) }}" class="d-flex gap-2">
+  {{ csrf_field() }}
         <select name="lab_company_id" class="form-select w-auto" required>
           <option value="" disabled selected>Choose a lab...</option>
           {% for lab in available_labs %}
@@ -81,7 +82,7 @@
       <p class="text-success mb-0"><i class="bi bi-patch-check-fill"></i> This listing is verified and eligible for buyer visibility.</p>
       {% if certificate %}
       <div class="mt-2 small text-secondary">
-        Certificate <strong>{{ certificate.certificate_number }}</strong> — issued {{ certificate.issued_at.strftime("%Y-%m-%d") }}
+        Certificate <strong>{{ certificate.certificate_number }}</strong> — issued {{ certificate.issue_date.strftime("%Y-%m-%d") }}
       </div>
       {% endif %}
     {% endif %}
@@ -114,12 +115,13 @@
       {% set active_passport = passport_history | selectattr("is_currently_valid") | first %}
       {% set pending_passport = passport_history | selectattr("status.value", "equalto", "pending") | first %}
       {% if active_passport %}
-        <p class="text-success mb-1"><i class="bi bi-patch-check-fill"></i> Active passport: <strong>{{ active_passport.passport_number }}</strong></p>
-        <p class="text-secondary small mb-0">{{ active_passport.scope.value | replace("_", " ") | capitalize }} · valid until {{ active_passport.valid_until }}</p>
+        <p class="text-success mb-1"><i class="bi bi-patch-check-fill"></i> Active passport: <strong>{{ active_passport.certificate_number }}</strong></p>
+        <p class="text-secondary small mb-0">{{ active_passport.category | replace("_", " ") | capitalize }} · valid until {{ active_passport.expiry_date }}</p>
       {% elif pending_passport %}
-        <p class="text-secondary mb-0"><i class="bi bi-hourglass-split"></i> A {{ pending_passport.scope.value | replace("_", " ") }} passport request is awaiting admin review.</p>
+        <p class="text-secondary mb-0"><i class="bi bi-hourglass-split"></i> A {{ pending_passport.category | replace("_", " ") }} passport request is awaiting admin review.</p>
       {% else %}
         <form method="post" action="{{ url_for('seller_listing_request_passport', product_id=product.id) }}" class="d-flex gap-2">
+  {{ csrf_field() }}
           <select name="scope" class="form-select w-auto" required>
             <option value="" disabled selected>Choose trade scope...</option>
             <option value="domestic">Domestic</option>
@@ -145,8 +147,8 @@
         {% elif p.status.value == "rejected" %}<span class="badge bg-danger-subtle text-danger">Rejected</span>
         {% else %}<span class="badge bg-warning-subtle text-warning">Pending</span>
         {% endif %}
-        {{ p.scope.value | replace("_", " ") | capitalize }}
-        {% if p.passport_number %}— <strong>{{ p.passport_number }}</strong>{% endif %}
+        {{ p.category | replace("_", " ") | capitalize }}
+        {% if p.certificate_number %}— <strong>{{ p.certificate_number }}</strong>{% endif %}
         <span class="text-secondary small">— {{ p.created_at.strftime("%Y-%m-%d") }}</span>
         {% if p.rejection_reason %}<div class="text-secondary small">Reason: {{ p.rejection_reason }}</div>{% endif %}
       </li>

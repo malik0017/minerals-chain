@@ -57,6 +57,7 @@
         <h6 class="mb-2"><i class="bi bi-unlock"></i> Account locked</h6>
         <p class="text-secondary small mb-3">Too many failed login attempts. Locked for {{ locked_minutes_remaining }} more minute(s).</p>
         <form method="post" action="{{ url_for('admin_user_unlock', user_id=target.id) }}">
+  {{ csrf_field() }}
           <button type="submit" class="btn btn-sm btn-theme">Unlock now</button>
         </form>
       </div>
@@ -71,6 +72,7 @@
         <h6 class="mb-2"><i class="bi bi-shield-x"></i> Two-factor authentication</h6>
         <p class="text-secondary small mb-3">If this user lost access to their authenticator app, disable 2FA so they can log in and re-enroll.</p>
         <form method="post" action="{{ url_for('admin_user_disable_2fa', user_id=target.id) }}">
+  {{ csrf_field() }}
           <button type="submit" class="btn btn-sm btn-outline-danger">Disable 2FA</button>
         </form>
       </div>
@@ -86,6 +88,7 @@
         <div class="alert alert-success py-2 mb-2">Password reset.</div>
         {% endif %}
         <form method="post" action="{{ url_for('admin_user_reset_password', user_id=target.id) }}">
+  {{ csrf_field() }}
           <input class="form-control form-control-sm mb-2" type="password" name="new_password" placeholder="New password" minlength="8" required />
           <input class="form-control form-control-sm mb-2" type="password" name="confirm_password" placeholder="Confirm new password" minlength="8" required />
           <button type="submit" class="btn btn-sm btn-outline-theme">Set new password</button>
@@ -99,6 +102,7 @@
   <div class="card-body">
     <h6 class="mb-3">Edit</h6>
     <form method="post" action="{{ url_for('admin_user_edit', user_id=target.id) }}">
+  {{ csrf_field() }}
       <div class="mb-3">
         <label class="form-label" for="full_name">Full name</label>
         <input class="form-control" id="full_name" name="full_name" value="{{ target.full_name }}" required />

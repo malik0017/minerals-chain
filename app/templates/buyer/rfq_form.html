@@ -17,6 +17,7 @@
 <div class="card adminuiux-card">
   <div class="card-body">
     <form method="post" action="{{ url_for('buyer_rfq_create') }}">
+  {{ csrf_field() }}
 
       <div class="mb-3">
         <label class="form-label" for="mineral_type">Mineral type</label>

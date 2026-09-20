@@ -7,7 +7,7 @@
 
 <div class="card adminuiux-card">
   <div class="table-responsive">
-    <table class="table align-middle mb-0">
+    <table class="table align-middle mb-0 mc-table-colorful">
       <thead>
         <tr>
           <th>Name</th>
@@ -21,8 +21,13 @@
       </thead>
       <tbody>
         {% for u in users %}
-        <tr>
-          <td>{{ u.full_name }}</td>
+        <tr class="mc-accent-{{ avatar_class(u.email) | replace('mc-avatar-', '') }}">
+          <td>
+            <div class="mc-row-label">
+              <div class="mc-avatar-chip {{ avatar_class(u.email) }}">{{ initials(u.full_name) }}</div>
+              <div class="mc-row-title">{{ u.full_name }}</div>
+            </div>
+          </td>
           <td class="text-secondary">{{ u.email }}</td>
           <td><span class="badge bg-secondary-subtle text-secondary">{{ u.role.value }}</span></td>
           <td>{{ u.company.company_name if u.company else "—" }}</td>

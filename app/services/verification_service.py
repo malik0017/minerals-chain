@@ -1,18 +1,18 @@
 """
 app/services/verification_service.py
 """
-import secrets
 import uuid
 
 from sqlalchemy.orm import Session
 
-from app.models.certificate import Certificate
+from app.models.certification import Certification
 from app.models.company import ApprovalStatus, Company, CompanyRole
 from app.models.notification import Notification
 from app.models.product import Product, ProductStatus
 from app.models.user import User
 from app.models.verification import VerificationRequest, VerificationStatus
-from app.repositories import certificate_repository, notification_repository, verification_repository
+from app.repositories import notification_repository, verification_repository
+from app.services import certification_service
 
 _ACTIVE_STATUSES = (VerificationStatus.REQUESTED, VerificationStatus.SAMPLE_SCHEDULED, VerificationStatus.TESTING_IN_PROGRESS)
 _EDITABLE_PRODUCT_STATUSES = (ProductStatus.DRAFT, ProductStatus.FAILED_VERIFICATION)
@@ -71,19 +71,14 @@ def get_owned_lab_request(db: Session, request_id: uuid.UUID, lab_company_id: uu
 
 def issue_certificate(
     db: Session, request: VerificationRequest, lab_user: User, tested_parameters_notes: str
-) -> Certificate:
+) -> Certification:
     if request.status not in _ACTIVE_STATUSES:
         raise VerificationActionError(f"This request is already {request.status.value}.")
 
-    certificate = Certificate(
-        verification_request_id=request.id,
-        product_id=request.product_id,
-        lab_company_id=request.lab_company_id,
-        issued_by_user_id=lab_user.id,
-        certificate_number=f"COA-{secrets.token_hex(4).upper()}",
-        tested_parameters_notes=tested_parameters_notes,
-    )
-    certificate_repository.create(db, certificate)
+    # Batch A: the credential itself is now a Certification row, built by
+    # certification_service — this function still owns the workflow
+    # transition (VerificationRequest + Product status) and the single commit.
+    certification = certification_service.create_lab_certificate(db, request, lab_user, tested_parameters_notes)
 
     request.status = VerificationStatus.COMPLETED
     request.product.status = ProductStatus.VERIFIED
@@ -92,12 +87,12 @@ def issue_certificate(
         db, request.product.seller_company,
         type_="verification_passed",
         title="Verification passed",
-        body=f"Your {request.product.mineral_type} listing has been verified. Certificate {certificate.certificate_number} issued.",
+        body=f"Your {request.product.mineral_type} listing has been verified. Certificate {certification.certificate_number} issued.",
     )
 
     db.commit()
-    db.refresh(certificate)
-    return certificate
+    db.refresh(certification)
+    return certification
 
 
 def reject_verification(db: Session, request: VerificationRequest, lab_user: User, rejection_reason: str) -> VerificationRequest:

@@ -21,19 +21,19 @@
         {% endif %}
         <dl class="row mb-0">
           <dt class="col-sm-4">Passport number</dt>
-          <dd class="col-sm-8">{{ passport.passport_number }}</dd>
+          <dd class="col-sm-8">{{ passport.certificate_number }}</dd>
 
           <dt class="col-sm-4">Mineral</dt>
-          <dd class="col-sm-8">{{ passport.product.mineral_type }}</dd>
+          <dd class="col-sm-8">{{ passport.scopes[0].product.mineral_type if passport.scopes else "—" }}</dd>
 
           <dt class="col-sm-4">Scope</dt>
-          <dd class="col-sm-8">{{ passport.scope.value | replace("_", " ") | capitalize }}</dd>
+          <dd class="col-sm-8">{{ passport.category | replace("_", " ") | capitalize }}</dd>
 
           <dt class="col-sm-4">Issuing company</dt>
-          <dd class="col-sm-8">{{ passport.seller_company.company_name }}</dd>
+          <dd class="col-sm-8">{{ passport.subject_company.company_name }}</dd>
 
           <dt class="col-sm-4">Valid</dt>
-          <dd class="col-sm-8">{{ passport.valid_from }} to {{ passport.valid_until }}</dd>
+          <dd class="col-sm-8">{{ passport.issue_date }} to {{ passport.expiry_date }}</dd>
         </dl>
       </div>
     </div>

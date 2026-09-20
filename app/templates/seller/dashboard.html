@@ -1,5 +1,5 @@
 {% extends "layouts/base.html" %}
-{% block title %}Seller Dashboard{% endblock %}
+{% block title %}{{ t('nav.dashboard') }}{% endblock %}
 {% block content %}
 
 {% if is_admin_preview %}
@@ -9,14 +9,18 @@
 </div>
 {% endif %}
 
-<div class="d-flex align-items-center justify-content-between mb-4">
-  <div>
-    <h4 class="mb-1">Welcome, {{ current_user.full_name }}</h4>
-    <p class="text-secondary mb-0">{{ current_user.company_name }} · Mine Operator</p>
+<div class="card adminuiux-card mb-4" style="background: linear-gradient(135deg, var(--adminuiux-theme-1, #5840ef), var(--adminuiux-theme-2, #0049e8)); color: #fff;">
+  <div class="card-body py-4">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <h4 class="mb-1 text-white">{{ t('common.welcome') }}, {{ current_user.full_name }}</h4>
+        <p class="mb-0 opacity-75">{{ current_user.company_name }} · Mine Operator</p>
+      </div>
+      <span class="badge bg-white text-success px-3 py-2">
+        <i class="bi bi-patch-check-fill"></i> Approved
+      </span>
+    </div>
   </div>
-  <span class="badge bg-success-subtle text-success px-3 py-2">
-    <i class="bi bi-patch-check-fill"></i> Approved
-  </span>
 </div>
 
 {% if stats_are_platform_wide %}
@@ -26,52 +30,102 @@
 {% endif %}
 
 <div class="row g-3 mb-3">
-  <div class="col-md-6">
+  <div class="col-6 col-md-3">
     <div class="card adminuiux-card h-100">
-      <div class="card-body d-flex align-items-center justify-content-between">
-        <div>
-          <div class="text-secondary small">{% if stats_are_platform_wide %}Total listings (all sellers){% else %}Total listings{% endif %}</div>
-          <div class="fs-3 fw-semibold">{{ listing_count }}</div>
-        </div>
-        <i class="bi bi-diagram-3 fs-1 text-primary opacity-50"></i>
+      <div class="card-body">
+        <div class="text-secondary small">{% if stats_are_platform_wide %}Listings (all sellers){% else %}Total listings{% endif %}</div>
+        <div class="fs-3 fw-semibold">{{ listing_count }}</div>
+        <i class="bi bi-diagram-3 text-primary"></i>
       </div>
     </div>
   </div>
-  <div class="col-md-6">
+  <div class="col-6 col-md-3">
     <div class="card adminuiux-card h-100">
-      <div class="card-body d-flex align-items-center justify-content-between">
-        <div>
-          <div class="text-secondary small">{% if stats_are_platform_wide %}Drafts (all sellers){% else %}Drafts{% endif %}</div>
-          <div class="fs-3 fw-semibold">{{ draft_count }}</div>
-        </div>
-        <i class="bi bi-pencil-square fs-1 text-secondary opacity-50"></i>
+      <div class="card-body">
+        <div class="text-secondary small">{% if stats_are_platform_wide %}Verified (all sellers){% else %}Verified{% endif %}</div>
+        <div class="fs-3 fw-semibold text-success">{{ verified_count }}</div>
+        <i class="bi bi-patch-check text-success"></i>
       </div>
     </div>
   </div>
-</div>
-<div class="mb-3">
-  {% if stats_are_platform_wide %}
-  <a href="{{ url_for('admin_companies_list') }}?role=seller" class="btn btn-theme">
-    <i class="bi bi-building"></i> Browse seller companies
-  </a>
-  {% else %}
-  <a href="{{ url_for('seller_listings_index') }}" class="btn btn-theme">
-    <i class="bi bi-diagram-3"></i> Manage my listings
-  </a>
-  {% endif %}
-  <a href="{{ url_for('seller_rfq_inbox_index') }}" class="btn btn-outline-theme">
-    <i class="bi bi-inbox"></i> RFQ Inbox ({{ open_rfq_count }} open)
-  </a>
+  <div class="col-6 col-md-3">
+    <div class="card adminuiux-card h-100">
+      <div class="card-body">
+        <div class="text-secondary small">Open RFQs (marketplace)</div>
+        <div class="fs-3 fw-semibold">{{ open_rfq_count }}</div>
+        <i class="bi bi-inbox text-warning"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card adminuiux-card h-100">
+      <div class="card-body">
+        {% if order_count is not none %}
+        <div class="text-secondary small">Orders in progress</div>
+        <div class="fs-3 fw-semibold">{{ orders_in_progress }} <span class="fs-6 text-secondary fw-normal">/ {{ order_count }}</span></div>
+        <i class="bi bi-box-seam text-primary"></i>
+        {% else %}
+        <div class="text-secondary small">Orders</div>
+        <div class="fs-6 text-secondary mt-2">Not available in preview</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="card adminuiux-card">
-  <div class="card-body">
-    <h6 class="mb-2"><i class="bi bi-signpost-split text-primary"></i> What's next for your portal</h6>
-    <p class="text-secondary mb-0">
-      Submitting quotations on RFQs is on the roadmap. Product listings,
-      lab verification, mineral passports, and browsing open RFQs are all
-      live now.
-    </p>
+<div class="row g-3 mb-3">
+  <div class="col-md-5">
+    <div class="card adminuiux-card h-100">
+      <div class="card-body">
+        <h6 class="mb-3">Listing status breakdown</h6>
+        {% if listing_donut and listing_donut.total > 0 %}
+        <div class="d-flex align-items-center gap-4">
+          <div style="width:120px;height:120px;border-radius:50%;background:conic-gradient({{ listing_donut.gradient }});flex-shrink:0;"></div>
+          <ul class="list-unstyled mb-0 small">
+            {% for seg in listing_donut.legend %}
+            <li class="mb-1"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:{{ seg.color }};" class="me-2"></span>{{ seg.label }} — {{ seg.count }} ({{ seg.pct }}%)</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% elif stats_are_platform_wide %}
+        <p class="text-secondary mb-0">Not available in admin preview — this breaks down one company's listings.</p>
+        {% else %}
+        <p class="text-secondary mb-0">No listings yet — <a href="{{ url_for('seller_listings_new') }}">create your first one</a>.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-7">
+    <div class="card adminuiux-card h-100">
+      <div class="card-body">
+        <h6 class="mb-3">Quick actions</h6>
+        <div class="d-flex flex-wrap gap-2">
+          {% if stats_are_platform_wide %}
+          <a href="{{ url_for('admin_companies_list') }}?role=seller" class="btn btn-theme">
+            <i class="bi bi-building"></i> Browse seller companies
+          </a>
+          {% else %}
+          <a href="{{ url_for('seller_listings_new') }}" class="btn btn-theme">
+            <i class="bi bi-plus-lg"></i> New listing
+          </a>
+          <a href="{{ url_for('seller_listings_index') }}" class="btn btn-outline-theme">
+            <i class="bi bi-diagram-3"></i> My listings
+          </a>
+          {% endif %}
+          <a href="{{ url_for('seller_rfq_inbox_index') }}" class="btn btn-outline-theme">
+            <i class="bi bi-inbox"></i> RFQ Inbox ({{ open_rfq_count }} open)
+          </a>
+          {% if not stats_are_platform_wide %}
+          <a href="{{ url_for('seller_quotations_index') }}" class="btn btn-outline-theme">
+            <i class="bi bi-tags"></i> My quotations ({{ quotation_count }})
+          </a>
+          <a href="{{ url_for('seller_orders_index') }}" class="btn btn-outline-theme">
+            <i class="bi bi-box-seam"></i> Orders ({{ order_count }})
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 

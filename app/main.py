@@ -1,10 +1,17 @@
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 
 from app.core.auth import get_current_user_optional
-from app.core.exceptions import AdminRedirectException, CompanyNotApprovedException, ForbiddenException, NotAuthenticatedException
+from app.core.csrf_middleware import CSRFMiddleware
+from app.core.exceptions import (
+    AdminRedirectException,
+    CompanyNotApprovedException,
+    ForbiddenException,
+    NotAuthenticatedException,
+    RateLimitExceededException,
+)
+from app.core.templates import templates
 from app.database.base import get_db  # noqa: F401  (kept — several routes below import it directly too)
 from app.models.user import User
 from app.modules.admin.approvals.routes import router as admin_approvals_router
@@ -24,14 +31,18 @@ from app.modules.seller.listings.routes import router as seller_listings_router
 from app.modules.seller.rfq_inbox.routes import router as seller_rfq_inbox_router
 from app.modules.seller.quotations.routes import router as seller_quotations_router
 from app.modules.seller.orders.routes import router as seller_orders_router
+from app.modules.shared.personalize.routes import router as personalize_router
 from app.modules.shared.profile.routes import router as profile_router
 from app.modules.shared.routes import router as shared_router
 
 app = FastAPI(title="Minerals Chain")
 
+# Batch G: applies to every request, no route opts in individually — see
+# app/core/csrf.py and app/core/csrf_middleware.py for the scheme.
+app.add_middleware(CSRFMiddleware)
+
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.mount("/assets", StaticFiles(directory="app/static"), name="assets_compat")
-templates = Jinja2Templates(directory="app/templates")
 
 app.include_router(auth_router)
 app.include_router(admin_approvals_router)
@@ -39,6 +50,7 @@ app.include_router(admin_companies_router)
 app.include_router(admin_passports_router)
 app.include_router(admin_users_router)
 app.include_router(shared_router)
+app.include_router(personalize_router)
 app.include_router(profile_router)
 app.include_router(public_router)
 app.include_router(seller_dashboard_router)
@@ -81,6 +93,19 @@ async def admin_redirect_handler(request: Request, exc: AdminRedirectException):
     if exc.query:
         url = f"{url}?{exc.query}"
     return RedirectResponse(url=url, status_code=303)
+
+
+@app.exception_handler(RateLimitExceededException)
+async def rate_limit_handler(request: Request, exc: RateLimitExceededException):
+    retry_after_minutes = max(1, exc.retry_after_seconds // 60)
+    response = templates.TemplateResponse(
+        request,
+        "errors/rate_limited.html",
+        {"lang": "en", "retry_after_minutes": retry_after_minutes},
+        status_code=429,
+    )
+    response.headers["Retry-After"] = str(exc.retry_after_seconds)
+    return response
 
 
 @app.get("/", name="root")

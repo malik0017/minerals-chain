@@ -3,7 +3,6 @@ app/modules/buyer/browse/routes.py
 """
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 import uuid
 
@@ -14,7 +13,7 @@ from app.models.user import User, UserRole
 from app.repositories import product_repository
 
 router = APIRouter(prefix="/buyer/browse", tags=["buyer-browse"])
-templates = Jinja2Templates(directory="app/templates")
+from app.core.templates import templates
 
 
 @router.get("", name="buyer_browse_index")

@@ -52,6 +52,7 @@
       <p class="text-secondary mb-0">This RFQ is closed and no longer accepting quotations.</p>
     {% else %}
       <form method="post" action="{{ url_for('seller_rfq_submit_quote', rfq_id=rfq.id) }}">
+  {{ csrf_field() }}
         <div class="row g-3 mb-3">
           <div class="col-md-4">
             <label class="form-label" for="price_value">Price</label>

@@ -4,7 +4,6 @@ app/modules/admin/approvals/routes.py
 import uuid
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from app.core.permissions import require_portal
 from app.core.portal_nav import build_portal_context
@@ -14,7 +13,7 @@ from app.repositories import company_repository
 from app.services.admin_service import AdminActionError, approve_company, reject_company
 
 router = APIRouter(prefix="/admin/approvals", tags=["admin-approvals"])
-templates = Jinja2Templates(directory="app/templates")
+from app.core.templates import templates
 
 
 @router.get("", name="admin_approvals_list")

@@ -1,28 +1,29 @@
 {% extends "layouts/base_auth.html" %}
-{% block title %}Log in{% endblock %}
+{% block title %}{{ t('auth.login.title') }}{% endblock %}
 {% block content %}
 
-<h4 class="text-center mb-1">Welcome back</h4>
-<p class="text-secondary text-center mb-4">Log in to your Minerals Chain account</p>
+<h4 class="text-center mb-1">{{ t('auth.login.title') }}</h4>
+<p class="text-secondary text-center mb-4">{{ t('auth.login.subtitle') }}</p>
 
 {% if error %}
 <div class="alert alert-danger py-2">{{ error }}</div>
 {% endif %}
 
 <form method="post" action="{{ url_for('login_submit') }}">
+  {{ csrf_field() }}
   <div class="mb-3">
-    <label class="form-label" for="email">Email</label>
+    <label class="form-label" for="email">{{ t('auth.login.email') }}</label>
     <input class="form-control" type="email" id="email" name="email" value="{{ email }}" required autofocus />
   </div>
   <div class="mb-3">
-    <label class="form-label" for="password">Password</label>
+    <label class="form-label" for="password">{{ t('auth.login.password') }}</label>
     <input class="form-control" type="password" id="password" name="password" required />
   </div>
-  <button type="submit" class="btn btn-theme w-100 mt-2">Log in</button>
+  <button type="submit" class="btn btn-theme w-100 mt-2">{{ t('auth.login.submit') }}</button>
 </form>
 
 <p class="text-center text-secondary mt-4 mb-0">
-  Don't have an account? <a href="{{ url_for('register_form') }}">Register</a>
+  {{ t('auth.login.no_account') }} <a href="{{ url_for('register_form') }}">{{ t('auth.login.register_link') }}</a>
 </p>
 
 {% endblock %}

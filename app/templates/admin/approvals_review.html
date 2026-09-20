@@ -41,6 +41,7 @@
 
 <div class="d-flex gap-2 mb-4">
   <form method="post" action="{{ url_for('admin_approvals_approve', company_id=company.id) }}">
+  {{ csrf_field() }}
     <button type="submit" class="btn btn-success">
       <i class="bi bi-check-circle"></i> Approve
     </button>
@@ -54,6 +55,7 @@
   <div class="card border-danger-subtle">
     <div class="card-body">
       <form method="post" action="{{ url_for('admin_approvals_reject', company_id=company.id) }}">
+  {{ csrf_field() }}
         <label class="form-label" for="reason">Reason for rejection (shown to the applicant)</label>
         <textarea class="form-control mb-3" id="reason" name="reason" rows="3" required></textarea>
         <button type="submit" class="btn btn-danger">Confirm rejection</button>

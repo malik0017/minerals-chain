@@ -23,6 +23,7 @@
           <li class="mb-2">Enter the 6-digit code it generates below to confirm setup.</li>
         </ol>
         <form method="post" action="{{ url_for('my_profile_2fa_confirm') }}">
+  {{ csrf_field() }}
           <label class="form-label" for="code">Confirmation code</label>
           <input class="form-control text-center fs-4 mb-3" type="text" id="code" name="code"
                  inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autofocus />

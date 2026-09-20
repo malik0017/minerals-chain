@@ -12,6 +12,10 @@ Batch 9: MineralPassport.
 Phase 2 Batch 2: RFQ.
 Phase 2 Batch 3: Quotation.
 Phase 2 Batch 4: Order — closes out Phase 2.
+Batch A (schema evolution): Certificate + MineralPassport REPLACED by
+  Certification + CertificationScope (see models/certification.py's
+  docstring for why). Subscription added (real history table,
+  Company.subscription_tier is now just a cache — see its docstring).
 Later batches will add: Dispute, Invoice — add each new model's
 import here as it's created.
 """
@@ -21,8 +25,8 @@ from app.models.notification import Notification  # noqa: F401
 from app.models.audit_log import AuditLog  # noqa: F401
 from app.models.product import Product  # noqa: F401
 from app.models.verification import VerificationRequest  # noqa: F401
-from app.models.certificate import Certificate  # noqa: F401
-from app.models.passport import MineralPassport  # noqa: F401
+from app.models.certification import Certification, CertificationScope  # noqa: F401
+from app.models.subscription import Subscription  # noqa: F401
 from app.models.rfq import RFQ  # noqa: F401
 from app.models.quotation import Quotation  # noqa: F401
 from app.models.order import Order  # noqa: F401

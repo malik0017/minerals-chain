@@ -17,9 +17,9 @@
       <tbody>
         {% for p in passports %}
         <tr>
-          <td>{{ p.seller_company.company_name }}</td>
-          <td>{{ p.product.mineral_type }}</td>
-          <td><span class="badge bg-secondary-subtle text-secondary">{{ p.scope.value | replace("_", " ") | capitalize }}</span></td>
+          <td>{{ p.subject_company.company_name }}</td>
+          <td>{{ p.scopes[0].product.mineral_type if p.scopes else "—" }}</td>
+          <td><span class="badge bg-secondary-subtle text-secondary">{{ p.category | replace("_", " ") | capitalize }}</span></td>
           <td class="text-secondary small">{{ p.created_at.strftime("%Y-%m-%d") }}</td>
           <td class="text-end">
             <a href="{{ url_for('admin_passport_review', passport_id=p.id) }}" class="btn btn-sm btn-theme">Review</a>

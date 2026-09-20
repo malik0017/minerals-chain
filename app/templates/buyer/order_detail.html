@@ -59,6 +59,7 @@
     <h6 class="mb-2"><i class="bi bi-check-circle"></i> Confirm receipt</h6>
     <p class="text-secondary small mb-3">Confirming marks this order complete.</p>
     <form method="post" action="{{ url_for('buyer_order_confirm_receipt', order_id=order.id) }}">
+  {{ csrf_field() }}
       <button type="submit" class="btn btn-theme">Confirm receipt</button>
     </form>
   </div>
