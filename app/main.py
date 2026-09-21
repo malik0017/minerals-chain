@@ -15,8 +15,10 @@ from app.core.templates import templates
 from app.database.base import get_db  # noqa: F401  (kept — several routes below import it directly too)
 from app.models.user import User
 from app.modules.admin.approvals.routes import router as admin_approvals_router
+from app.modules.admin.audit_log.routes import router as admin_audit_log_router
 from app.modules.admin.companies.routes import router as admin_companies_router
 from app.modules.admin.passports.routes import router as admin_passports_router
+from app.modules.admin.settings.routes import router as admin_settings_router
 from app.modules.admin.users.routes import router as admin_users_router
 from app.modules.auth.routes import router as auth_router
 from app.modules.buyer.browse.routes import router as buyer_browse_router
@@ -46,8 +48,10 @@ app.mount("/assets", StaticFiles(directory="app/static"), name="assets_compat")
 
 app.include_router(auth_router)
 app.include_router(admin_approvals_router)
+app.include_router(admin_audit_log_router)
 app.include_router(admin_companies_router)
 app.include_router(admin_passports_router)
+app.include_router(admin_settings_router)
 app.include_router(admin_users_router)
 app.include_router(shared_router)
 app.include_router(personalize_router)

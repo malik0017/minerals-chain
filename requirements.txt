@@ -13,3 +13,9 @@ email-validator==2.2.0
 pyotp==2.9.0
 qrcode==7.4.2
 Pillow==10.4.0
+
+# TEST & DEVELOPMENT DEPENDENCIES
+httpx2==0.1.1
+selenium==4.25.0
+pytest==8.3.4
+pytest-asyncio==0.24.0

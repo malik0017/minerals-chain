@@ -30,3 +30,4 @@ from app.models.subscription import Subscription  # noqa: F401
 from app.models.rfq import RFQ  # noqa: F401
 from app.models.quotation import Quotation  # noqa: F401
 from app.models.order import Order  # noqa: F401
+from app.models.platform_settings import PlatformSettings  # noqa: F401

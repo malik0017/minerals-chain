@@ -280,20 +280,12 @@
                 : document.documentElement.setAttribute("dir", "ltr");
             }),
             "rtl" === o("adminuiuxdirectionmode")
-              ? (i("#btn-layout-RTL").prop("checked", !0),
-                r.addClass("rtl"),
-                r.attr("dir", "ltr"))
-              : (i("#btn-layout-RTL").prop("checked", !1),
-                r.attr("dir", ""),
-                r.removeClass("rtl")),
+              ? i("#btn-layout-RTL").prop("checked", !0)
+              : i("#btn-layout-RTL").prop("checked", !1),
             i("#btn-layout-RTL").on("click", function () {
               i(this).is(":checked")
-                ? (a("adminuiuxdirectionmode", "rtl", 1),
-                  r.attr("dir", "rtl"),
-                  r.addClass("rtl"))
-                : (a("adminuiuxdirectionmode", "ltr", 1),
-                  r.attr("dir", ""),
-                  r.removeClass("rtl"));
+                ? a("adminuiuxdirectionmode", "rtl", 1)
+                : a("adminuiuxdirectionmode", "ltr", 1);
             });
         });
       },

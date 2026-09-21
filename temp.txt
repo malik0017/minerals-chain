@@ -35,7 +35,8 @@ minerals/
 │   ├── subscription.py
 │   ├── rfq.py
 │   ├── quotation.py
-│   └── order.py
+│   ├── order.py
+│   └── platform_settings.py              # Batch H — single-row admin toggles table
 │
 ├── schemas                              # Pydantic validation. (Used for form/request input.)
 │   ├── auth.py
@@ -58,7 +59,8 @@ minerals/
 │   ├── subscription_repository.py
 │   ├── rfq_repository.py
 │   ├── quotation_repository.py
-│   └── order_repository.py
+│   ├── order_repository.py
+│   └── platform_settings_repository.py   # Batch H
 │
 ├── services                            # Business logic.
 │   ├── auth_service.py
@@ -115,7 +117,9 @@ minerals/
 │       ├── approvals/routes.py
 │       ├── companies/routes.py
 │       ├── users/routes.py
-│       └── passports/routes.py
+│       ├── passports/routes.py
+│       ├── audit_log/routes.py           # Batch H — /admin/audit-log viewer
+│       └── settings/routes.py            # Batch H — /admin/settings (registration + OTP toggles)
 │
 ├── static
 │   ├── css
@@ -136,8 +140,10 @@ minerals/
 │   ├── partials                        # Reusable components, included into base.html
 │   │   ├── header.html
 │   │   ├── sidebar.html
-│   │   ├── footer.html
-│   │   └── personalize_theme_color.html
+│   │   └── footer.html
+│   │   # personalize_theme_color.html was the vendor demo page leaking
+│   │   # into every page (hotfix, pre-Batch-H) — delete it if it's still
+│   │   # sitting in your copy, nothing references it any more.
 │   │
 │   ├── auth
 │   │   ├── login.html
@@ -166,7 +172,9 @@ minerals/
 │   │   ├── approvals_list.html, approvals_review.html
 │   │   ├── companies_list.html, company_detail.html
 │   │   ├── users_list.html, user_detail.html
-│   │   └── passports_list.html, passport_review.html
+│   │   ├── passports_list.html, passport_review.html
+│   │   ├── audit_log_list.html           # Batch H
+│   │   └── settings.html                 # Batch H
 │   │
 │   ├── public
 │   │   └── passport_lookup.html
@@ -185,6 +193,20 @@ minerals/
 │
 ├── seeds                               # Demo/admin data creation
 │   └── create_admin.py
+│
+├── scripts                             # NEW (H-fix) — run after every batch/update
+│   ├── seed_test_data.py                 # idempotent full-lifecycle test data
+│   ├── check_routes.py                   # in-process "does every route still work" check
+│   └── seed_ids.json                     # written by seed_test_data.py, read by both
+│                                          # check_routes.py and tests_selenium/ — not
+│                                          # hand-edited, safe to delete and regenerate
+│
+├── tests_selenium                      # NEW (H-fix) — real-browser tests for the
+│   │                                      mutating (POST) flows check_routes.py skips
+│   ├── conftest.py                       # driver/login fixtures, reads seed_ids.json
+│   ├── test_auth.py
+│   ├── test_admin_approvals.py
+│   └── test_rfq_quotation_flow.py
 │
 ├── alembic
 │   ├── env.py

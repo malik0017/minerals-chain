@@ -240,3 +240,22 @@
   width: 100%;
   max-width: 320px;
 }
+
+/* Hotfix: the sidebar "Personalize" CTA is a solid .btn-theme button,
+   so Bootstrap's default .active state (a slightly darker shade of
+   the same theme color) barely reads as a visible change — it looks
+   "always on" whether or not you're actually on /personalize. Give
+   the truly-active state its own unmistakable marker. */
+.adminuiux-sidebar a.btn-theme.active {
+  outline: 2px solid var(--bs-white, #fff);
+  outline-offset: -4px;
+  box-shadow: 0 0 0 2px var(--adminuiux-theme-1, #0d6efd);
+}
+.adminuiux-sidebar a.btn-theme.active::after {
+  content: "\f26e"; /* bootstrap-icons check-circle-fill */
+  font-family: "bootstrap-icons", sans-serif;
+  margin-inline-start: 0.25rem;
+}
+.adminuiux-sidebar a.btn-theme:not(.active) {
+  opacity: 0.85;
+}

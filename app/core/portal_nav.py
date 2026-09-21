@@ -4,9 +4,6 @@ app/core/portal_nav.py
 from app.core.localization import t
 from app.models.user import User, UserRole
 
-# Keys reference app/core/localization.py's TRANSLATIONS dict — every
-# label below is a translation key now (Batch C), not literal English,
-# resolved via t(key, lang) inside build_portal_context().
 _NAV_ITEMS = {
     UserRole.SELLER: [
         {"icon": "bi-columns-gap", "key": "nav.dashboard", "url": "/seller/dashboard"},
@@ -30,6 +27,8 @@ _NAV_ITEMS = {
         {"icon": "bi-building", "key": "nav.all_companies", "url": "/admin/companies"},
         {"icon": "bi-people", "key": "nav.users", "url": "/admin/users"},
         {"icon": "bi-shield-check", "key": "nav.mineral_passports", "url": "/admin/passports"},
+        {"icon": "bi-journal-text", "key": "nav.audit_log", "url": "/admin/audit-log"},
+        {"icon": "bi-gear", "key": "nav.settings", "url": "/admin/settings"},
     ],
 }
 
@@ -61,25 +60,10 @@ _ADMIN_PREVIEW_LINKS = [
 
 
 def build_portal_context(user: User, portal_role: UserRole, active_path: str | None = None) -> dict:
-    """
-    portal_role: which portal's page is being rendered (drives nav_items/
-    portal_label/upcoming_items). Pass the route's own role explicitly —
-    e.g. seller/dashboard/routes.py always passes UserRole.SELLER, even
-    when an admin is the one viewing it.
-
-    active_path: the current request path (e.g. request.url.path) —
-    used to mark the matching nav item active. Pass None (e.g. from
-    the shared /notifications page) and nothing gets marked active.
-    """
+   
     is_admin_preview = user.role == UserRole.ADMIN and portal_role != UserRole.ADMIN
     lang = user.preferred_language
 
-    # Batch 7: when admin is previewing another portal, the header
-    # subtitle now says so explicitly ("Admin Portal · Previewing
-    # Lab") instead of just "Lab Portal" — the preview banner already
-    # explained this, but the header itself looking identical to a
-    # real lab session was confusing on its own, out of banner-reading
-    # context (e.g. a screenshot of just the header).
     if is_admin_preview:
         portal_label = f"{t('portal.admin', lang)} · {t('portal.previewing', lang)} {t(_PORTAL_LABEL_KEY[portal_role], lang)}"
     else:
@@ -112,12 +96,14 @@ def build_portal_context(user: User, portal_role: UserRole, active_path: str | N
         "is_admin_preview": is_admin_preview,
     }
 
-    # Every real page an admin can see also gets quick links to every
-    # portal — the "view all portals without logging in again" ask.
+
     if user.role == UserRole.ADMIN:
+        preview_links = _ADMIN_PREVIEW_LINKS if is_admin_preview else [
+            item for item in _ADMIN_PREVIEW_LINKS if item["url"] != "/admin/approvals"
+        ]
         context["admin_preview_links"] = [
             {**item, "label": t(item["key"], lang), "active": item["url"] == active_path}
-            for item in _ADMIN_PREVIEW_LINKS
+            for item in preview_links
         ]
 
     return context

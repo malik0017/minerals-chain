@@ -1,0 +1,65 @@
+{% extends "layouts/base.html" %}
+{% block title %}{{ t('settings.title') }}{% endblock %}
+{% block content %}
+
+<h4 class="mb-1">{{ t('settings.title') }}</h4>
+<p class="text-secondary mb-4">Controls that apply platform-wide, effective immediately.</p>
+
+{% if saved %}
+<div class="alert alert-success py-2">{{ t('settings.saved') }}</div>
+{% endif %}
+
+<form method="post" action="{{ url_for('admin_settings_update') }}">
+  {{ csrf_field() }}
+
+  <div class="card adminuiux-card mb-3">
+    <div class="card-body">
+      <h6 class="mb-1"><i class="bi bi-person-plus"></i> {{ t('settings.registration_heading') }}</h6>
+      <p class="text-secondary small mb-3">{{ t('settings.registration_desc') }}</p>
+
+      <div class="form-check form-switch mb-2">
+        <input class="form-check-input" type="checkbox" role="switch" id="registration_enabled_seller"
+               name="registration_enabled_seller" value="1" {% if platform_settings.registration_enabled_seller %}checked{% endif %} />
+        <label class="form-check-label" for="registration_enabled_seller">
+          <i class="bi bi-diagram-3"></i> Seller registration
+        </label>
+      </div>
+      <div class="form-check form-switch mb-2">
+        <input class="form-check-input" type="checkbox" role="switch" id="registration_enabled_buyer"
+               name="registration_enabled_buyer" value="1" {% if platform_settings.registration_enabled_buyer %}checked{% endif %} />
+        <label class="form-check-label" for="registration_enabled_buyer">
+          <i class="bi bi-cart3"></i> Buyer registration
+        </label>
+      </div>
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" role="switch" id="registration_enabled_lab"
+               name="registration_enabled_lab" value="1" {% if platform_settings.registration_enabled_lab %}checked{% endif %} />
+        <label class="form-check-label" for="registration_enabled_lab">
+          <i class="bi bi-eyedropper"></i> Lab registration
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="card adminuiux-card mb-3">
+    <div class="card-body">
+      <h6 class="mb-1"><i class="bi bi-envelope-check"></i> {{ t('settings.otp_heading') }}</h6>
+      <p class="text-secondary small mb-3">{{ t('settings.otp_desc') }}</p>
+
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" role="switch" id="require_email_otp"
+               name="require_email_otp" value="1" {% if platform_settings.require_email_otp %}checked{% endif %} />
+        <label class="form-check-label" for="require_email_otp">Require email OTP verification before submitting registration</label>
+      </div>
+      {% if not platform_settings.require_email_otp %}
+      <div class="alert alert-warning py-2 mt-3 mb-0 small">
+        <i class="bi bi-exclamation-triangle"></i> Email verification is currently OFF — anyone can register with an unverified email address. Turn this back on before going to production.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-theme">{{ t('settings.save') }}</button>
+</form>
+
+{% endblock %}

@@ -34,9 +34,10 @@ from app.core.security import (
     decode_pending_2fa_token,
 )
 from app.database.base import get_db
+from app.models.audit_log import AuditLog
 from app.models.company import ApprovalStatus
 from app.models.user import User, UserRole
-from app.repositories import user_repository
+from app.repositories import audit_log_repository, platform_settings_repository, user_repository
 from app.schemas.auth import LoginRequest, RegisterRequest
 from app.services.auth_service import AuthenticationError, RegistrationError, authenticate_user, register_new_company_user
 from app.services.document_upload_service import DocumentUploadError, validate_document
@@ -75,22 +76,53 @@ def _client_ip(request: Request) -> str:
 
 # Common calling codes for a Saudi-market platform — Saudi Arabia first/default,
 # then the rest of the GCC, then a handful of other frequent trading partners.
-# Not exhaustive by design; easy to extend without touching any logic, this is
-# pure display data for the template's <select>.
+# Not exhaustive by design; easy to extend without touching any logic.
+#
+# Hotfix: "flag" used to be a raw flag emoji (e.g. "\U0001F1F8\U0001F1E6"),
+# rendered inside a native <select><option>. That works on macOS/Linux, but
+# on Windows the OS-drawn <select> list box has no colored-emoji glyph for
+# regional-indicator flag sequences, so it fell back to showing the two bare
+# letters ("SA", "AE", ...) instead of a flag - exactly the "text codes, not
+# flags" complaint. Native <select> can't host an <img> at all, on any OS.
+# Fix: keep "flag" (still used as a plain-text fallback/accessible label),
+# add "iso2" so the template can render a real flagcdn.com <img> flag in a
+# custom Bootstrap dropdown (see auth/register.html) instead of a native
+# <select>, which renders identically everywhere.
 PHONE_COUNTRY_CODES = [
-    {"flag": "🇸🇦", "name": "Saudi Arabia", "dial": "+966"},
-    {"flag": "🇦🇪", "name": "UAE", "dial": "+971"},
-    {"flag": "🇰🇼", "name": "Kuwait", "dial": "+965"},
-    {"flag": "🇶🇦", "name": "Qatar", "dial": "+974"},
-    {"flag": "🇧🇭", "name": "Bahrain", "dial": "+973"},
-    {"flag": "🇴🇲", "name": "Oman", "dial": "+968"},
-    {"flag": "🇪🇬", "name": "Egypt", "dial": "+20"},
-    {"flag": "🇯🇴", "name": "Jordan", "dial": "+962"},
-    {"flag": "🇵🇰", "name": "Pakistan", "dial": "+92"},
-    {"flag": "🇮🇳", "name": "India", "dial": "+91"},
-    {"flag": "🇬🇧", "name": "United Kingdom", "dial": "+44"},
-    {"flag": "🇺🇸", "name": "United States", "dial": "+1"},
+    {"flag": "🇸🇦", "iso2": "sa", "name": "Saudi Arabia", "dial": "+966"},
+    {"flag": "🇦🇪", "iso2": "ae", "name": "UAE", "dial": "+971"},
+    {"flag": "🇰🇼", "iso2": "kw", "name": "Kuwait", "dial": "+965"},
+    {"flag": "🇶🇦", "iso2": "qa", "name": "Qatar", "dial": "+974"},
+    {"flag": "🇧🇭", "iso2": "bh", "name": "Bahrain", "dial": "+973"},
+    {"flag": "🇴🇲", "iso2": "om", "name": "Oman", "dial": "+968"},
+    {"flag": "🇪🇬", "iso2": "eg", "name": "Egypt", "dial": "+20"},
+    {"flag": "🇯🇴", "iso2": "jo", "name": "Jordan", "dial": "+962"},
+    {"flag": "🇵🇰", "iso2": "pk", "name": "Pakistan", "dial": "+92"},
+    {"flag": "🇮🇳", "iso2": "in", "name": "India", "dial": "+91"},
+    {"flag": "🇬🇧", "iso2": "gb", "name": "United Kingdom", "dial": "+44"},
+    {"flag": "🇺🇸", "iso2": "us", "name": "United States", "dial": "+1"},
 ]
+
+
+def _log_login(db: Session, user: User) -> None:
+    """
+    Task #7: the admin audit-log viewer needs to show *who logged in and
+    when*, not just the "approve/reject/reset password" admin-action
+    entries Batch G already recorded. Logged for every real, completed
+    login (password-only and the second half of the 2FA flow) - not for
+    the auto-login right after registration, which is a distinct event
+    already implied by the account's own "Registered" timestamp.
+    """
+    audit_log_repository.create(
+        db,
+        AuditLog(
+            actor_user_id=user.id,
+            action="login",
+            target_type="user",
+            target_id=user.id,
+        ),
+    )
+    db.commit()
 
 
 def _set_session_cookie(response: RedirectResponse, user: User) -> None:
@@ -105,13 +137,32 @@ def _set_session_cookie(response: RedirectResponse, user: User) -> None:
     )
 
 
-def _register_context(request: Request, raw_form: dict, errors: list[str]) -> dict:
+_ROLE_SETTINGS_FIELD = {
+    "seller": "registration_enabled_seller",
+    "buyer": "registration_enabled_buyer",
+    "lab": "registration_enabled_lab",
+}
+
+
+def _register_context(request: Request, raw_form: dict, errors: list[str], db: Session) -> dict:
     """Shared by GET /register and every POST that re-renders the same
     page — computes the OTP/verification state from cookies so the
     template can show the right step."""
     pending_token = request.cookies.get(REG_OTP_PENDING_COOKIE)
     verified_token = request.cookies.get(REG_EMAIL_VERIFIED_COOKIE)
     verified_email = decode_email_verified_token(verified_token) if verified_token else None
+
+    # Task #4: admin-controlled per-role registration toggle + dev-mode
+    # OTP bypass. Reading the settings row here (rather than duplicating
+    # this fetch in every route below) means every render of this page —
+    # first load or any re-render after a POST — reflects the current
+    # admin settings without extra plumbing.
+    platform_settings = platform_settings_repository.get_settings(db)
+    disabled_roles = {
+        role for role, field in _ROLE_SETTINGS_FIELD.items() if not getattr(platform_settings, field)
+    }
+    otp_required = platform_settings.require_email_otp
+    default_role = next((r for r in ("seller", "buyer", "lab") if r not in disabled_roles), "seller")
 
     return {
         "errors": errors,
@@ -120,17 +171,28 @@ def _register_context(request: Request, raw_form: dict, errors: list[str]) -> di
         "otp_sent": bool(pending_token),
         "verified_email": verified_email,
         # True only when the CURRENTLY TYPED email matches what was verified —
-        # changing the email after verifying correctly un-verifies it.
-        "email_is_verified": verified_email is not None and verified_email == (raw_form.get("email") or "").strip().lower(),
+        # changing the email after verifying correctly un-verifies it. When
+        # OTP verification isn't required (admin dev-mode toggle), treat
+        # every email as already "verified" so the form doesn't block on it.
+        "email_is_verified": not otp_required or (
+            verified_email is not None and verified_email == (raw_form.get("email") or "").strip().lower()
+        ),
+        "otp_required": otp_required,
+        "disabled_roles": disabled_roles,
+        "default_role": default_role,
         "lang": _anon_lang(request),
     }
 
 
 @router.get("/register", name="register_form")
-def register_form(request: Request, user: User | None = Depends(get_current_user_optional)):
+def register_form(
+    request: Request,
+    db: Session = Depends(get_db),
+    user: User | None = Depends(get_current_user_optional),
+):
     if user is not None:
         return RedirectResponse(url=request.url_for("home"), status_code=303)
-    context = _register_context(request, {}, [])
+    context = _register_context(request, {}, [], db)
     return templates.TemplateResponse(request, "auth/register.html", context)
 
 
@@ -150,6 +212,7 @@ def _raw_form_from(
 @router.post("/register/send-otp", name="register_send_otp")
 def register_send_otp_route(
     request: Request,
+    db: Session = Depends(get_db),
     role: str = Form(""),
     company_name: str = Form(""),
     cr_number: str = Form(""),
@@ -166,7 +229,7 @@ def register_send_otp_route(
 
     email_clean = email.strip().lower()
     if not email_clean or "@" not in email_clean:
-        context = _register_context(request, raw_form, ["Enter a valid email address before requesting a code."])
+        context = _register_context(request, raw_form, ["Enter a valid email address before requesting a code."], db)
         return templates.TemplateResponse(request, "auth/register.html", context, status_code=422)
 
     # Batch G: caps how many codes can be requested for one email address —
@@ -181,7 +244,7 @@ def register_send_otp_route(
     )
 
     token = request_otp(email_clean)
-    context = _register_context(request, raw_form, [])
+    context = _register_context(request, raw_form, [], db)
     # The cookie we're about to set on the response isn't visible via
     # request.cookies until the NEXT request — override here so this
     # same render already shows the code-entry step instead of looking
@@ -199,6 +262,7 @@ def register_send_otp_route(
 @router.post("/register/verify-otp", name="register_verify_otp")
 def register_verify_otp_route(
     request: Request,
+    db: Session = Depends(get_db),
     role: str = Form(""),
     company_name: str = Form(""),
     cr_number: str = Form(""),
@@ -232,10 +296,10 @@ def register_verify_otp_route(
     try:
         verified_token = verify_otp(pending_token, otp_code)
     except RegistrationOTPError as exc:
-        context = _register_context(request, raw_form, [str(exc)])
+        context = _register_context(request, raw_form, [str(exc)], db)
         return templates.TemplateResponse(request, "auth/register.html", context, status_code=400)
 
-    context = _register_context(request, raw_form, [])
+    context = _register_context(request, raw_form, [], db)
     # Same reasoning as register_send_otp_route above — the verified
     # cookie we're about to set isn't visible in request.cookies yet
     # on this same render, so set the state explicitly.
@@ -274,14 +338,27 @@ async def register_submit(
     )
 
     def _error(messages: list[str], status_code: int = 422):
-        context = _register_context(request, raw_form, messages)
+        context = _register_context(request, raw_form, messages, db)
         return templates.TemplateResponse(request, "auth/register.html", context, status_code=status_code)
 
-    # --- Batch B: email OTP gate — checked before anything else ---
-    verified_token = request.cookies.get(REG_EMAIL_VERIFIED_COOKIE)
-    verified_email = decode_email_verified_token(verified_token) if verified_token else None
-    if verified_email is None or verified_email != email.strip().lower():
-        return _error(["Please verify your email address before submitting."], status_code=400)
+    platform_settings = platform_settings_repository.get_settings(db)
+
+    # --- Task #4: per-role registration toggle — checked first, since a
+    # disabled role shouldn't even get to the (possibly also-bypassed) OTP
+    # check below. Re-validated here server-side, not just hidden/disabled
+    # in the template, since the template state is never trusted alone. ---
+    settings_field = _ROLE_SETTINGS_FIELD.get(role)
+    if settings_field is not None and not getattr(platform_settings, settings_field):
+        return _error(["Registration for this role is currently disabled. Contact the platform administrator."], status_code=403)
+
+    # --- Batch B: email OTP gate — checked before anything else. Task #4:
+    # skipped entirely when the admin has turned off require_email_otp
+    # (dev/staging convenience). ---
+    if platform_settings.require_email_otp:
+        verified_token = request.cookies.get(REG_EMAIL_VERIFIED_COOKIE)
+        verified_email = decode_email_verified_token(verified_token) if verified_token else None
+        if verified_email is None or verified_email != email.strip().lower():
+            return _error(["Please verify your email address before submitting."], status_code=400)
 
     # --- Batch B: phone digits-only check on the number part, combined with the country code ---
     digits_only = contact_phone_number.strip()
@@ -378,6 +455,7 @@ def login_submit(
 
     response = RedirectResponse(url=request.url_for("home"), status_code=303)
     _set_session_cookie(response, user)
+    _log_login(db, user)
     rate_limit.reset("login", _client_ip(request))
     return response
 
@@ -426,6 +504,7 @@ def login_2fa_submit(request: Request, db: Session = Depends(get_db), code: str 
 
     response = RedirectResponse(url=request.url_for("home"), status_code=303)
     _set_session_cookie(response, user)
+    _log_login(db, user)
     response.delete_cookie(PENDING_2FA_COOKIE_NAME)
     rate_limit.reset("login_2fa", _client_ip(request))
     return response

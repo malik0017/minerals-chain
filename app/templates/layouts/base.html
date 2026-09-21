@@ -1,121 +1,110 @@
 <!DOCTYPE html>
 <html lang="{{ lang | default('en') }}" dir="{{ 'rtl' if (lang | default('en')) == 'ar' else 'ltr' }}">
-  <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width,initial-scale=1,viewport-fit=cover"
-    />
-    <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <title>
-      {% block title %}Minerals Chain{% endblock %} - Minerals Chain
-    </title>
-    <link rel="icon" type="image/png" href="{{ url_for('static', path='img/favicon.png') }}" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      :root {
-        --adminuiux-content-font: "Open Sans", sans-serif;
-        --adminuiux-content-font-weight: 400;
-        --adminuiux-title-font: "Lexend", sans-serif;
-        --adminuiux-title-font-weight: 600;
-      }
-    </style>
-    <link href="{{ url_for('static', path='css/app.css') }}" rel="stylesheet" />
-    <link href="{{ url_for('static', path='css/theme-mineral.css') }}" rel="stylesheet" />
-    <link href="{{ url_for('static', path='css/batch-f-polish.css') }}" rel="stylesheet" />
 
-    {% block extra_css %}{% endblock %}
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge" />
+  <title>
+    {% block title %}Minerals Chain{% endblock %} - Minerals Chain
+  </title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', path='img/favicon.png') }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --adminuiux-content-font: "Open Sans", sans-serif;
+      --adminuiux-content-font-weight: 400;
+      --adminuiux-title-font: "Lexend", sans-serif;
+      --adminuiux-title-font-weight: 600;
+    }
+  </style>
+  <link href="{{ url_for('static', path='css/app.css') }}" rel="stylesheet" />
+  <link href="{{ url_for('static', path='css/theme-mineral.css') }}" rel="stylesheet" />
+  <link href="{{ url_for('static', path='css/batch-f-polish.css') }}" rel="stylesheet" />
+  <link href="{{ url_for('static', path='css/design_system.css') }}" rel="stylesheet" />
 
-    <!-- Hotfix: personalize.js was never wired into this layout — the
-         one every real logged-in page (including /personalize itself)
-         extends. It was only linked from base_auth.html/base_auth_
-         split.html (login/register), which have nothing to
-         personalize, so every saved theme/background/sidebar/header
-         preference was silently never applied anywhere. Loaded here,
-         non-deferred, with an immediate apply call right after — this
-         is exactly what personalize.js's own header comment says it
-         expects ("called inline from base.html's <head>, before the
-         rest of the page ... has loaded"), so preferences are applied
-         before first paint instead of flashing the default look. -->
-    <script src="{{ url_for('static', path='js/personalize.js') }}"></script>
-    <script>window.__mcApplyPersonalize && window.__mcApplyPersonalize();</script>
+  {% block extra_css %}{% endblock %}
 
-    <script defer src="{{ url_for('static', path='js/app.js') }}"></script>
-  </head>
+  <script src="{{ url_for('static', path='js/personalize.js') }}"></script>
+  <script>window.__mcApplyPersonalize && window.__mcApplyPersonalize();</script>
 
-  <body
-    class="main-bg main-bg-opac main-bg-blur adminuiux-sidebar-fill-white adminuiux-sidebar-boxed theme-blue roundedui"
-    data-theme="theme-blue"
-    data-sidebarfill="adminuiux-sidebar-fill-white"
-    data-bs-spy="scroll"
-    data-bs-target="#list-example"
-    data-bs-smooth-scroll="true"
-    tabindex="0"
-  >
-    <div class="pageloader">
-        <div class="container h-100">
-            <div
-            class="row justify-content-center align-items-center text-center h-100"
-            >
-            <div class="col-12 mb-auto pt-4"></div>
-            <div class="col-auto">
-                <img src="{{ url_for('static', path='img/logo.svg') }}" alt="" class="height-60 mb-3" />
-                <p class="h6 mb-0">Minerals Chain</p>
-                <p class="h3 mb-4">{{ portal_label | default('Portal') }}</p>
-                <div class="loader10 mb-2 mx-auto"></div>
-            </div>
-            <div class="col-12 mt-auto pb-4">
-                <p class="text-secondary">
-                Loading...
-                </p>
-            </div>
-            </div>
+  <script defer src="{{ url_for('static', path='js/app.js') }}"></script>
+  <script defer src="{{ url_for('static', path='js/language_switcher.js') }}"></script>
+
+</head>
+
+<body
+  class="main-bg main-bg-opac main-bg-blur adminuiux-sidebar-fill-white adminuiux-sidebar-boxed theme-blue roundedui"
+  data-theme="theme-blue" data-sidebarfill="adminuiux-sidebar-fill-white" data-bs-spy="scroll"
+  data-bs-target="#list-example" data-bs-smooth-scroll="true" tabindex="0">
+  <div class="pageloader">
+    <div class="container h-100">
+      <div class="row justify-content-center align-items-center text-center h-100">
+        <div class="col-12 mb-auto pt-4"></div>
+        <div class="col-auto">
+          <img src="{{ url_for('static', path='img/logo.svg') }}" alt="" class="height-60 mb-3" />
+          <p class="h6 mb-0">Minerals Chain</p>
+          <p class="h3 mb-4">{{ portal_label | default('Portal') }}</p>
+          <div class="loader10 mb-2 mx-auto"></div>
         </div>
+        <div class="col-12 mt-auto pb-4">
+          <p class="text-secondary">
+            Loading...
+          </p>
+        </div>
+      </div>
     </div>
+  </div>
 
-    {% include "partials/header.html" %}
+  {% include "partials/header.html" %}
 
-    <div class="adminuiux-wrap">
+  <div class="adminuiux-wrap">
 
-        {% include "partials/sidebar.html" %}
+    {% include "partials/sidebar.html" %}
+
+    <main class="adminuiux-content has-sidebar" onclick="contentClick()">
+      <div class="container mt-4" id="main-content">
+
+        {% block content %}{% endblock %}
+
+      </div>
+    </main>
+  </div>
+
+  {% include "partials/footer.html" %}
+
+  <!-- <div class="position-fixed bottom-0 end-0 m-3 z-index-5">
     
-        <main class="adminuiux-content has-sidebar" onclick="contentClick()">
-            <div class="container mt-4" id="main-content">
-
-                {% block content %}{% endblock %}
-            
-            </div>
-        </main>
-    </div>
-
-    {% include "partials/footer.html" %}
-
-    <div class="position-fixed bottom-0 end-0 m-3 z-index-5">
-    <!-- Hotfix: this used to point at data-bs-toggle="offcanvas"
-         data-bs-target="#theming" — an offcanvas panel that never
-         existed anywhere in the app, so the button silently did
-         nothing. Repointed at the real Personalize page instead of
-         removing it, since it's a handy shortcut. -->
-    <a
-        href="{{ url_for('personalize_page') }}"
-        class="btn btn-square btn-theme shadow"
-    >
-        <i class="bi bi-palette"></i></a
-    ><br /><button
+    <a href="{{ url_for('personalize_page') }}" class="btn btn-square btn-theme shadow"> 
+        <i class="bi bi-palette"></i></a>
+        <br />
+    <button
         class="btn btn-theme btn-square rounded-circle shadow mt-2 d-none"
         id="backtotop"
     >
         <i class="bi bi-arrow-up"></i>
     </button>
-    </div>
+    </div> -->
+  <div class="position-fixed bottom-0 end-0 m-3 z-index-5">
+    <button class="btn btn-square btn-theme shadow" type="button" data-bs-toggle="offcanvas" data-bs-target="#theming"
+      aria-controls="theming">
+      <i class="bi bi-palette"></i>
+    </button><br />
+      <button
+      class="btn btn-theme btn-square rounded-circle shadow mt-2 d-none" id="backtotop">
+      <i class="bi bi-arrow-up"></i>
+    </button>
+  </div>
 
-    {% block extra_js %}{% endblock %}
+  {% include "partials/personlize_footer_button.html" %}
 
-    <script src="{{ url_for('static', path='js/investment/investment-dashboard.js') }}"></script>
+  {% block extra_js %}{% endblock %}
+
+  <script src="{{ url_for('static', path='js/investment/investment-dashboard.js') }}"></script>
 </body>
+
 </html>

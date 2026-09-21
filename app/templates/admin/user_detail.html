@@ -13,21 +13,21 @@
 <div class="card adminuiux-card mb-3">
   <div class="card-body">
     <dl class="row mb-0">
-      <dt class="col-sm-3">Email</dt>
-      <dd class="col-sm-9">{{ target.email }}</dd>
-      <dt class="col-sm-3">Role</dt>
-      <dd class="col-sm-9"><span class="badge bg-secondary-subtle text-secondary">{{ target.role.value }}</span></dd>
-      <dt class="col-sm-3">Company</dt>
-      <dd class="col-sm-9">
+      <dt class="col-sm-6">Email</dt>
+      <dd class="col-sm-6">{{ target.email }}</dd>
+      <dt class="col-sm-6">Role</dt>
+      <dd class="col-sm-6"><span class="badge bg-secondary-subtle text-secondary">{{ target.role.value }}</span></dd>
+      <dt class="col-sm-6">Company</dt>
+      <dd class="col-sm-6">
         {% if target.company %}
         <a href="{{ url_for('admin_company_detail', company_id=target.company.id) }}">{{ target.company.company_name }}</a>
         {% else %}—{% endif %}
       </dd>
-      <dt class="col-sm-3">Registered</dt>
-      <dd class="col-sm-9">{{ target.created_at.strftime("%Y-%m-%d %H:%M UTC") }}</dd>
+      <dt class="col-sm-6">Registered</dt>
+      <dd class="col-sm-6">{{ target.created_at.strftime("%Y-%m-%d %H:%M UTC") }}</dd>
 
-      <dt class="col-sm-3">Login status</dt>
-      <dd class="col-sm-9">
+      <dt class="col-sm-6">Login status</dt>
+      <dd class="col-sm-6">
         {% if is_locked %}
         <span class="badge bg-danger-subtle text-danger">Locked ({{ locked_minutes_remaining }} min remaining)</span>
         {% elif not target.is_active %}
@@ -37,8 +37,8 @@
         {% endif %}
       </dd>
 
-      <dt class="col-sm-3">Two-factor auth</dt>
-      <dd class="col-sm-9">
+      <dt class="col-sm-6">Two-factor auth</dt>
+      <dd class="col-sm-6">
         {% if target.totp_enabled %}
         <span class="badge bg-success-subtle text-success">Enabled</span>
         {% else %}
@@ -49,54 +49,68 @@
   </div>
 </div>
 
-<div class="row g-3 mb-3">
-  {% if is_locked %}
-  <div class="col-md-4">
-    <div class="card adminuiux-card h-100">
-      <div class="card-body">
-        <h6 class="mb-2"><i class="bi bi-unlock"></i> Account locked</h6>
-        <p class="text-secondary small mb-3">Too many failed login attempts. Locked for {{ locked_minutes_remaining }} more minute(s).</p>
-        <form method="post" action="{{ url_for('admin_user_unlock', user_id=target.id) }}">
-  {{ csrf_field() }}
-          <button type="submit" class="btn btn-sm btn-theme">Unlock now</button>
-        </form>
+<div class="card adminuiux-card mb-3">
+  <div class="card-body">
+    <div class="row g-3 mb-3">
+      {% if is_locked %}
+      <div class="col-md-4">
+        <div class="card adminuiux-card h-100">
+          <div class="card-body">
+            <h6 class="mb-2"><i class="bi bi-unlock"></i> Account locked</h6>
+            <p class="text-secondary small mb-3">Too many failed login attempts. Locked for {{ locked_minutes_remaining }} more minute(s).</p>
+            <form method="post" action="{{ url_for('admin_user_unlock', user_id=target.id) }}">
+      {{ csrf_field() }}
+              <button type="submit" class="btn btn-sm btn-theme">Unlock now</button>
+            </form>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-  {% endif %}
+      {% endif %}
 
-  {% if target.totp_enabled %}
-  <div class="col-md-4">
-    <div class="card adminuiux-card h-100">
-      <div class="card-body">
-        <h6 class="mb-2"><i class="bi bi-shield-x"></i> Two-factor authentication</h6>
-        <p class="text-secondary small mb-3">If this user lost access to their authenticator app, disable 2FA so they can log in and re-enroll.</p>
-        <form method="post" action="{{ url_for('admin_user_disable_2fa', user_id=target.id) }}">
-  {{ csrf_field() }}
-          <button type="submit" class="btn btn-sm btn-outline-danger">Disable 2FA</button>
-        </form>
+      {% if target.totp_enabled %}
+      <div class="col-md-4">
+        <div class="card adminuiux-card h-100">
+          <div class="card-body">
+            <h6 class="mb-2"><i class="bi bi-shield-x"></i> Two-factor authentication</h6>
+            <p class="text-secondary small mb-3">If this user lost access to their authenticator app, disable 2FA so they can log in and re-enroll.</p>
+            <form method="post" action="{{ url_for('admin_user_disable_2fa', user_id=target.id) }}">
+      {{ csrf_field() }}
+              <button type="submit" class="btn btn-sm btn-outline-danger">Disable 2FA</button>
+            </form>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-  {% endif %}
+      {% endif %}
 
-  <div class="col-md-4">
-    <div class="card adminuiux-card h-100">
-      <div class="card-body">
-        <h6 class="mb-2"><i class="bi bi-key"></i> Reset password</h6>
-        {% if reset_success %}
-        <div class="alert alert-success py-2 mb-2">Password reset.</div>
-        {% endif %}
-        <form method="post" action="{{ url_for('admin_user_reset_password', user_id=target.id) }}">
-  {{ csrf_field() }}
-          <input class="form-control form-control-sm mb-2" type="password" name="new_password" placeholder="New password" minlength="8" required />
-          <input class="form-control form-control-sm mb-2" type="password" name="confirm_password" placeholder="Confirm new password" minlength="8" required />
-          <button type="submit" class="btn btn-sm btn-outline-theme">Set new password</button>
-        </form>
+      <div class="col-md-12">
+        <div class="card adminuiux-card h-100">
+          <div class="card-body">
+            <h6 class="mb-2"><i class="bi bi-key"></i> Reset password</h6>
+            {% if reset_success %}
+            <div class="alert alert-success py-2 mb-2">Password reset.</div>
+            {% endif %}
+            <form method="post" action="{{ url_for('admin_user_reset_password', user_id=target.id) }}">
+      {{ csrf_field() }}
+              <div class="row g-2 mb-2">
+                <div class="col-6">
+                  <label class="form-label small text-secondary mb-1" for="new_password_{{ target.id }}">New password</label>
+                  <input class="form-control form-control-sm" type="password" id="new_password_{{ target.id }}" name="new_password" placeholder="New password" minlength="8" required />
+                </div>
+                <div class="col-6">
+                  <label class="form-label small text-secondary mb-1" for="confirm_password_{{ target.id }}">Confirm new password</label>
+                  <input class="form-control form-control-sm" type="password" id="confirm_password_{{ target.id }}" name="confirm_password" placeholder="Confirm new password" minlength="8" required />
+                </div>
+              </div>
+              <button type="submit" class="btn btn-sm btn-outline-theme">Set new password</button>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-</div>
+</div>   
+
+
 
 <div class="card adminuiux-card">
   <div class="card-body">
@@ -105,10 +119,10 @@
   {{ csrf_field() }}
       <div class="mb-3">
         <label class="form-label" for="full_name">Full name</label>
-        <input class="form-control" id="full_name" name="full_name" value="{{ target.full_name }}" required />
+        <input class="form-control" id="full_name" name="full_name" value="{{ target.full_name }}" type="text" required />
       </div>
       <div class="form-check mb-3">
-        <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" {% if target.is_active %}checked{% endif %} {% if is_self %}disabled{% endif %} />
+        <input class="form-check-input " type="checkbox" id="is_active" name="is_active" value="1" {% if target.is_active %}checked{% endif %} {% if is_self %}disabled{% endif %} />
         <label class="form-check-label" for="is_active">Account active</label>
         {% if is_self %}<div class="form-text">You can't deactivate your own account.</div>{% endif %}
       </div>

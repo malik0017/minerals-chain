@@ -1,0 +1,20 @@
+{
+  "admin_id": "5b4710bd-24b9-4326-ac6a-2db1980346f0",
+  "seller_user_id": "eea3827f-17ea-4af2-8f9f-b0006f84e8a2",
+  "seller_company_id": "5548fcc7-361f-40a8-a3ff-4a6367792156",
+  "buyer_user_id": "0733cb5c-bc10-4115-a62c-db53c53c7e70",
+  "buyer_company_id": "cba378ab-8a54-40dd-b22e-f5890df7af5a",
+  "lab_user_id": "59012240-0356-4f13-bc7a-4cc470d86116",
+  "lab_company_id": "813a300f-beab-4e3c-b1e6-a994291457ee",
+  "pending_company_id": "19494229-9bc5-4c83-876a-d287becd9028",
+  "product_id": "d224bb59-43db-493b-b98d-f3ff8ec6d52f",
+  "second_product_id": "c20b0e39-789a-4b83-a08d-b08628fb19aa",
+  "third_product_id": "20d3e1bd-3f0c-49b3-bb76-506ad74dd409",
+  "pending_verification_request_id": "892733f1-1702-4fc0-9816-ae92c7f5cc8b",
+  "passport_id": "bdee140d-4ce3-4830-b00c-485f4d77ac76",
+  "pending_passport_id": "484c6b1d-ea91-4594-910a-cff11fe6dd14",
+  "rfq_id": "87d44376-5854-4e90-a4d7-54c71536bdbf",
+  "rfq2_id": "2661c66b-8ceb-4793-a1a8-2fc0e63dfdef",
+  "quotation_id": "8ecd75b7-10cb-4297-aa97-653361f71c94",
+  "order_id": "8f3fff46-7216-4db3-8438-e782db9489cb"
+}
