@@ -491,3 +491,15 @@ def import_csv(db: Session, entity: Entity, text: str, actor) -> ImportResult:
     if missing_key:
         raise MasterDataError(f"Missing key column(s): {', '.join(missing_key)}.")
     return upsert_records(db, entity, list(reader), actor)
+
+
+def entity_stats(db: Session, entity: Entity) -> dict:
+    model = entity.model
+    total = count_rows(db, entity)
+    active = total
+    if entity.has_active and hasattr(model, "is_active"):
+        active = db.execute(select(func.count()).select_from(model).where(model.is_active.is_(True))).scalar_one()
+    last = None
+    if hasattr(model, "updated_at"):
+        last = db.execute(select(func.max(model.updated_at))).scalar_one()
+    return {"total": total, "active": active, "inactive": total - active, "last": last}

@@ -1,219 +1,436 @@
-Minerals Chain
+Minerals Chain — project tree
+(images, fonts, vendor libraries, __init__.py, migrations and i18n TSV files omitted)
 
 minerals/
-│
-├── app
-│
-├── core                                 # Security, permissions, template helper, i18n
-│   ├── config.py
-│   ├── security.py
-│   ├── auth.py
-│   ├── permissions.py
-│   ├── exceptions.py
-│   ├── portal_nav.py
-│   ├── identity_guard.py
-│   ├── localization.py
-│   ├── csrf.py                          # double-submit CSRF token helpers
-│   ├── csrf_middleware.py               # CSRF check, runs on every request
-│   ├── rate_limit.py                    # in-memory sliding-window rate limiter
-│   ├── visual_polish.py                 # deterministic avatar/accent color helper
-│   └── templates.py
-│
-├── database                             # DB connection and session
-│   ├── base.py
-│   └── init_db.py
-│
-├── models                                # Database tables. (Every file = one table
-│   │                                       or one closely related pair.)
-│   ├── company.py
-│   ├── user.py
-│   ├── notification.py
-│   ├── audit_log.py
-│   ├── product.py
-│   ├── verification.py
-│   ├── certification.py
-│   ├── subscription.py
-│   ├── rfq.py
-│   ├── quotation.py
-│   ├── order.py
-│   └── platform_settings.py              # Batch H — single-row admin toggles table
-│
-├── schemas                              # Pydantic validation. (Used for form/request input.)
-│   ├── auth.py
-│   ├── profile.py
-│   ├── two_factor.py
-│   ├── product.py
-│   ├── verification.py
-│   ├── certification.py
-│   ├── rfq.py
-│   └── quotation.py
-│
-├── repositories                        # Only database queries. (No business logic.)
-│   ├── company_repository.py
-│   ├── user_repository.py
-│   ├── notification_repository.py
-│   ├── audit_log_repository.py
-│   ├── product_repository.py
-│   ├── verification_repository.py
-│   ├── certification_repository.py
-│   ├── subscription_repository.py
-│   ├── rfq_repository.py
-│   ├── quotation_repository.py
-│   ├── order_repository.py
-│   └── platform_settings_repository.py   # Batch H
-│
-├── services                            # Business logic.
-│   ├── auth_service.py
-│   ├── admin_service.py
-│   ├── admin_user_service.py
-│   ├── two_factor_service.py
-│   ├── profile_service.py
-│   ├── avatar_service.py
-│   ├── email_service.py
-│   ├── registration_otp_service.py
-│   ├── document_upload_service.py
-│   ├── product_service.py
-│   ├── verification_service.py
-│   ├── certification_service.py
-│   ├── subscription_service.py
-│   ├── rfq_service.py
-│   ├── quotation_service.py
-│   └── order_service.py
-│
-├── modules                             # Actual application screens, one folder per
-│   │                                     portal (route + template pairs live together
-│   │                                     conceptually; templates themselves sit under
-│   │                                     app/templates/<same name>).
-│   │
-│   ├── auth
-│   │   └── routes.py                     # register, login, 2FA, logout, home
-│   │
-│   ├── shared
-│   │   ├── routes.py                     # /notifications, /language/set
-│   │   └── profile
-│   │       └── routes.py                 # /my-profile — any logged-in user
-│   │
-│   ├── public
-│   │   └── routes.py                     # /passports/verify — no login required
-│   │
-│   ├── seller
-│   │   ├── dashboard/routes.py
-│   │   ├── listings/routes.py
-│   │   ├── rfq_inbox/routes.py
-│   │   ├── quotations/routes.py
-│   │   └── orders/routes.py
-│   │
-│   ├── buyer
-│   │   ├── dashboard/routes.py
-│   │   ├── browse/routes.py
-│   │   ├── rfq/routes.py
-│   │   └── orders/routes.py
-│   │
-│   ├── lab
-│   │   ├── dashboard/routes.py
-│   │   └── verification/routes.py
-│   │
-│   └── admin
-│       ├── approvals/routes.py
-│       ├── companies/routes.py
-│       ├── users/routes.py
-│       ├── passports/routes.py
-│       ├── audit_log/routes.py           # Batch H — /admin/audit-log viewer
-│       └── settings/routes.py            # Batch H — /admin/settings (registration + OTP toggles)
-│
-├── static
-│   ├── css
-│   ├── js
-│   ├── img
-│   ├── fonts
-│   └── uploads                         # User-uploaded content (avatars, company docs)
-│       ├── avatars
-│       └── company_documents
-│
-├── templates                          # HTML pages (Jinja2)
-│   │
-│   ├── layouts
-│   │   ├── base.html                     # the real app shell every portal page extends
-│   │   ├── base_auth.html                # login / account-status / public pages
-│   │   └── base_auth_split.html          # register
-│   │
-│   ├── partials                        # Reusable components, included into base.html
-│   │   ├── header.html
-│   │   ├── sidebar.html
-│   │   └── footer.html
-│   │   # personalize_theme_color.html was the vendor demo page leaking
-│   │   # into every page (hotfix, pre-Batch-H) — delete it if it's still
-│   │   # sitting in your copy, nothing references it any more.
-│   │
-│   ├── auth
-│   │   ├── login.html
-│   │   ├── login_2fa.html
-│   │   ├── register.html
-│   │   └── account_status.html
-│   │
-│   ├── seller
-│   │   ├── dashboard.html
-│   │   ├── listings_index.html, listing_form.html, listing_detail.html
-│   │   ├── rfq_inbox_index.html, rfq_inbox_detail.html
-│   │   ├── quotations_index.html
-│   │   └── orders_index.html, order_detail.html
-│   │
-│   ├── buyer
-│   │   ├── dashboard.html
-│   │   ├── browse_index.html, browse_detail.html
-│   │   ├── rfq_index.html, rfq_form.html, rfq_detail.html
-│   │   └── orders_index.html, order_detail.html
-│   │
-│   ├── lab
-│   │   ├── dashboard.html
-│   │   └── verification_index.html, verification_detail.html
-│   │
-│   ├── admin
-│   │   ├── approvals_list.html, approvals_review.html
-│   │   ├── companies_list.html, company_detail.html
-│   │   ├── users_list.html, user_detail.html
-│   │   ├── passports_list.html, passport_review.html
-│   │   ├── audit_log_list.html           # Batch H
-│   │   └── settings.html                 # Batch H
-│   │
-│   ├── public
-│   │   └── passport_lookup.html
-│   │
-│   ├── shared
-│   │   ├── notifications.html
-│   │   ├── profile.html
-│   │   └── two_factor_setup.html
-│   │
-│   ├── errors
-│   │   ├── 403.html
-│   │   ├── csrf_failed.html              # 400 page, bad/missing CSRF token
-│   │   └── rate_limited.html             # 429 page, too many attempts
-│   │
-│   └── dashboard.html                  # design-reference page, not routed for real use
-│
-├── seeds                               # Demo/admin data creation
-│   └── create_admin.py
-│
-├── scripts                             # NEW (H-fix) — run after every batch/update
-│   ├── seed_test_data.py                 # idempotent full-lifecycle test data
-│   ├── check_routes.py                   # in-process "does every route still work" check
-│   └── seed_ids.json                     # written by seed_test_data.py, read by both
-│                                          # check_routes.py and tests_selenium/ — not
-│                                          # hand-edited, safe to delete and regenerate
-│
-├── tests_selenium                      # NEW (H-fix) — real-browser tests for the
-│   │                                      mutating (POST) flows check_routes.py skips
-│   ├── conftest.py                       # driver/login fixtures, reads seed_ids.json
-│   ├── test_auth.py
-│   ├── test_admin_approvals.py
-│   └── test_rfq_quotation_flow.py
-│
-├── alembic
-│   ├── env.py
-│   └── versions                          # one file per schema change, in order
-│
-├── main.py
-├── alembic.ini
-├── requirements.txt
-├── .env.example
-└── .env
+├── alembic/                                                # Database migrations (schema history 0001 → 0025)
+│   ├── versions/                                           # 0001 … 0025 — one file per schema change; never edit one that already ran
+│   ├── env.py                                              # Connects Alembic to DATABASE_URL and the models
+│   └── script.py.mako
+├── app/                                                    # The application
+│   ├── core/                                               # Framework plumbing: settings, security, permissions, i18n, middleware
+│   │   ├── auth.py                                         # Session cookie → current user
+│   │   ├── client_ip.py                                    # Real visitor IP behind nginx
+│   │   ├── config.py                                       # All settings from .env
+│   │   ├── csrf.py                                         # CSRF token helpers
+│   │   ├── csrf_middleware.py                              # CSRF check on every POST
+│   │   ├── donut_chart.py                                  # Donut data helper
+│   │   ├── exceptions.py                                   # App exceptions → redirects/pages
+│   │   ├── forms.py                                        # form_data dependency
+│   │   ├── identity_guard.py                               # Buyer/seller identity reveal rule
+│   │   ├── listing.py                                      # Pagination + query-string helpers
+│   │   ├── localization.py                                 # EN/AR labels for navigation keys
+│   │   ├── permissions.py                                  # Route guards per portal and admin area
+│   │   ├── portal_nav.py                                   # Sidebar menu per portal
+│   │   ├── production.py                                   # Start-up guard + logging
+│   │   ├── rate_limit.py                                   # Login/OTP/API throttling (Redis or memory)
+│   │   ├── security.py                                     # Argon2 passwords, session tokens, OTP helpers
+│   │   ├── security_headers.py                             # CSP, HSTS and other security headers
+│   │   ├── simple_markup.py                                # **bold**/[link](url) for content pages
+│   │   ├── system_settings.py                              # Admin-editable typed settings
+│   │   ├── templates.py                                    # Jinja2 environment, globals and filters
+│   │   ├── translation.py                                  # Translates rendered pages to Arabic
+│   │   └── visual_polish.py                                # Avatar initials/colours
+│   ├── database/                                           # Database engine, sessions, base model
+│   │   └── base.py                                         # Engine, SessionLocal, Base, TimestampMixin
+│   ├── models/                                             # Database tables (one file = one table or a close group)
+│   │   ├── api_token.py
+│   │   ├── audit_log.py
+│   │   ├── backup.py
+│   │   ├── batch.py
+│   │   ├── certification.py
+│   │   ├── company.py
+│   │   ├── company_document.py
+│   │   ├── content_page.py
+│   │   ├── credential_check.py
+│   │   ├── data_request.py
+│   │   ├── dispute.py
+│   │   ├── document_sequence.py
+│   │   ├── erp_export.py
+│   │   ├── inventory.py
+│   │   ├── lab_partner.py
+│   │   ├── md_base.py
+│   │   ├── md_classification.py
+│   │   ├── md_commercial.py
+│   │   ├── md_locations.py
+│   │   ├── md_product.py
+│   │   ├── md_quality.py
+│   │   ├── md_units.py
+│   │   ├── monitoring.py
+│   │   ├── notification.py
+│   │   ├── order.py
+│   │   ├── platform_settings.py
+│   │   ├── product.py
+│   │   ├── product_spec.py
+│   │   ├── quotation.py
+│   │   ├── rfq.py
+│   │   ├── shipment.py
+│   │   ├── subscription.py
+│   │   ├── system_setting.py
+│   │   ├── ui_translation.py
+│   │   ├── user.py
+│   │   └── verification.py
+│   ├── modules/                                            # Routes (URLs), one folder per portal/feature
+│   │   ├── admin/                                          # Admin portal — /admin/...
+│   │   │   ├── approvals/
+│   │   │   │   └── routes.py
+│   │   │   ├── audit_log/
+│   │   │   │   └── routes.py
+│   │   │   ├── backups/
+│   │   │   │   └── routes.py
+│   │   │   ├── batches/
+│   │   │   │   └── routes.py
+│   │   │   ├── companies/
+│   │   │   │   └── routes.py
+│   │   │   ├── control_center/
+│   │   │   │   └── routes.py
+│   │   │   ├── credentials/
+│   │   │   │   └── routes.py
+│   │   │   ├── data_requests/
+│   │   │   │   └── routes.py
+│   │   │   ├── disputes/
+│   │   │   │   └── routes.py
+│   │   │   ├── documents/
+│   │   │   │   └── routes.py
+│   │   │   ├── erp_export/
+│   │   │   │   └── routes.py
+│   │   │   ├── inventory/
+│   │   │   │   └── routes.py
+│   │   │   ├── labs/
+│   │   │   │   └── routes.py
+│   │   │   ├── marketplace/
+│   │   │   │   └── routes.py
+│   │   │   ├── master_data/
+│   │   │   │   └── routes.py
+│   │   │   ├── monitoring/
+│   │   │   │   └── routes.py
+│   │   │   ├── orders/
+│   │   │   │   └── routes.py
+│   │   │   ├── passports/
+│   │   │   │   └── routes.py
+│   │   │   ├── reports/
+│   │   │   │   └── routes.py
+│   │   │   ├── settings/
+│   │   │   │   └── routes.py
+│   │   │   ├── shipments/
+│   │   │   │   └── routes.py
+│   │   │   ├── subscriptions/
+│   │   │   │   └── routes.py
+│   │   │   └── users/
+│   │   │       └── routes.py
+│   │   ├── api/                                            # REST API /api/v1 (bearer tokens) for mobile & integrations
+│   │   │   └── v1.py                                       # All API endpoints
+│   │   ├── auth/                                           # Login, 2FA, registration, OTP, logout
+│   │   │   └── routes.py
+│   │   ├── buyer/                                          # Buyer portal — /buyer/...
+│   │   │   ├── browse/
+│   │   │   │   └── routes.py
+│   │   │   ├── dashboard/
+│   │   │   │   └── routes.py
+│   │   │   ├── orders/
+│   │   │   │   └── routes.py
+│   │   │   ├── rfq/
+│   │   │   │   └── routes.py
+│   │   │   └── shipments/
+│   │   │       └── routes.py
+│   │   ├── lab/                                            # Lab portal — /lab/...
+│   │   │   ├── dashboard/
+│   │   │   │   └── routes.py
+│   │   │   └── verification/
+│   │   │       └── routes.py
+│   │   ├── public/                                         # Public pages: passport check, PWA files, security.txt
+│   │   │   ├── pwa_routes.py
+│   │   │   ├── routes.py
+│   │   │   └── security_routes.py
+│   │   ├── seller/                                         # Seller portal — /seller/...
+│   │   │   ├── dashboard/
+│   │   │   │   └── routes.py
+│   │   │   ├── erp_export/
+│   │   │   │   └── routes.py
+│   │   │   ├── inventory/
+│   │   │   │   └── routes.py
+│   │   │   ├── listings/
+│   │   │   │   └── routes.py
+│   │   │   ├── orders/
+│   │   │   │   └── routes.py
+│   │   │   ├── quotations/
+│   │   │   │   └── routes.py
+│   │   │   ├── rfq_inbox/
+│   │   │   │   └── routes.py
+│   │   │   └── shipments/
+│   │   │       └── routes.py
+│   │   └── shared/                                         # Pages every signed-in user can use
+│   │       ├── personalize/
+│   │       │   └── routes.py
+│   │       ├── profile/
+│   │       │   └── routes.py
+│   │       ├── api_token_routes.py
+│   │       ├── catalog_routes.py
+│   │       ├── certificate_routes.py
+│   │       ├── dispute_routes.py
+│   │       ├── document_library_routes.py
+│   │       ├── erp_export_views.py                         # Shared ERP export page logic
+│   │       ├── order_document_routes.py
+│   │       ├── privacy_routes.py
+│   │       ├── routes.py
+│   │       ├── shipment_views.py                           # Shared shipments page logic
+│   │       └── subscription_routes.py
+│   ├── repositories/                                       # Reusable database queries (older features)
+│   │   ├── audit_log_repository.py
+│   │   ├── certification_repository.py
+│   │   ├── company_repository.py
+│   │   ├── notification_repository.py
+│   │   ├── order_repository.py
+│   │   ├── platform_settings_repository.py
+│   │   ├── product_repository.py
+│   │   ├── quotation_repository.py
+│   │   ├── rfq_repository.py
+│   │   ├── subscription_repository.py
+│   │   ├── user_repository.py
+│   │   └── verification_repository.py
+│   ├── schemas/                                            # Pydantic input validation
+│   │   ├── auth.py
+│   │   ├── certification.py
+│   │   ├── product.py
+│   │   ├── profile.py
+│   │   ├── quotation.py
+│   │   ├── rfq.py
+│   │   ├── two_factor.py
+│   │   └── verification.py
+│   ├── services/                                           # Business logic — every rule lives here
+│   │   ├── master_data/                                    # Generic ERP master-data engine + Arabic catalogue (i18n/*.tsv)
+│   │   │   ├── batch_service.py
+│   │   │   ├── registry.py
+│   │   │   ├── service.py
+│   │   │   ├── starter_content.py
+│   │   │   └── starter_data.py
+│   │   ├── admin_service.py
+│   │   ├── admin_user_service.py
+│   │   ├── analytics_service.py
+│   │   ├── api_token_service.py
+│   │   ├── auth_service.py
+│   │   ├── avatar_service.py
+│   │   ├── backup_service.py
+│   │   ├── certification_service.py
+│   │   ├── company_document_service.py
+│   │   ├── control_center_service.py
+│   │   ├── credential_check_service.py
+│   │   ├── data_request_service.py
+│   │   ├── dispute_service.py
+│   │   ├── document_upload_service.py
+│   │   ├── email_service.py
+│   │   ├── erp_export_service.py
+│   │   ├── file_crypto.py
+│   │   ├── insights_service.py
+│   │   ├── inventory_service.py
+│   │   ├── job_service.py
+│   │   ├── lab_partner_service.py
+│   │   ├── marketplace_admin_service.py
+│   │   ├── monitoring_service.py
+│   │   ├── notification_service.py
+│   │   ├── order_document_service.py
+│   │   ├── order_service.py
+│   │   ├── portal_dashboard_service.py
+│   │   ├── private_files.py
+│   │   ├── product_service.py
+│   │   ├── profile_service.py
+│   │   ├── quotation_service.py
+│   │   ├── reference_service.py
+│   │   ├── registration_otp_service.py
+│   │   ├── rfq_service.py
+│   │   ├── security_posture.py
+│   │   ├── settlement_service.py
+│   │   ├── shipment_service.py
+│   │   ├── spec_service.py
+│   │   ├── subscription_limits.py
+│   │   ├── subscription_service.py
+│   │   ├── two_factor_service.py
+│   │   └── verification_service.py
+│   ├── static/                                             # Browser files (served by nginx in production)
+│   │   ├── css/                                            # Styles
+│   │   │   ├── app.css
+│   │   │   ├── batch-f-polish.css
+│   │   │   ├── design_system.css
+│   │   │   ├── mc-components.css
+│   │   │   └── theme-mineral.css
+│   │   └── js/                                             # Scripts (charts, tables, PWA, personalise)
+│   │       ├── app.js
+│   │       ├── lang_sync.js
+│   │       ├── language_switcher.js
+│   │       ├── mc_charts.js
+│   │       ├── mc_table.js
+│   │       ├── personalize.js
+│   │       ├── pwa.js
+│   │       └── spec_prefill.js
+│   ├── templates/                                          # Jinja2 HTML pages
+│   │   ├── admin/
+│   │   │   ├── master_data/
+│   │   │   │   ├── _flash.html
+│   │   │   │   ├── form.html
+│   │   │   │   ├── index.html
+│   │   │   │   └── list.html
+│   │   │   ├── api_tokens.html
+│   │   │   ├── approvals_list.html
+│   │   │   ├── approvals_review.html
+│   │   │   ├── audit_log_list.html
+│   │   │   ├── backups.html
+│   │   │   ├── batch_qc.html
+│   │   │   ├── companies_list.html
+│   │   │   ├── company_detail.html
+│   │   │   ├── company_new.html
+│   │   │   ├── control_center.html
+│   │   │   ├── credential_checks.html
+│   │   │   ├── data_request_detail.html
+│   │   │   ├── data_requests.html
+│   │   │   ├── dispute_detail.html
+│   │   │   ├── disputes.html
+│   │   │   ├── documents.html
+│   │   │   ├── finance.html
+│   │   │   ├── insights.html
+│   │   │   ├── inventory.html
+│   │   │   ├── labs.html
+│   │   │   ├── monitoring.html
+│   │   │   ├── order_detail.html
+│   │   │   ├── orders_list.html
+│   │   │   ├── passport_review.html
+│   │   │   ├── passports_list.html
+│   │   │   ├── products.html
+│   │   │   ├── reports.html
+│   │   │   ├── rfq_detail.html
+│   │   │   ├── rfqs.html
+│   │   │   ├── settings.html
+│   │   │   ├── subscriptions.html
+│   │   │   ├── system_settings.html
+│   │   │   ├── user_detail.html
+│   │   │   ├── user_new.html
+│   │   │   └── users_list.html
+│   │   ├── auth/
+│   │   │   ├── account_status.html
+│   │   │   ├── login.html
+│   │   │   ├── login_2fa.html
+│   │   │   └── register.html
+│   │   ├── buyer/
+│   │   │   ├── browse_detail.html
+│   │   │   ├── browse_index.html
+│   │   │   ├── dashboard.html
+│   │   │   ├── order_detail.html
+│   │   │   ├── orders_index.html
+│   │   │   ├── rfq_detail.html
+│   │   │   ├── rfq_form.html
+│   │   │   └── rfq_index.html
+│   │   ├── documents/
+│   │   │   └── commercial_invoice.html
+│   │   ├── errors/
+│   │   │   ├── 403.html
+│   │   │   ├── 404.html
+│   │   │   ├── 500.html
+│   │   │   ├── csrf_failed.html
+│   │   │   └── rate_limited.html
+│   │   ├── lab/
+│   │   │   ├── certificates.html
+│   │   │   ├── dashboard.html
+│   │   │   ├── verification_detail.html
+│   │   │   └── verification_index.html
+│   │   ├── layouts/                                        # Page shells
+│   │   │   ├── base.html
+│   │   │   ├── base_auth.html
+│   │   │   ├── base_auth_split.html
+│   │   │   └── base_public.html
+│   │   ├── partials/                                       # Reusable blocks and macros
+│   │   │   ├── charts.html
+│   │   │   ├── credential_checks.html
+│   │   │   ├── dashboard_panels.html
+│   │   │   ├── dispute_macros.html
+│   │   │   ├── doc_health.html
+│   │   │   ├── footer.html
+│   │   │   ├── header.html
+│   │   │   ├── list_kit.html
+│   │   │   ├── order_document_macros.html
+│   │   │   ├── order_progress.html
+│   │   │   ├── pager.html
+│   │   │   ├── personlize_footer_button.html
+│   │   │   ├── security_checklist.html
+│   │   │   ├── shipment_macros.html
+│   │   │   ├── sidebar.html
+│   │   │   └── spec_table_macros.html
+│   │   ├── public/
+│   │   │   ├── content_page.html
+│   │   │   ├── offline.html
+│   │   │   └── passport_lookup.html
+│   │   ├── seller/
+│   │   │   ├── dashboard.html
+│   │   │   ├── inventory.html
+│   │   │   ├── listing_detail.html
+│   │   │   ├── listing_form.html
+│   │   │   ├── listings_index.html
+│   │   │   ├── order_detail.html
+│   │   │   ├── orders_index.html
+│   │   │   ├── quotations_index.html
+│   │   │   ├── rfq_inbox_detail.html
+│   │   │   └── rfq_inbox_index.html
+│   │   └── shared/
+│   │       ├── api_tokens.html
+│   │       ├── certificate_document.html
+│   │       ├── dispute_detail.html
+│   │       ├── dispute_new.html
+│   │       ├── disputes_index.html
+│   │       ├── documents.html
+│   │       ├── erp_export.html
+│   │       ├── notifications.html
+│   │       ├── personalize.html
+│   │       ├── privacy.html
+│   │       ├── profile.html
+│   │       ├── shipments.html
+│   │       ├── subscription.html
+│   │       └── two_factor_setup.html
+│   └── main.py                                             # Entry point: app, middleware, routers, error pages, /healthz
+├── deploy/                                                 # Live-server kit (Ubuntu/AWS EC2): gunicorn, systemd, nginx, setup/deploy scripts
+│   ├── nginx/                                              # HTTPS reverse proxy config
+│   │   ├── minerals-proxy.conf
+│   │   └── minerals.conf
+│   ├── systemd/                                            # Services: web app + 15-minute jobs timer
+│   │   ├── minerals-jobs.service
+│   │   ├── minerals-jobs.timer
+│   │   └── minerals.service
+│   ├── deploy.sh                                           # Every update: backup → pull → migrate → reload
+│   ├── first_deploy.sh                                     # Once: venv, migrations, nginx+TLS, services
+│   ├── gunicorn.conf.py                                    # Web process manager settings
+│   └── server_setup.sh                                     # Once: packages, DB, Redis, firewall
+├── docs/                                                   # Guides: project structure, deployment, pen-test plan
+│   ├── DEPLOYMENT.md
+│   ├── PROJECT_STRUCTURE.md
+│   └── SECURITY_PENTEST_PLAN.md
+├── scripts/                                                # Command-line tools
+│   ├── backup.py                                           # Manual backup (database + storage)
+│   ├── check_routes.py                                     # Opens every page for every role — run before release
+│   ├── create_admin.py                                     # Create the first super admin (production)
+│   ├── demo_data_ops.py                                    # Demo data for inventory, shipments, documents, registry checks
+│   ├── encrypt_storage.py                                  # Encrypt files stored before FILE_ENCRYPTION_KEY existed
+│   ├── generate_demo_data.py                               # DEV/UAT ONLY — 12 months of demo data
+│   ├── harden_env.py                                       # Write secure .env values per profile (local/staging/production)
+│   ├── load_master_data.py                                 # Load/refresh reference lists (safe to re-run)
+│   ├── restore_backup.py                                   # Restore a backup
+│   ├── run_scheduled_jobs.py                               # Scheduled jobs (--due / --job / --list)
+│   ├── security_selftest.py                                # 24 automated security checks — run before release
+│   └── seed_test_data.py                                   # DEV ONLY — test accounts, password admin123
+├── tests/                                                  # Automated tests — run: pytest tests/ -q
+│   ├── conftest.py                                         # Logged-in test clients with CSRF
+│   ├── test_brd_completion.py
+│   ├── test_erp_batches.py
+│   └── test_ops_release.py
+├── .env.example                                            # Template for a developer .env (no secrets)
+├── .env.production.example                                 # Template for the live-server .env
+├── .gitattributes                                          # Keeps deploy/*.sh with Linux line endings
+├── .gitignore                                              # Files Git must never commit (.env, venv, storage, caches)
+├── alembic.ini                                             # Alembic settings
+├── PROJECT_STATUS.md                                       # What is built, pending and decided
+├── README.md                                               # Quick start
+├── requirements-dev.txt                                    # requirements.txt + pytest (development only)
+├── requirements.txt                                        # Python packages for the app (production)
+└── temp.txt                                                # This file
+
+Not in Git (created locally, never copied to the server):
+  venv/        Python virtual environment
+  .env         Secrets and settings for this machine
+  storage/     Private uploaded files (encrypted)
+  backups/     Local backups (when you run one)
+  reports/     security_selftest output

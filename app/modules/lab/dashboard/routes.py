@@ -60,4 +60,7 @@ def lab_dashboard(
         context["stats_are_platform_wide"] = True
         context["verification_donut"] = None
 
+    if user.company is not None:
+        from app.services import portal_dashboard_service
+        context["labx"] = portal_dashboard_service.lab(db, user.company)
     return templates.TemplateResponse(request, "lab/dashboard.html", context)

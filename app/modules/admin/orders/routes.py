@@ -30,10 +30,7 @@ def _to(request: Request, name: str, msg=None, error=None, **params):
 @router.get("/admin/orders", name="admin_orders_list")
 def orders_list(request: Request, db: Session = Depends(get_db),
                 admin: User = Depends(require_admin("orders")), status: str | None = None):
-    query = select(Order).order_by(Order.created_at.desc())
-    if status in {s.value for s in OrderStatus}:
-        query = query.where(Order.status == OrderStatus(status))
-    orders = db.execute(query.limit(500)).scalars().all()
+    orders = db.execute(select(Order).order_by(Order.created_at.desc()).limit(1000)).scalars().all()
     context = build_portal_context(admin, UserRole.ADMIN, active_path="/admin/orders")
     context.update({"orders": orders, "statuses": list(OrderStatus), "status_filter": status or ""})
     return templates.TemplateResponse(request, "admin/orders_list.html", context)
@@ -55,6 +52,9 @@ def order_detail(request: Request, order_id: uuid.UUID, db: Session = Depends(ge
     from app.services import order_document_service as ods
     context.update({"documents": ods.visible_documents(order, "admin"), "credentials": ods.linked_credentials(db, order),
                     "doc_types": {**ods.DOC_TYPES, **ods.GENERATED_TYPES}})
+    from app.models.shipment import SHIPMENT_STATUSES
+    from app.services import shipment_service
+    context.update({"shipments": shipment_service.for_order(db, order), "shipment_statuses": SHIPMENT_STATUSES})
     return templates.TemplateResponse(request, "admin/order_detail.html", context)
 
 

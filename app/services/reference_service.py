@@ -18,7 +18,9 @@ _PREFIX_SETTING = {
     "data_request": "prefix_data_request",  
     "subscription": "prefix_subscription",  
     "document": "prefix_document",          
-    "coa": "prefix_coa",                    
+    "coa": "prefix_coa",
+    "shipment": "prefix_shipment",
+    "stock": "prefix_stock",                    
 }
 
 

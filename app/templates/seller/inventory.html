@@ -1,0 +1,123 @@
+{% extends "layouts/base.html" %}
+{% import "partials/charts.html" as ch with context %}
+{% block title %}Inventory{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <h4 class="mb-0"><i class="bi bi-boxes"></i> Inventory</h4>
+  <div class="d-flex flex-wrap gap-2">
+    <button class="btn btn-sm btn-theme" data-bs-toggle="modal" data-bs-target="#mvReceipt"><i class="bi bi-box-arrow-in-down"></i> Receipt</button>
+    <button class="btn btn-sm btn-outline-theme" data-bs-toggle="modal" data-bs-target="#mvTransfer"><i class="bi bi-arrow-left-right"></i> Transfer</button>
+    <button class="btn btn-sm btn-outline-theme" data-bs-toggle="modal" data-bs-target="#mvAdjust"><i class="bi bi-sliders2"></i> Adjust</button>
+    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#mvWarehouse"><i class="bi bi-building-add"></i> Warehouse</button>
+    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('seller_inventory_csv') }}"><i class="bi bi-filetype-csv"></i></a>
+  </div>
+</div>
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+
+<div class="row g-3 mb-3">
+{% set kpis = [
+  ('bi-boxes', 'On hand (MT)', '{:,.1f}'.format(s.on_hand), 'primary'),
+  ('bi-lock', 'Reserved for orders', '{:,.1f}'.format(s.reserved), 'warning'),
+  ('bi-cash-stack', 'Stock value (SAR)', '{:,.0f}'.format(s.value), 'success'),
+  ('bi-exclamation-triangle', 'Listings out of stock', s.low | length, 'danger' if s.low else 'secondary'),
+] %}
+{% for icon, label, value, color in kpis %}
+  <div class="col-6 col-lg-3"><div class="card adminuiux-card h-100"><div class="card-body d-flex justify-content-between align-items-center">
+    <div><div class="small text-secondary">{{ label }}</div><div class="fs-4 fw-bold">{{ value }}</div></div>
+    <span class="mc-kpi-icon bg-{{ color }}-subtle text-{{ color }}"><i class="bi {{ icon }}"></i></span>
+  </div></div></div>
+{% endfor %}
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-lg-5"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6 class="mb-2"><i class="bi bi-bar-chart"></i> Stock by listing (MT)</h6>
+    {{ ch.hbars('invProducts', s.chart_products, 260) }}
+  </div></div></div>
+  <div class="col-lg-7"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6 class="mb-2"><i class="bi bi-graph-up"></i> In vs out · 12 weeks (MT)</h6>
+    {{ ch.lines('invFlow', s.weeks, [{"name": "In", "data": s.ins}, {"name": "Out", "data": s.outs}], 260, area=True) }}
+  </div></div></div>
+</div>
+
+<div class="card adminuiux-card mb-3"><div class="card-body pb-0"><h6><i class="bi bi-grid-3x3"></i> Stock by listing</h6></div>
+<div class="table-responsive"><table class="table align-middle mb-0">
+<thead><tr><th>Listing</th><th class="text-end">On hand</th><th class="text-end">Reserved</th><th class="text-end">Available</th><th class="text-end">Value (SAR)</th></tr></thead>
+<tbody>{% for e in s.products %}<tr>
+  <td>{{ e.product.mineral_type }}{% if e.product.grade %} · {{ e.product.grade }}{% endif %}</td>
+  <td class="text-end">{{ '{:,.3f}'.format(e.on_hand) }}</td>
+  <td class="text-end text-warning">{{ '{:,.3f}'.format(e.reserved) }}</td>
+  <td class="text-end fw-semibold {{ 'text-danger' if e.available <= 0 else 'text-success' }}">{{ '{:,.3f}'.format(e.available) }}</td>
+  <td class="text-end">{{ '{:,.0f}'.format(e.value) }}</td>
+</tr>{% else %}<tr><td colspan="5" class="text-secondary">No stock recorded yet — start with a receipt.</td></tr>{% endfor %}</tbody></table></div></div>
+
+<div class="card adminuiux-card"><div class="card-body pb-2">
+  <h6><i class="bi bi-journal-text"></i> Stock ledger</h6>
+  <form method="get" class="row g-2">
+    <div class="col-md-3"><select name="product" class="form-select form-select-sm"><option value="">All listings</option>{% for p in products %}<option value="{{ p.id }}" {% if f.product == p.id|string %}selected{% endif %}>{{ p.mineral_type }}{% if p.grade %} · {{ p.grade }}{% endif %}</option>{% endfor %}</select></div>
+    <div class="col-md-2"><select name="warehouse" class="form-select form-select-sm"><option value="">All warehouses</option>{% for w in warehouses %}<option value="{{ w.id }}" {% if f.warehouse == w.id|string %}selected{% endif %}>{{ w.name_en }}</option>{% endfor %}</select></div>
+    <div class="col-md-2"><select name="type" class="form-select form-select-sm"><option value="">All types</option>{% for k, v in types.items() %}<option value="{{ k }}" {% if f.type == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+    <div class="col-md-4"><div class="input-group input-group-sm"><input type="date" name="start" value="{{ f.start }}" class="form-control"><span class="input-group-text">→</span><input type="date" name="end" value="{{ f.end }}" class="form-control"></div></div>
+    <div class="col-md-1"><button class="btn btn-sm btn-theme w-100"><i class="bi bi-funnel"></i></button></div>
+  </form>
+</div>
+<div class="table-responsive"><table class="table table-sm align-middle mb-0">
+<thead><tr><th>Ref</th><th>Date</th><th>Type</th><th>Listing</th><th>Warehouse</th><th class="text-end">Qty</th><th>Order / note</th><th>By</th></tr></thead>
+<tbody>{% for m in moves %}{% set c = {'receipt':'success','sale_issue':'primary','adjustment':'warning','transfer_out':'secondary','transfer_in':'secondary','return':'info'}.get(m.movement_type,'secondary') %}<tr>
+  <td class="small fw-semibold">{{ m.reference }}</td><td class="small">{{ m.movement_date }}</td>
+  <td><span class="badge bg-{{ c }}-subtle text-{{ c }}">{{ m.type_label }}</span></td>
+  <td class="small">{{ m.product.mineral_type if m.product else '—' }}</td>
+  <td class="small">{{ m.warehouse.name_en if m.warehouse else '—' }}</td>
+  <td class="text-end fw-semibold {{ 'text-success' if m.quantity > 0 else 'text-danger' }}">{{ '{:+,.3f}'.format(m.quantity) }} {{ m.unit }}</td>
+  <td class="small">{% if m.order %}<a href="{{ url_for('seller_order_detail', order_id=m.order.id) }}">{{ m.order.order_reference }}</a>{% endif %} {{ m.note or '' }}</td>
+  <td class="small text-secondary">{{ m.created_by.full_name if m.created_by else 'system' }}</td>
+</tr>{% else %}<tr><td colspan="8" class="text-secondary">No movements.</td></tr>{% endfor %}</tbody></table></div></div>
+{% include "partials/pager.html" %}
+
+{% macro sel(name, items, label, required=True) %}
+<div class="mb-2"><label class="form-label small mb-0">{{ label }}</label><select name="{{ name }}" class="form-select" {% if required %}required{% endif %}>
+  <option value="">Choose…</option>{% for i in items %}<option value="{{ i.id }}">{{ i.label }}</option>{% endfor %}</select></div>
+{% endmacro %}
+{% set plist = [] %}{% for p in products %}{% set _ = plist.append({"id": p.id, "label": p.mineral_type ~ (' · ' ~ p.grade if p.grade else '')}) %}{% endfor %}
+{% set wlist = [] %}{% for w in warehouses %}{% set _ = wlist.append({"id": w.id, "label": w.name_en ~ ('' if w.company_id else ' (shared)')}) %}{% endfor %}
+{% set blist = [] %}{% for b in batches %}{% set _ = blist.append({"id": b.id, "label": b.batch_number ~ ' · ' ~ b.qc_status.value}) %}{% endfor %}
+
+{% macro modal(id, title, action, icon) %}
+<div class="modal fade" id="{{ id }}" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+<form method="post" action="{{ action }}">{{ csrf_field() }}
+  <div class="modal-header"><h6 class="modal-title"><i class="bi {{ icon }}"></i> {{ title }}</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body">{{ caller() }}</div>
+  <div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button><button class="btn btn-theme">Save</button></div>
+</form></div></div></div>
+{% endmacro %}
+
+{% call modal('mvReceipt', 'Stock receipt', url_for('seller_inventory_receipt'), 'bi-box-arrow-in-down') %}
+  {{ sel('product_id', plist, 'Listing') }}{{ sel('warehouse_id', wlist, 'Warehouse') }}{{ sel('batch_id', blist, 'Batch / lot (optional)', False) }}
+  <div class="row g-2"><div class="col-6"><label class="form-label small mb-0">Quantity (MT)</label><input name="quantity" class="form-control" inputmode="decimal" required></div>
+  <div class="col-6"><label class="form-label small mb-0">Unit cost (SAR)</label><input name="unit_cost_sar" class="form-control" inputmode="decimal"></div>
+  <div class="col-6"><label class="form-label small mb-0">Date</label><input type="date" name="movement_date" value="{{ today }}" max="{{ today }}" class="form-control"></div>
+  <div class="col-6"><label class="form-label small mb-0">Note</label><input name="note" class="form-control" placeholder="e.g. Pit 3 extraction"></div></div>
+{% endcall %}
+{% call modal('mvTransfer', 'Transfer between warehouses', url_for('seller_inventory_transfer'), 'bi-arrow-left-right') %}
+  {{ sel('product_id', plist, 'Listing') }}
+  <div class="row g-2"><div class="col-6">{{ sel('warehouse_id', wlist, 'From') }}</div><div class="col-6">{{ sel('to_warehouse_id', wlist, 'To') }}</div></div>
+  <div class="row g-2"><div class="col-6"><label class="form-label small mb-0">Quantity (MT)</label><input name="quantity" class="form-control" inputmode="decimal" required></div>
+  <div class="col-6"><label class="form-label small mb-0">Date</label><input type="date" name="movement_date" value="{{ today }}" max="{{ today }}" class="form-control"></div></div>
+  <input name="note" class="form-control mt-2" placeholder="Note (optional)">
+{% endcall %}
+{% call modal('mvAdjust', 'Stock adjustment', url_for('seller_inventory_adjustment'), 'bi-sliders2') %}
+  {{ sel('product_id', plist, 'Listing') }}{{ sel('warehouse_id', wlist, 'Warehouse') }}
+  <div class="row g-2"><div class="col-6"><label class="form-label small mb-0">Quantity (+ gain / − loss)</label><input name="quantity" class="form-control" inputmode="decimal" placeholder="-2.5" required></div>
+  <div class="col-6"><label class="form-label small mb-0">Date</label><input type="date" name="movement_date" value="{{ today }}" max="{{ today }}" class="form-control"></div></div>
+  <label class="form-label small mb-0 mt-2">Reason</label><input name="note" class="form-control" minlength="5" required placeholder="e.g. Physical count 2026-09-30">
+{% endcall %}
+{% call modal('mvWarehouse', 'New warehouse', url_for('seller_warehouse_create'), 'bi-building-add') %}
+  <div class="row g-2"><div class="col-md-6"><label class="form-label small mb-0">Name</label><input name="name_en" class="form-control" required></div>
+  <div class="col-md-6"><label class="form-label small mb-0">Arabic name</label><input name="name_ar" class="form-control" dir="rtl"></div>
+  <div class="col-md-4"><label class="form-label small mb-0">City</label><input name="city" class="form-control"></div>
+  <div class="col-md-4"><label class="form-label small mb-0">National address</label><input name="national_address" class="form-control" maxlength="20"></div>
+  <div class="col-md-4"><label class="form-label small mb-0">Capacity (MT)</label><input name="capacity_mt" class="form-control" inputmode="decimal"></div></div>
+{% endcall %}
+{% endblock %}
+{% block extra_js %}{{ ch.scripts() }}{% endblock %}

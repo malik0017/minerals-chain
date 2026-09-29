@@ -1,0 +1,7 @@
+{% set DOC_HEALTH = {
+  'valid': ('success', 'bi-check-circle', 'Valid'), 'no_expiry': ('success', 'bi-check-circle', 'No expiry'),
+  'expiring': ('warning', 'bi-hourglass-split', 'Expiring soon'), 'expired': ('danger', 'bi-x-octagon', 'Expired'),
+  'missing': ('secondary', 'bi-dash-circle', 'Missing'), 'rejected': ('danger', 'bi-x-circle', 'Rejected')} %}
+{% set DOC_STATUS = {'pending': 'warning', 'approved': 'success', 'rejected': 'danger'} %}
+{% macro health_badge(h, days=None) %}{% set c, i, l = DOC_HEALTH[h] %}<span class="badge bg-{{ c }}-subtle text-{{ c }}"><i class="bi {{ i }}"></i> {{ l }}</span>{% if days is not none and h in ('expiring', 'expired') %} <span class="small text-{{ c }}">{{ days }} d</span>{% endif %}{% endmacro %}
+{% macro status_badge(s, labels) %}{% set c = DOC_STATUS.get(s, 'secondary') %}<span class="badge bg-{{ c }}-subtle text-{{ c }}">{{ labels.get(s, s) }}</span>{% endmacro %}

@@ -1,0 +1,73 @@
+{% set ORDER_ST = {
+  'pending_confirmation': ('Awaiting confirmation', 'warning', 'bi-hourglass-split'), 'confirmed': ('Confirmed', 'info', 'bi-check2-circle'),
+  'in_transit': ('In transit', 'primary', 'bi-truck'), 'delivered': ('Delivered', 'primary', 'bi-box-seam'),
+  'invoiced': ('Invoiced', 'secondary', 'bi-receipt'), 'completed': ('Completed', 'success', 'bi-patch-check'),
+  'resolved': ('Resolved', 'success', 'bi-hammer'), 'disputed': ('Disputed', 'danger', 'bi-flag'), 'cancelled': ('Cancelled', 'danger', 'bi-x-circle')} %}
+{% set LISTING_ST = {
+  'draft': ('Draft', 'secondary', 'bi-pencil'), 'under_verification': ('Under verification', 'warning', 'bi-eyedropper'),
+  'verified': ('Verified', 'success', 'bi-patch-check'), 'failed_verification': ('Failed verification', 'danger', 'bi-x-octagon'),
+  'suspended': ('Suspended', 'dark', 'bi-pause-circle')} %}
+{% set QUOTE_ST = {
+  'submitted': ('Submitted', 'info', 'bi-send'), 'accepted': ('Accepted', 'success', 'bi-trophy'),
+  'rejected': ('Not selected', 'secondary', 'bi-x-circle'), 'expired': ('Expired', 'warning', 'bi-clock-history')} %}
+{% set RFQ_ST = {'open': ('Open', 'success', 'bi-broadcast'), 'closed': ('Closed', 'secondary', 'bi-lock'), 'cancelled': ('Cancelled', 'danger', 'bi-x-circle')} %}
+{% set VR_ST = {
+  'requested': ('Requested', 'warning', 'bi-inbox'), 'sample_scheduled': ('Sample scheduled', 'info', 'bi-calendar-event'),
+  'testing_in_progress': ('Testing', 'primary', 'bi-eyedropper'), 'completed': ('Completed', 'success', 'bi-patch-check'),
+  'failed': ('Failed', 'danger', 'bi-x-octagon')} %}
+{% set ROLE_ST = {'seller': ('Seller', 'primary', 'bi-shop'), 'buyer': ('Buyer', 'info', 'bi-bag'), 'lab': ('Lab', 'warning', 'bi-eyedropper')} %}
+{% macro page_head(icon, title, subtitle='', actions='') %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <div><h4 class="mb-1"><i class="bi {{ icon }}"></i> {{ title }}</h4>{% if subtitle %}<p class="text-secondary mb-0 small">{{ subtitle }}</p>{% endif %}</div>
+  {% if actions %}<div class="d-flex gap-2 flex-wrap">{{ actions }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro kpis(items, target='') %}
+<div class="row g-3 mb-3">
+{% for icon, label, value, color, flt in items %}
+  <div class="col-6 col-lg">
+    <div class="card adminuiux-card h-100 mc-kpi{% if flt is not none and target %} mc-kpi-click{% endif %}"{% if flt is not none and target %} data-mc-set="{{ flt }}" data-mc-target="{{ target }}" role="button" tabindex="0"{% endif %}>
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <div class="text-truncate"><div class="small text-secondary">{{ label }}</div><div class="fs-4 fw-bold text-truncate">{{ value }}</div></div>
+        <span class="mc-kpi-icon bg-{{ color }}-subtle text-{{ color }}"><i class="bi {{ icon }}"></i></span>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>
+{% endmacro %}
+
+{% macro toolbar(target, statuses, placeholder='Search…') %}
+<div class="mc-toolbar card adminuiux-card mb-3" data-mc-for="{{ target }}"><div class="card-body py-2 d-flex flex-wrap align-items-center gap-2">
+  <div class="input-group input-group-sm mc-toolbar-search">
+    <span class="input-group-text"><i class="bi bi-search"></i></span>
+    <input type="search" class="form-control" placeholder="{{ placeholder }}" data-mc-search>
+  </div>
+  <div class="d-flex flex-wrap gap-1 ms-lg-auto">
+    <button type="button" class="btn btn-sm mc-pill active" data-mc-status="">All <span class="badge rounded-pill" data-mc-count></span></button>
+    {% for value, meta in statuses.items() %}
+    <button type="button" class="btn btn-sm mc-pill" data-mc-status="{{ value }}"><i class="bi {{ meta[2] }} text-{{ meta[1] }}"></i> {{ meta[0] }} <span class="badge rounded-pill" data-mc-count></span></button>
+    {% endfor %}
+  </div>
+</div></div>
+{% endmacro %}
+
+{% macro badge(value, statuses) %}{% set m = statuses.get(value, (value.replace('_', ' ') | capitalize, 'secondary', 'bi-dot')) %}<span class="badge bg-{{ m[1] }}-subtle text-{{ m[1] }}"><i class="bi {{ m[2] }}"></i> {{ m[0] }}</span>{% endmacro %}
+
+{% macro row_label(title, sub='', seed=None) %}
+<div class="mc-row-label"><span class="mc-avatar-chip {{ avatar_class(seed or title) }}">{{ initials(title) }}</span>
+  <div class="min-w-0"><div class="mc-row-title text-truncate">{{ title }}</div>{% if sub %}<div class="mc-row-sub text-truncate">{{ sub }}</div>{% endif %}</div></div>
+{% endmacro %}
+
+{% macro empty_row(cols, text='No matching records') %}
+<tr class="mc-empty d-none"><td colspan="{{ cols }}" class="text-center text-secondary py-4"><i class="bi bi-search"></i> {{ text }}</td></tr>
+{% endmacro %}
+
+{% macro empty_state(icon, text, action_url=None, action_label=None) %}
+<div class="card adminuiux-card"><div class="card-body text-center py-5">
+  <span class="mc-empty-icon"><i class="bi {{ icon }}"></i></span>
+  <p class="text-secondary mt-3 mb-3">{{ text }}</p>
+  {% if action_url %}<a href="{{ action_url }}" class="btn btn-theme"><i class="bi bi-plus-lg"></i> {{ action_label }}</a>{% endif %}
+</div></div>
+{% endmacro %}

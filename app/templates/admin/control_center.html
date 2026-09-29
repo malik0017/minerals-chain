@@ -80,22 +80,9 @@
 
 {# ---- security checklist (compact) + quick actions ---- #}
 <div class="row g-3">
-  <div class="col-lg-7"><div class="card adminuiux-card h-100"><div class="card-body">
-    <h6 class="mb-2"><i class="bi bi-list-check"></i> Security checklist</h6>
-    <div class="table-responsive"><table class="table table-sm align-middle mb-0 small">
-    {% for item in checklist %}
-      {% set c = {'ok':'success','warn':'warning','fail':'danger','info':'info'}[item.level] %}
-      {% set ic = {'ok':'bi-check-circle-fill','warn':'bi-exclamation-triangle-fill','fail':'bi-x-octagon-fill','info':'bi-info-circle-fill'}[item.level] %}
-      <tr>
-        <td style="width:24px"><i class="bi {{ ic }} text-{{ c }}"></i></td>
-        <td class="fw-semibold">{{ item.title }}</td>
-        <td class="text-secondary">{{ item.detail }}</td>
-        <td class="text-end">{% if item.level != 'ok' and item.fix %}<i class="bi bi-lightbulb text-warning" data-bs-toggle="tooltip" title="{{ item.fix }}"></i>{% endif %}
-          {% if item.action == 'secure_uploads' %}<form method="post" action="{{ url_for('admin_secure_uploads') }}" class="d-inline">{{ csrf_field() }}<button class="btn btn-sm btn-danger py-0"><i class="bi bi-lock"></i></button></form>{% endif %}</td>
-      </tr>
-    {% endfor %}
-    </table></div>
-  </div></div></div>
+  <div class="col-lg-7">
+    {% include "partials/security_checklist.html" %}
+  </div>
   <div class="col-lg-5"><div class="card adminuiux-card h-100"><div class="card-body">
     <h6 class="mb-2"><i class="bi bi-lightning"></i> Quick actions</h6>
     <div class="row g-2 text-center">

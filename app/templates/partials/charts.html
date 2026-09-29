@@ -1,11 +1,18 @@
 {# Batch R2 — ECharts option builders. Each macro emits a sized div plus the
    option JSON; static/js/mc_charts.js renders them (dark mode + RTL aware). #}
+{% macro empty(height=240) %}
+<div class="d-flex flex-column align-items-center justify-content-center text-secondary" style="height: {{ height }}px">
+  <i class="bi bi-bar-chart fs-2 opacity-50"></i><div class="small mt-1">No data in this period</div>
+</div>
+{% endmacro %}
+
 {% macro _emit(id, option, height=280, link=None) %}
 <div data-mc-chart="{{ id }}" {% if link %}data-mc-link="{{ link }}"{% endif %} style="height: {{ height }}px; width: 100%;" translate="no"></div>
 <script type="application/json" id="{{ id }}">{{ option | chart_i18n | tojson }}</script>
 {% endmacro %}
 
 {% macro donut(id, data, height=260, link=None, center_label='') %}
+{% if not data or not (data | selectattr('value') | list) %}{{ empty(height) }}{% else %}
 {{ _emit(id, {
   "tooltip": {"trigger": "item", "formatter": "{b}: {c} ({d}%)"},
   "legend": {"bottom": 0, "type": "scroll", "icon": "circle", "itemWidth": 8, "itemHeight": 8},
@@ -14,6 +21,7 @@
               "itemStyle": {"borderRadius": 6, "borderColor": "rgba(0,0,0,0)", "borderWidth": 2},
               "label": {"show": false}, "data": data}]
 }, height, link) }}
+{% endif %}
 {% endmacro %}
 
 {% macro combo(id, months, bars, line, bar_name='Orders', line_name='GMV (SAR)', height=300) %}
@@ -43,6 +51,7 @@
 {% endmacro %}
 
 {% macro bars(id, data, height=240, color=None, link=None) %}
+{% if not data %}{{ empty(height) }}{% else %}
 {{ _emit(id, {
   "tooltip": {"trigger": "axis", "axisPointer": {"type": "shadow"}},
   "grid": {"left": 40, "right": 16, "top": 16, "bottom": 48},
@@ -50,6 +59,21 @@
   "yAxis": {"type": "value", "splitLine": {"lineStyle": {"type": "dashed", "opacity": 0.4}}},
   "series": [{"type": "bar", "barMaxWidth": 28, "colorBy": "data", "itemStyle": {"borderRadius": [4,4,0,0]}, "data": data}]
 }, height, link) }}
+{% endif %}
+{% endmacro %}
+
+{% macro hbars(id, data, height=260) %}
+{% if not data %}{{ empty(height) }}{% else %}
+{{ _emit(id, {
+  "tooltip": {"trigger": "axis", "axisPointer": {"type": "shadow"}},
+  "grid": {"left": 8, "right": 48, "top": 8, "bottom": 8, "containLabel": true},
+  "xAxis": {"type": "value", "show": false},
+  "yAxis": {"type": "category", "inverse": true, "data": data | map(attribute='name') | list, "axisTick": {"show": false},
+            "axisLabel": {"width": 160, "overflow": "truncate"}},
+  "series": [{"type": "bar", "barMaxWidth": 18, "colorBy": "data", "itemStyle": {"borderRadius": [0,4,4,0]},
+              "label": {"show": true, "position": "right"}, "data": data}]
+}, height) }}
+{% endif %}
 {% endmacro %}
 
 {% macro lines(id, months, series, height=260, area=False, stack=False) %}
@@ -85,6 +109,16 @@
   "series": [{"type": "line", "data": values, "smooth": true, "symbol": "none", "lineStyle": {"width": 2, "color": color},
               "areaStyle": {"opacity": 0.15, "color": color}}]
 }, height) }}
+{% endmacro %}
+
+{% macro funnel(id, data, height=280) %}
+{% if not data or not (data | selectattr('value') | list) %}{{ empty(height) }}{% else %}
+{{ _emit(id, {
+  "tooltip": {"trigger": "item", "formatter": "{b}: {c}"},
+  "series": [{"type": "funnel", "sort": "none", "left": "8%", "right": "8%", "top": 8, "bottom": 8, "minSize": "18%", "gap": 3,
+              "label": {"show": true, "position": "inside", "formatter": "{b}\n{c}"}, "data": data}]
+}, height) }}
+{% endif %}
 {% endmacro %}
 
 {% macro scripts() %}

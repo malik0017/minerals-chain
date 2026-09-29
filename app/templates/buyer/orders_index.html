@@ -1,59 +1,37 @@
 {% extends "layouts/base.html" %}
+{% from "partials/list_kit.html" import page_head, kpis, toolbar, badge, row_label, empty_row, empty_state, ORDER_ST with context %}
 {% block title %}My Orders{% endblock %}
 {% block content %}
-
-<h4 class="mb-1">My Orders</h4>
-<p class="text-secondary mb-4">Orders created from accepted quotations.</p>
-
+{{ page_head('bi-box-seam', 'My Orders', 'Orders created from the quotations you accepted.') }}
 {% if not orders %}
-<div class="card adminuiux-card">
-  <div class="card-body text-center py-5">
-    <i class="bi bi-box-seam fs-1 text-secondary opacity-50"></i>
-    <p class="text-secondary mt-3 mb-0">No orders yet — accept a quotation on one of your RFQs to create one.</p>
-  </div>
-</div>
+{{ empty_state('bi-box-seam', 'No orders yet — accept a quotation on one of your RFQs to create one.', url_for('buyer_rfqs_index'), 'My RFQs') }}
 {% else %}
-<div class="card adminuiux-card">
-  <div class="table-responsive">
-    <table class="table align-middle mb-0">
-      <thead>
-        <tr>
-          <th>Mineral</th>
-          <th>Price</th>
-          <th>Seller</th>
-          <th>Status</th>
-          <th>Created</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for order, revealed in orders %}
-        <tr>
-          <td>{{ order.rfq.mineral_type }}</td>
-          <td>{{ order.quotation.price_currency }} {{ order.quotation.price_value }}</td>
-          <td>
-            {% if revealed %}{{ order.seller_company.company_name }}
-            {% else %}<span class="text-secondary">Hidden until confirmed</span>{% endif %}
-          </td>
-          <td>
-            {% if order.status.value == "pending_confirmation" %}<span class="badge bg-warning-subtle text-warning">Awaiting confirmation</span>
-            {% elif order.status.value == "confirmed" %}<span class="badge bg-info-subtle text-info">Confirmed</span>
-            {% elif order.status.value == "in_transit" %}<span class="badge bg-primary-subtle text-primary">In transit</span>
-            {% elif order.status.value == "delivered" %}<span class="badge bg-primary-subtle text-primary">Delivered</span>
-            {% elif order.status.value == "completed" %}<span class="badge bg-success-subtle text-success">Completed</span>
-            {% elif order.status.value in ("cancelled", "disputed") %}<span class="badge bg-danger-subtle text-danger">{{ order.status.value | capitalize }}</span>
-            {% else %}<span class="badge bg-secondary-subtle text-secondary">{{ order.status.value | capitalize }}</span>{% endif %}
-          </td>
-          <td class="text-secondary small">{{ order.created_at.strftime("%Y-%m-%d") }}</td>
-          <td class="text-end">
-            <a href="{{ url_for('buyer_order_detail', order_id=order.id) }}" class="btn btn-sm btn-outline-theme">View</a>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
+{% set st = orders | map('first') | map(attribute='status') | map(attribute='value') | list %}
+{% set live = orders | map('first') | selectattr('status.value', 'in', ['confirmed', 'in_transit', 'delivered', 'invoiced', 'completed', 'resolved']) | map(attribute='total_value_sar') | select | list %}
+{{ kpis([
+  ('bi-box-seam', 'All orders', orders | length, 'primary', ''),
+  ('bi-hourglass-split', 'Awaiting seller', st | select('equalto', 'pending_confirmation') | list | length, 'warning', 'pending_confirmation'),
+  ('bi-truck', 'In transit', st | select('equalto', 'in_transit') | list | length, 'info', 'in_transit'),
+  ('bi-patch-check', 'Completed', st | select('in', ['completed', 'resolved']) | list | length, 'success', 'completed'),
+  ('bi-cash-stack', 'Order value (SAR)', '{:,.0f}'.format(live | sum), 'success', None),
+], 'ordersTable') }}
+{{ toolbar('ordersTable', ORDER_ST, 'Search mineral, reference or seller…') }}
+<div class="card adminuiux-card"><div class="table-responsive"><table class="table align-middle mb-0 mc-list-table" id="ordersTable">
+  <thead><tr><th>Order</th><th>Seller</th><th class="text-end">Quantity</th><th class="text-end">Total (SAR)</th><th>Status</th><th>Created</th><th></th></tr></thead>
+  <tbody>
+  {% for order, revealed in orders %}
+    <tr data-status="{{ order.status.value }}{% if order.status.value == 'resolved' %} completed{% endif %}">
+      <td>{{ row_label(order.rfq.mineral_type, order.order_reference or '') }}</td>
+      <td>{% if revealed %}{{ order.seller_company.company_name }}{% else %}<span class="text-secondary small"><i class="bi bi-eye-slash"></i> Revealed when the seller confirms</span>{% endif %}</td>
+      <td class="text-end small text-nowrap">{{ '{:,.2f}'.format(order.quantity or order.rfq.quantity_value) }} {{ order.quantity_unit or order.rfq.quantity_unit }}</td>
+      <td class="text-end fw-semibold text-nowrap">{{ '{:,.2f}'.format(order.total_value_sar) if order.total_value_sar is not none else '—' }}</td>
+      <td>{{ badge(order.status.value, ORDER_ST) }}</td>
+      <td class="text-secondary small text-nowrap">{{ order.created_at.strftime("%Y-%m-%d") }}</td>
+      <td class="text-end"><a href="{{ url_for('buyer_order_detail', order_id=order.id) }}" class="btn btn-sm {{ 'btn-theme' if order.status.value in ('delivered', 'invoiced') else 'btn-outline-theme' }}">{{ 'Confirm receipt' if order.status.value in ('delivered', 'invoiced') else 'Track' if order.status.value == 'in_transit' else 'View' }}</a></td>
+    </tr>
+  {% endfor %}
+  {{ empty_row(7) }}
+  </tbody>
+</table></div></div>
 {% endif %}
-
 {% endblock %}

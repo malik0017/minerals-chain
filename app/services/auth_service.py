@@ -80,6 +80,10 @@ def register_new_company_user(
         privacy_consent_version=consent_version,
     )
     user_repository.create(db, user)
+    from app.services import company_document_service
+    company_document_service.register_initial(db, company, user)
+    from app.services import credential_check_service
+    credential_check_service.auto_check(db, company)
 
     notification_service.notify_admins(
         db, "approvals", "registration_submitted", "New registration awaiting review",

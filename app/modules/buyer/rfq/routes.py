@@ -36,6 +36,10 @@ def rfqs_index(
     rfqs = rfq_repository.list_for_company(db, user.company_id)
     context = build_portal_context(user, UserRole.BUYER, active_path=request.url.path)
     context["rfqs"] = rfqs
+    from sqlalchemy import func
+    from app.models.quotation import Quotation
+    context["quote_counts"] = dict(db.query(Quotation.rfq_id, func.count()).filter(Quotation.rfq_id.in_([r.id for r in rfqs]))
+                                   .group_by(Quotation.rfq_id).all()) if rfqs else {}
     return templates.TemplateResponse(request, "buyer/rfq_index.html", context)
 
 

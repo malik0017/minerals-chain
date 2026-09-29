@@ -1,20 +1,36 @@
 {% extends "layouts/base.html" %}
+{% from "partials/list_kit.html" import page_head, kpis, toolbar, badge, row_label, empty_row, empty_state, ORDER_ST with context %}
 {% block title %}Orders console{% endblock %}
 {% block content %}
-<h4 class="mb-1"><i class="bi bi-box-seam"></i> Orders console</h4>
-<p class="text-secondary mb-3">Every order with its frozen financial snapshot. Admins see both parties (BRD §6.8).</p>
-<form method="get" class="mb-3"><select name="status" class="form-select w-auto" onchange="this.form.submit()">
-  <option value="">All statuses</option>{% for s in statuses %}<option value="{{ s.value }}" {% if status_filter == s.value %}selected{% endif %}>{{ s.value.replace('_',' ') }}</option>{% endfor %}
-</select></form>
-{% if not orders %}<div class="alert alert-secondary">No orders.</div>{% else %}
-<div class="card adminuiux-card"><div class="table-responsive"><table class="table align-middle mb-0 mc-table-colorful">
-  <thead><tr><th>Reference</th><th>Mineral</th><th>Buyer</th><th>Seller</th><th class="text-end">Total incl. VAT (SAR)</th><th>Status</th><th>Created</th><th></th></tr></thead>
-  <tbody>{% for o in orders %}<tr>
-    <td class="fw-semibold">{{ o.order_reference or '—' }}</td><td>{{ o.rfq.mineral_type }}</td>
-    <td>{{ o.buyer_company.company_name }}</td><td>{{ o.seller_company.company_name }}</td>
-    <td class="text-end">{{ '{:,.2f}'.format(o.total_value_sar) if o.total_value_sar is not none else '—' }}</td>
-    <td><span class="badge bg-secondary-subtle text-secondary">{{ o.status.value.replace('_',' ') }}</span></td>
-    <td class="small text-secondary">{{ o.created_at.strftime('%Y-%m-%d') }}</td>
-    <td class="text-end"><a class="btn btn-sm btn-outline-theme" href="{{ url_for('admin_order_detail', order_id=o.id) }}">Open</a></td>
-  </tr>{% endfor %}</tbody></table></div></div>{% endif %}
+{{ page_head('bi-box-seam', 'Orders console', 'Every order with its frozen financial snapshot. Admins see both parties.') }}
+{% if not orders %}
+{{ empty_state('bi-box-seam', 'No orders yet.') }}
+{% else %}
+{% set st = orders | map(attribute='status') | map(attribute='value') | list %}
+{% set gmv = orders | selectattr('status.value', 'in', ['confirmed', 'in_transit', 'delivered', 'invoiced', 'completed', 'resolved']) | map(attribute='total_value_sar') | select | sum %}
+{{ kpis([
+  ('bi-box-seam', 'Orders', orders | length, 'primary', ''),
+  ('bi-hourglass-split', 'Awaiting seller', st | select('equalto', 'pending_confirmation') | list | length, 'warning', 'pending_confirmation'),
+  ('bi-truck', 'In transit', st | select('equalto', 'in_transit') | list | length, 'info', 'in_transit'),
+  ('bi-flag', 'Disputed', st | select('equalto', 'disputed') | list | length, 'danger', 'disputed'),
+  ('bi-cash-stack', 'GMV incl. VAT (SAR)', '{:,.0f}'.format(gmv), 'success', None),
+], 'adminOrders') }}
+{{ toolbar('adminOrders', ORDER_ST, 'Search reference, mineral, buyer or seller…') }}
+<div class="card adminuiux-card"><div class="table-responsive"><table class="table align-middle mb-0 mc-list-table" id="adminOrders">
+  <thead><tr><th>Order</th><th>Buyer → Seller</th><th class="text-end">Total incl. VAT (SAR)</th><th>Status</th><th>Created</th><th></th></tr></thead>
+  <tbody>
+  {% for o in orders %}
+    <tr data-status="{{ o.status.value }}">
+      <td>{{ row_label(o.rfq.mineral_type, o.order_reference or '—') }}</td>
+      <td class="small">{{ o.buyer_company.company_name }}<div class="text-secondary">→ {{ o.seller_company.company_name }}</div></td>
+      <td class="text-end fw-semibold text-nowrap">{{ '{:,.2f}'.format(o.total_value_sar) if o.total_value_sar is not none else '—' }}</td>
+      <td>{{ badge(o.status.value, ORDER_ST) }}</td>
+      <td class="small text-secondary text-nowrap">{{ o.created_at.strftime('%Y-%m-%d') }}</td>
+      <td class="text-end"><a class="btn btn-sm btn-outline-theme" href="{{ url_for('admin_order_detail', order_id=o.id) }}">Open</a></td>
+    </tr>
+  {% endfor %}
+  {{ empty_row(6) }}
+  </tbody>
+</table></div></div>
+{% endif %}
 {% endblock %}

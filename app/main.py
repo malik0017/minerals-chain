@@ -1,11 +1,15 @@
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.auth import get_current_user_optional
 from app.core.csrf_middleware import CSRFMiddleware
+from app.core.config import settings
 from app.core.security_headers import SecurityHeadersMiddleware
 from app.core.translation import TranslationMiddleware
+from app.services.monitoring_service import MetricsMiddleware
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from app.core.exceptions import (
     AdminRedirectException,
     CompanyNotApprovedException,
@@ -56,11 +60,19 @@ from app.modules.shared.order_document_routes import (admin_router as admin_orde
     buyer_router as buyer_order_docs_router, seller_router as seller_order_docs_router)
 from app.modules.admin.data_requests.routes import router as admin_data_requests_router
 
-app = FastAPI(title="Minerals Chain")
+from app.core import production  # noqa: E402
+
+production.configure_logging(settings.LOG_LEVEL)
+production.enforce(settings)
+_prod = settings.APP_ENV == "production"
+app = FastAPI(title="Minerals Chain", docs_url=None if _prod else "/docs", redoc_url=None if _prod else "/redoc",
+              openapi_url=None if _prod else "/openapi.json")
 
 app.add_middleware(CSRFMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(TranslationMiddleware)
+app.add_middleware(MetricsMiddleware)
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=[h.strip() for h in settings.FORWARDED_ALLOW_IPS.split(",") if h.strip()])
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.mount("/assets", StaticFiles(directory="app/static"), name="assets_compat")
@@ -106,6 +118,38 @@ app.include_router(buyer_rfq_router)
 app.include_router(buyer_orders_router)
 app.include_router(lab_dashboard_router)
 app.include_router(lab_verification_router)
+from app.modules.admin.backups.routes import router as admin_backups_router  # noqa: E402
+app.include_router(admin_backups_router)
+from app.modules.public.security_routes import router as security_router  # noqa: E402
+app.include_router(security_router)
+from app.modules.seller.inventory.routes import router as seller_inventory_router  # noqa: E402
+app.include_router(seller_inventory_router)
+from app.modules.admin.inventory.routes import router as admin_inventory_router  # noqa: E402
+app.include_router(admin_inventory_router)
+from app.modules.admin.erp_export.routes import router as admin_erp_export_router  # noqa: E402
+app.include_router(admin_erp_export_router)
+from app.modules.seller.erp_export.routes import router as seller_erp_export_router  # noqa: E402
+app.include_router(seller_erp_export_router)
+from app.modules.admin.shipments.routes import router as admin_shipments_router  # noqa: E402
+app.include_router(admin_shipments_router)
+from app.modules.seller.shipments.routes import router as seller_shipments_router  # noqa: E402
+app.include_router(seller_shipments_router)
+from app.modules.buyer.shipments.routes import router as buyer_shipments_router  # noqa: E402
+app.include_router(buyer_shipments_router)
+from app.modules.shared.document_library_routes import router as document_library_router  # noqa: E402
+app.include_router(document_library_router)
+from app.modules.admin.documents.routes import router as admin_documents_router  # noqa: E402
+app.include_router(admin_documents_router)
+from app.modules.admin.monitoring.routes import router as admin_monitoring_router  # noqa: E402
+app.include_router(admin_monitoring_router)
+from app.modules.admin.credentials.routes import router as admin_credentials_router  # noqa: E402
+app.include_router(admin_credentials_router)
+from app.modules.api.v1 import router as api_v1_router  # noqa: E402
+app.include_router(api_v1_router)
+from app.modules.shared.api_token_routes import router as api_token_router  # noqa: E402
+app.include_router(api_token_router)
+from app.modules.public.pwa_routes import router as pwa_router  # noqa: E402
+app.include_router(pwa_router)
 
 @app.exception_handler(NotAuthenticatedException)
 async def not_authenticated_handler(request: Request, exc: NotAuthenticatedException):
@@ -130,6 +174,22 @@ async def admin_redirect_handler(request: Request, exc: AdminRedirectException):
     return RedirectResponse(url=url, status_code=303)
 
 
+@app.exception_handler(StarletteHTTPException)
+async def http_error_handler(request: Request, exc: StarletteHTTPException):
+    from fastapi.exception_handlers import http_exception_handler
+    if exc.status_code == 404 and not request.url.path.startswith("/api/") and "text/html" in request.headers.get("accept", ""):
+        return templates.TemplateResponse(request, "errors/404.html", {"lang": request.cookies.get("mc_lang", "en")}, status_code=404)
+    return await http_exception_handler(request, exc)
+
+
+@app.exception_handler(Exception)
+async def server_error_handler(request: Request, exc: Exception):
+    from fastapi.responses import HTMLResponse, JSONResponse
+    if request.url.path.startswith("/api/"):
+        return JSONResponse({"detail": "Internal server error."}, status_code=500)
+    return HTMLResponse(templates.get_template("errors/500.html").render(), status_code=500)
+
+
 @app.exception_handler(RateLimitExceededException)
 async def rate_limit_handler(request: Request, exc: RateLimitExceededException):
     retry_after_minutes = max(1, exc.retry_after_seconds // 60)
@@ -143,54 +203,26 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceededException):
     return response
 
 
+@app.get("/healthz", include_in_schema=False)
+def healthz():
+    from sqlalchemy import text
+    from app.database.base import SessionLocal
+    from fastapi.responses import JSONResponse
+    db = SessionLocal()
+    try:
+        rev = db.execute(text("SELECT version_num FROM alembic_version")).scalar()
+        return {"status": "ok", "db": "ok", "revision": rev}
+    except Exception as exc:
+        return JSONResponse({"status": "error", "db": type(exc).__name__}, status_code=503)
+    finally:
+        db.close()
+
+
 @app.get("/", name="root")
 def root(request: Request, user: User | None = Depends(get_current_user_optional)):
     if user is not None:
         return RedirectResponse(url=request.url_for("home"))
     return RedirectResponse(url=request.url_for("login_form"))
-
-
-@app.get("/dashboard-test", name="dashboard_home")
-def dashboard_test(
-    request: Request,
-    user: User | None = Depends(get_current_user_optional),
-):
-
-    if user is not None:
-        context = {
-            "portal_label": f"{user.role.value.capitalize()} Portal"
-            + (" (test)" if user.role.value != "admin" else ""),
-            "lang": user.preferred_language,
-            "current_user": {
-                "full_name": user.full_name,
-                "email": user.email,
-                "company_name": user.company.company_name if user.company else "Platform Administration",
-                "avatar_url": "/static/img/logo-512.png",
-            },
-            "nav_items": [
-                {"icon": "bi-speedometer2", "label": "Dashboard", "url": "/dashboard-test", "active": True},
-            ],
-            "notifications": [],
-            "unread_notifications": 0,
-        }
-    else:
-        context = {
-            "portal_label": "Seller Portal (test)",
-            "lang": "en",
-            "current_user": {
-                "full_name": "Test User",
-                "email": "test@example.com",
-                "company_name": "Demo Mining Co.",
-                "avatar_url": "/static/img/logo-512.png", 
-            },
-            "nav_items": [
-                {"icon": "bi-speedometer2", "label": "Dashboard", "url": "/dashboard-test", "active": True},
-            ],
-            "notifications": [],
-            "unread_notifications": 0,
-        }
-
-    return templates.TemplateResponse(request, "dashboard.html", context)
 
 
 def _content_page(request: Request, slug: str, db, user):
@@ -199,7 +231,7 @@ def _content_page(request: Request, slug: str, db, user):
     lang = user.preferred_language if user else request.cookies.get("mc_lang", DEFAULT_LANGUAGE)
     page = db.query(ContentPage).filter(ContentPage.slug == slug, ContentPage.is_published.is_(True)).first()
     if page is None:
-        return templates.TemplateResponse(request, "errors/403.html", {"lang": lang}, status_code=404)
+        return templates.TemplateResponse(request, "errors/404.html", {"lang": lang}, status_code=404)
     use_ar = lang == "ar" and page.body_ar
     return templates.TemplateResponse(request, "public/content_page.html", {
         "lang": lang, "page": page,

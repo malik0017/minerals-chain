@@ -10,7 +10,7 @@
   "product_id": "d224bb59-43db-493b-b98d-f3ff8ec6d52f",
   "second_product_id": "c20b0e39-789a-4b83-a08d-b08628fb19aa",
   "third_product_id": "20d3e1bd-3f0c-49b3-bb76-506ad74dd409",
-  "pending_verification_request_id": "892733f1-1702-4fc0-9816-ae92c7f5cc8b",
+  "pending_verification_request_id": null,
   "passport_id": "bdee140d-4ce3-4830-b00c-485f4d77ac76",
   "pending_passport_id": "484c6b1d-ea91-4594-910a-cff11fe6dd14",
   "rfq_id": "87d44376-5854-4e90-a4d7-54c71536bdbf",

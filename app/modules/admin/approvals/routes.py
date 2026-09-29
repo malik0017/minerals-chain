@@ -35,6 +35,7 @@ def approvals_review(
     db: Session = Depends(get_db),
     admin: User = Depends(require_admin("approvals")),
     error: str | None = None,
+    msg: str | None = None,
 ):
     company = company_repository.get_by_id(db, company_id)
     if company is None:
@@ -43,7 +44,9 @@ def approvals_review(
     primary_user = company.users[0] if company.users else None
 
     context = build_portal_context(admin, UserRole.ADMIN, active_path=request.url.path)
-    context.update({"company": company, "primary_user": primary_user, "error": error})
+    from app.services import credential_check_service
+    context.update({"company": company, "primary_user": primary_user, "error": error, "msg": msg,
+                    "cred": credential_check_service.panel(db, company)})
     return templates.TemplateResponse(request, "admin/approvals_review.html", context)
 
 

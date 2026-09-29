@@ -39,6 +39,8 @@ def rfq_inbox_index(
     context["rfqs"] = rfqs
     mine = {q.rfq_id: q for q in quotation_repository.list_for_seller_company(db, user.company_id)}
     context["quoted"] = mine
+    from datetime import datetime, timezone
+    context["now_utc"] = datetime.now(timezone.utc)
     return templates.TemplateResponse(request, "seller/rfq_inbox_index.html", context)
 
 

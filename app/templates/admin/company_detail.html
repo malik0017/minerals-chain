@@ -1,5 +1,7 @@
 {% extends "layouts/base.html" %}
 {% block title %}{{ company.company_name }}{% endblock %}
+{% from "partials/credential_checks.html" import credential_panel with context %}
+{% from "partials/doc_health.html" import health_badge with context %}
 {% block content %}
 
 <a href="{{ url_for('admin_companies_list') }}" class="text-secondary text-decoration-none small">&larr; Back to all companies</a>
@@ -141,9 +143,15 @@
       <a class="btn btn-sm btn-outline-theme mb-1" href="{{ url_for('admin_company_document', company_id=company.id, kind='cr') }}"><i class="bi bi-file-earmark-pdf"></i> CR document</a>
       <a class="btn btn-sm btn-outline-theme mb-1" href="{{ url_for('admin_company_document', company_id=company.id, kind='license') }}"><i class="bi bi-file-earmark-pdf"></i> Licence document</a>
       <div class="form-text">Served privately to admins only.</div>
+      <hr>
+      <ul class="list-unstyled small mb-2">{% for r in library %}
+        <li class="d-flex justify-content-between align-items-center py-1"><span class="text-truncate me-2">{{ r.label }}</span>{{ health_badge(r.health, r.days_left) }}</li>{% endfor %}</ul>
+      <a class="btn btn-sm btn-outline-secondary w-100" href="{{ url_for('admin_documents') }}?q={{ company.company_name | urlencode }}"><i class="bi bi-folder2-open"></i> Document library</a>
     </div></div>
   </div>
 </div>
+
+{{ credential_panel(company, cred) }}
 
 <div class="card adminuiux-card mb-3">
   <div class="card-body">

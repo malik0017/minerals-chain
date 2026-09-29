@@ -1,56 +1,36 @@
 {% extends "layouts/base.html" %}
+{% from "partials/list_kit.html" import page_head, kpis, toolbar, badge, row_label, empty_row, empty_state, QUOTE_ST with context %}
 {% block title %}My Quotations{% endblock %}
 {% block content %}
-
-<h4 class="mb-1">My Quotations</h4>
-<p class="text-secondary mb-4">Every quote you've submitted on an RFQ.</p>
-
+{{ page_head('bi-tags', 'My Quotations', "Every quote you've submitted on an RFQ.") }}
 {% if not quotations %}
-<div class="card adminuiux-card">
-  <div class="card-body text-center py-5">
-    <i class="bi bi-tags fs-1 text-secondary opacity-50"></i>
-    <p class="text-secondary mt-3 mb-3">You haven't submitted any quotations yet.</p>
-    <a href="{{ url_for('seller_rfq_inbox_index') }}" class="btn btn-theme">
-      <i class="bi bi-inbox"></i> Browse the RFQ inbox
-    </a>
-  </div>
-</div>
+{{ empty_state('bi-tags', "You haven't submitted any quotations yet.", url_for('seller_rfq_inbox_index'), 'Browse the RFQ inbox') }}
 {% else %}
-<div class="card adminuiux-card">
-  <div class="table-responsive">
-    <table class="table align-middle mb-0">
-      <thead>
-        <tr>
-          <th>Mineral</th>
-          <th>Your price</th>
-          <th>Lead time</th>
-          <th>Status</th>
-          <th>Submitted</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for q in quotations %}
-        <tr>
-          <td>{{ q.rfq.mineral_type }}</td>
-          <td>{{ q.price_currency }} {{ q.price_value }}{% if q.price_unit %} <span class="text-secondary small">{{ q.price_unit }}</span>{% endif %}</td>
-          <td>{{ q.lead_time_days }} day(s)</td>
-          <td>
-            {% if q.status.value == "accepted" %}<span class="badge bg-success-subtle text-success">Accepted</span>
-            {% elif q.status.value == "rejected" %}<span class="badge bg-danger-subtle text-danger">Not selected</span>
-            {% elif q.status.value == "expired" %}<span class="badge bg-secondary-subtle text-secondary">Expired</span>
-            {% else %}<span class="badge bg-secondary-subtle text-secondary">Submitted</span>{% endif %}
-          </td>
-          <td class="text-secondary small">{{ q.created_at.strftime("%Y-%m-%d") }}</td>
-          <td class="text-end">
-            <a href="{{ url_for('seller_rfq_inbox_detail', rfq_id=q.rfq_id) }}" class="btn btn-sm btn-outline-theme">View RFQ</a>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
+{% set st = quotations | map(attribute='status') | map(attribute='value') | list %}
+{% set won = st | select('equalto', 'accepted') | list | length %}
+{% set decided = st | select('in', ['accepted', 'rejected']) | list | length %}
+{{ kpis([
+  ('bi-tags', 'All quotations', quotations | length, 'primary', ''),
+  ('bi-send', 'Awaiting buyer', st | select('equalto', 'submitted') | list | length, 'info', 'submitted'),
+  ('bi-trophy', 'Won', won, 'success', 'accepted'),
+  ('bi-percent', 'Win rate', ((100 * won / decided) | round | int ~ '%') if decided else '—', 'warning', None),
+], 'quotesTable') }}
+{{ toolbar('quotesTable', QUOTE_ST, 'Search mineral or RFQ reference…') }}
+<div class="card adminuiux-card"><div class="table-responsive"><table class="table align-middle mb-0 mc-list-table" id="quotesTable">
+  <thead><tr><th>RFQ</th><th class="text-end">Your price</th><th class="text-end">Lead time</th><th>Status</th><th>Submitted</th><th></th></tr></thead>
+  <tbody>
+  {% for q in quotations %}
+    <tr data-status="{{ q.status.value }}">
+      <td>{{ row_label(q.rfq.mineral_type, (q.rfq.rfq_reference or '') ~ ' · ' ~ '{:,.0f}'.format(q.rfq.quantity_value) ~ ' ' ~ q.rfq.quantity_unit) }}</td>
+      <td class="text-end text-nowrap"><span class="fw-semibold">{{ q.price_currency }} {{ '{:,.2f}'.format(q.price_value) }}</span>{% if q.price_unit %} <span class="text-secondary small">{{ q.price_unit }}</span>{% endif %}</td>
+      <td class="text-end small">{{ q.lead_time_days }} d</td>
+      <td>{{ badge(q.status.value, QUOTE_ST) }}</td>
+      <td class="text-secondary small text-nowrap">{{ q.created_at.strftime("%Y-%m-%d") }}</td>
+      <td class="text-end"><a href="{{ url_for('seller_rfq_inbox_detail', rfq_id=q.rfq_id) }}" class="btn btn-sm btn-outline-theme">View RFQ</a></td>
+    </tr>
+  {% endfor %}
+  {{ empty_row(6) }}
+  </tbody>
+</table></div></div>
 {% endif %}
-
 {% endblock %}

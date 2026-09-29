@@ -1,6 +1,7 @@
 {% extends "layouts/base.html" %}
 {% from "partials/dispute_macros.html" import dispute_badge with context %}
 {% from "partials/order_document_macros.html" import order_documents with context %}
+{% from "partials/shipment_macros.html" import shipment_card with context %}
 {% block title %}{{ order.order_reference or 'Order' }}{% endblock %}
 {% block content %}
 <a href="{{ url_for('admin_orders_list') }}" class="text-secondary text-decoration-none small">&larr; Orders console</a>
@@ -65,5 +66,6 @@
   {% for d in disputes %}<div class="d-flex justify-content-between border-bottom py-2"><a href="{{ url_for('admin_dispute_detail', dispute_id=d.id) }}">{{ d.reference }}</a><span>{{ dispute_badge(d.status) }}{% if d.ruling %} · for {{ d.ruling.value }}{% endif %}</span></div>{% endfor %}
 </div></div>
 {% endif %}
+{% for sh in shipments %}{{ shipment_card(sh, shipment_statuses) }}{% endfor %}
 {{ order_documents(order, 'admin', documents, credentials, doc_types, 'admin_order_document') }}
 {% endblock %}

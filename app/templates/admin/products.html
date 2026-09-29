@@ -18,25 +18,54 @@
 {% if not rows %}<div class="alert alert-secondary">No listings match.</div>{% else %}
 <div class="card adminuiux-card"><div class="table-responsive"><table class="table align-middle mb-0">
 <thead><tr><th>Listing</th><th>Seller</th><th>Quantity</th><th>Price</th><th>Status</th><th>Updated</th><th class="text-end">Action</th></tr></thead>
-<tbody>{% for p in rows %}<tr>
+<tbody>{% for p in rows %}{% set c = {'draft':'secondary','under_verification':'warning','verified':'success','failed_verification':'danger','suspended':'dark'}[p.status.value] %}<tr>
   <td>{{ p.mineral_type }}{% if p.grade %} · {{ p.grade }}{% endif %}{% if not p.is_visible_to_buyers %} <span class="badge bg-secondary-subtle text-secondary">hidden</span>{% endif %}</td>
   <td class="small">{{ p.seller_company.company_name }}<div class="text-secondary">{{ p.seller_company.subscription_tier.value if p.seller_company.subscription_tier else '' }}</div></td>
-  <td class="small">{{ p.quantity_value }} {{ p.quantity_unit }}</td>
-  <td class="small">{% if p.price_value is not none %}{{ p.price_currency }} {{ p.price_value }}{% else %}—{% endif %}</td>
-  <td>{% set c = {'draft':'secondary','under_verification':'warning','verified':'success','failed_verification':'danger','suspended':'dark'}[p.status.value] %}
-    <span class="badge bg-{{ c }}-subtle text-{{ c }}">{{ p.status.value.replace('_',' ') }}</span>
-    {% if p.suspended_reason %}<div class="small text-secondary" style="max-width:220px">{{ p.suspended_reason }}</div>{% endif %}</td>
-  <td class="small">{{ p.updated_at.strftime('%Y-%m-%d') }}</td>
-  <td class="text-end">
+  <td class="small text-nowrap">{{ '{:,.0f}'.format(p.quantity_value) }} {{ p.quantity_unit }}</td>
+  <td class="small text-nowrap">{% if p.price_value is not none %}{{ p.price_currency }} {{ '{:,.2f}'.format(p.price_value) }}{% else %}—{% endif %}</td>
+  <td><span class="badge bg-{{ c }}-subtle text-{{ c }}">{{ p.status.value.replace('_',' ') }}</span>
+    {% if p.suspended_reason %}<i class="bi bi-chat-left-text text-secondary ms-1" data-bs-toggle="tooltip" title="{{ p.suspended_reason }} (was {{ (p.status_before_suspension or 'draft').replace('_',' ') }})"></i>{% endif %}</td>
+  <td class="small text-nowrap">{{ p.updated_at.strftime('%Y-%m-%d') }}</td>
+  <td class="text-end mc-action-cell">
     {% if p.status.value == 'suspended' %}
-      <form method="post" action="{{ url_for('admin_product_reactivate', product_id=p.id) }}">{{ csrf_field() }}<input type="hidden" name="back" value="{{ request.url.path }}?{{ request.url.query }}">
-        <button class="btn btn-sm btn-outline-success"><i class="bi bi-play-circle"></i> Reactivate</button></form>
+      <form method="post" action="{{ url_for('admin_product_reactivate', product_id=p.id) }}" class="d-inline"
+            onsubmit="return confirm('Reactivate this listing? It returns to “{{ (p.status_before_suspension or 'draft').replace('_',' ') }}” and the seller is notified.');">
+        {{ csrf_field() }}<input type="hidden" name="back" value="{{ request.url.path }}?{{ request.url.query }}">
+        <button class="btn btn-sm btn-success"><i class="bi bi-play-circle"></i> Reactivate</button></form>
     {% else %}
-      <form method="post" action="{{ url_for('admin_product_suspend', product_id=p.id) }}" class="d-flex gap-1 justify-content-end">{{ csrf_field() }}<input type="hidden" name="back" value="{{ request.url.path }}?{{ request.url.query }}">
-        <input name="reason" class="form-control form-control-sm" style="max-width:160px" placeholder="Reason" required>
-        <button class="btn btn-sm btn-outline-danger"><i class="bi bi-pause-circle"></i></button></form>
+      <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#suspendModal"
+              data-action="{{ url_for('admin_product_suspend', product_id=p.id) }}" data-name="{{ p.mineral_type }}{% if p.grade %} · {{ p.grade }}{% endif %}"
+              data-seller="{{ p.seller_company.company_name }}"><i class="bi bi-pause-circle"></i> Suspend</button>
     {% endif %}
   </td>
 </tr>{% endfor %}</tbody></table></div></div>
 {% include "partials/pager.html" %}{% endif %}
+<div class="modal fade" id="suspendModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+  <form method="post" id="suspendForm">{{ csrf_field() }}<input type="hidden" name="back" value="{{ request.url.path }}?{{ request.url.query }}">
+    <div class="modal-header"><h6 class="modal-title"><i class="bi bi-pause-circle text-danger"></i> Suspend listing</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <div class="fw-semibold" id="suspendName"></div><div class="small text-secondary mb-3" id="suspendSeller"></div>
+      <ul class="list-unstyled small mb-3">
+        <li><i class="bi bi-eye-slash text-danger"></i> Removed from buyer browse and RFQ offers</li>
+        <li><i class="bi bi-bell text-primary"></i> Seller is notified with your reason</li>
+        <li><i class="bi bi-arrow-counterclockwise text-success"></i> Reactivate restores the previous status</li>
+        <li><i class="bi bi-journal-text text-secondary"></i> Recorded in the audit log</li>
+      </ul>
+      <label class="form-label">Reason</label>
+      <textarea name="reason" class="form-control" rows="3" minlength="5" required placeholder="e.g. Buyer complaint about moisture content — under review"></textarea>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button><button class="btn btn-danger">Suspend</button></div>
+  </form>
+</div></div></div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.getElementById('suspendModal').addEventListener('show.bs.modal', function (ev) {
+  var b = ev.relatedTarget;
+  document.getElementById('suspendForm').action = b.getAttribute('data-action');
+  document.getElementById('suspendName').textContent = b.getAttribute('data-name');
+  document.getElementById('suspendSeller').textContent = b.getAttribute('data-seller');
+});
+document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (e) { if (window.bootstrap) new bootstrap.Tooltip(e); });
+</script>
 {% endblock %}

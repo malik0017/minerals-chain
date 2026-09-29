@@ -4,8 +4,8 @@ app/modules/admin/control_center/routes.py
 import uuid
 from urllib.parse import quote
 
-from fastapi import APIRouter, Depends, Request
-from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, Depends, Form, Request
+from fastapi.responses import RedirectResponse, Response
 from sqlalchemy.orm import Session
 
 from starlette.datastructures import FormData
@@ -23,6 +23,7 @@ from app.models.audit_log import AuditLog
 from app.models.user import User, UserRole
 from app.repositories import audit_log_repository
 from app.services import control_center_service as cc
+from app.services import security_posture
 
 router = APIRouter(tags=["admin-control-center"])
 
@@ -45,6 +46,7 @@ def control_center(request: Request, db: Session = Depends(get_db),
         "impersonation_allowed": cc.impersonation_allowed(db), "msg": msg, "error": error,
         # Batch R2: visual dashboard
         "dash": analytics_service.dashboard(db), "security_score": analytics_service.security_score(checklist),
+        "env_fixes": security_posture.env_fixes(checklist),
     })
     return templates.TemplateResponse(request, "admin/control_center.html", context)
 
@@ -154,3 +156,34 @@ def stop_impersonation(request: Request, db: Session = Depends(get_db),
                         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
     response.delete_cookie(IMPERSONATOR_COOKIE_NAME)
     return response
+
+
+@router.post("/admin/control-center/security/fix", name="admin_security_fix")
+def security_fix(request: Request, item: str = Form(...), db: Session = Depends(get_db),
+                 admin: User = Depends(require_admin("system"))):
+    try:
+        security_posture.apply_toggle(db, admin, item)
+    except ValueError as exc:
+        db.rollback()
+        return _to(request, "admin_control_center", error=str(exc))
+    return _to(request, "admin_control_center", msg="Security setting applied.")
+
+
+@router.post("/admin/control-center/security/test-email", name="admin_security_test_email")
+def security_test_email(request: Request, db: Session = Depends(get_db), admin: User = Depends(require_admin("system"))):
+    from app.services import email_service
+    try:
+        email_service.send_email(to=admin.email, subject="Minerals Chain — test email",
+                                 body="This is a test message from the Admin Control Center.")
+    except Exception as exc:
+        return _to(request, "admin_control_center", error=f"Email failed: {exc}")
+    return _to(request, "admin_control_center", msg=f"Test email sent to {admin.email} (mode: {settings.EMAIL_MODE}).")
+
+
+@router.get("/admin/control-center/security/env", name="admin_security_env")
+def security_env(db: Session = Depends(get_db), admin: User = Depends(require_admin("system"))):
+    fixes = security_posture.env_fixes(cc.security_checklist(db))
+    body = "# Minerals Chain — add or update these lines in .env, then restart the app\n" + \
+        "".join(f"{k}={v}\n" for k, v in fixes.items())
+    return Response(content=body, media_type="text/plain; charset=utf-8",
+                    headers={"Content-Disposition": 'attachment; filename="env-security-fixes.txt"'})

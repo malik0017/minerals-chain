@@ -1,0 +1,26 @@
+[Unit]
+Description=Minerals Chain web application
+After=network.target postgresql.service redis-server.service
+Wants=postgresql.service redis-server.service
+
+[Service]
+Type=simple
+User=minerals
+Group=minerals
+WorkingDirectory=/srv/minerals/app
+EnvironmentFile=/srv/minerals/app/.env
+ExecStart=/srv/minerals/venv/bin/gunicorn app.main:app -c deploy/gunicorn.conf.py
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=always
+RestartSec=5
+KillMode=mixed
+TimeoutStopSec=40
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/srv/minerals/app/storage /srv/minerals/app/app/static/uploads /var/backups/minerals-chain
+UMask=0027
+
+[Install]
+WantedBy=multi-user.target

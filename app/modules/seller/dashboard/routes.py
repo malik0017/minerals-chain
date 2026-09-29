@@ -68,4 +68,7 @@ def seller_dashboard(
         context["quotation_count"] = None
         context["listing_donut"] = None
 
+    if user.company is not None:
+        from app.services import portal_dashboard_service
+        context["trade"] = portal_dashboard_service.trade(db, user.company, "seller")
     return templates.TemplateResponse(request, "seller/dashboard.html", context)

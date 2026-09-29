@@ -6,6 +6,8 @@ import uuid
 from dataclasses import dataclass
 from pathlib import Path
 
+from app.services import file_crypto
+
 STORAGE_ROOT = Path("storage")
 MAX_BYTES = 10 * 1024 * 1024  # 10 MB
 
@@ -60,7 +62,7 @@ def _write(area: str, ext: str, contents: bytes, mime: str, original: str) -> St
     folder = STORAGE_ROOT / area
     folder.mkdir(parents=True, exist_ok=True)
     rel = f"{area}/{uuid.uuid4().hex}.{ext}"
-    (STORAGE_ROOT / rel).write_bytes(contents)
+    file_crypto.write(STORAGE_ROOT / rel, contents)
     return StoredFile(rel, hashlib.sha256(contents).hexdigest(), len(contents), mime, original)
 
 
@@ -78,7 +80,10 @@ def read_verified(rel_path: str | None, expected_sha256: str | None) -> tuple[by
     p = resolve(rel_path)
     if p is None:
         raise FileError("File not found.")
-    data = p.read_bytes()
+    try:
+        data = file_crypto.read(p)
+    except file_crypto.FileCryptoError as exc:
+        raise FileError(str(exc))
     intact = expected_sha256 is None or hashlib.sha256(data).hexdigest() == expected_sha256
     return data, intact
 

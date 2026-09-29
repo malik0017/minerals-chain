@@ -1,0 +1,78 @@
+{% set SHIP_COLORS = {'dispatched':'info','in_transit':'primary','at_checkpoint':'secondary','delayed':'warning','arrived':'info','delivered':'success','cancelled':'danger'} %}
+{% set SHIP_ICONS = {'dispatched':'bi-box-arrow-right','in_transit':'bi-truck','at_checkpoint':'bi-sign-stop','delayed':'bi-hourglass-split','arrived':'bi-geo-alt','delivered':'bi-check2-circle','cancelled':'bi-x-circle'} %}
+
+{% macro status_badge(status, labels) %}{% set c = SHIP_COLORS.get(status, 'secondary') %}<span class="badge bg-{{ c }}-subtle text-{{ c }}"><i class="bi {{ SHIP_ICONS.get(status, 'bi-dot') }}"></i> {{ labels.get(status, status) }}</span>{% endmacro %}
+
+{% macro shipment_card(s, labels, update_url=None, update_statuses=()) %}
+<div class="card adminuiux-card mb-3"><div class="card-body">
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+    <div><h6 class="mb-1"><i class="bi bi-truck"></i> {{ s.reference }}</h6>
+      <div class="small text-secondary">{{ s.carrier_name or '—' }}{% if s.tracking_number %} · {{ s.tracking_number }}{% endif %}</div></div>
+    <div class="text-end">{{ status_badge(s.status, labels) }}
+      {% if s.is_late and s.status != 'delivered' %}<span class="badge bg-danger-subtle text-danger"><i class="bi bi-alarm"></i> Late</span>{% endif %}</div>
+  </div>
+  <div class="row g-2 mb-3 small">
+    {% for icon, label, value in [
+      ('bi-geo', 'From', s.origin or '—'), ('bi-geo-alt', 'To', s.destination or '—'),
+      ('bi-calendar-event', 'Dispatched', s.dispatched_at.strftime('%Y-%m-%d %H:%M')),
+      ('bi-calendar-check', 'ETA', s.eta.strftime('%Y-%m-%d') if s.eta else '—'),
+      ('bi-truck-front', 'Vehicle', s.vehicle_plate or '—'),
+      ('bi-person-badge', 'Driver', (s.driver_name or '—') ~ ((' · ' ~ s.driver_phone) if s.driver_phone else '')),
+    ] %}
+    <div class="col-6 col-md-4"><div class="border rounded p-2 h-100"><div class="text-secondary"><i class="bi {{ icon }}"></i> {{ label }}</div><div class="fw-semibold text-truncate">{{ value }}</div></div></div>
+    {% endfor %}
+  </div>
+  {% if s.gross_weight_t is not none %}
+  <div class="table-responsive mb-3"><table class="table table-sm mb-0 small text-center align-middle">
+    <thead><tr class="text-center"><th>Ticket</th><th>Gross (t)</th><th>Tare (t)</th><th>Net (t)</th><th>Received (t)</th><th>Variance (t)</th></tr></thead>
+    <tbody><tr><td>{{ s.weighbridge_ticket or '—' }}</td><td>{{ '%.3f' % s.gross_weight_t }}</td><td>{{ '%.3f' % s.tare_weight_t if s.tare_weight_t is not none else '—' }}</td>
+      <td class="fw-semibold">{{ '%.3f' % s.net_weight_t if s.net_weight_t is not none else '—' }}</td>
+      <td>{{ '%.3f' % s.received_net_t if s.received_net_t is not none else '—' }}</td>
+      <td class="{{ 'text-danger' if s.variance_t is not none and s.variance_t < 0 else '' }}">{{ '%+.3f' % s.variance_t if s.variance_t is not none else '—' }}</td></tr></tbody>
+  </table></div>
+  {% endif %}
+  <ul class="list-unstyled mb-0 mc-timeline">
+    {% for e in s.events | reverse %}{% set c = SHIP_COLORS.get(e.status, 'secondary') %}
+    <li class="d-flex gap-2 mb-2">
+      <span class="mc-kpi-icon bg-{{ c }}-subtle text-{{ c }}" style="width:32px;height:32px;font-size:.9rem"><i class="bi {{ SHIP_ICONS.get(e.status, 'bi-dot') }}"></i></span>
+      <div class="small"><div class="fw-semibold">{{ labels.get(e.status, e.status) }}{% if e.location %} <span class="text-secondary fw-normal">· {{ e.location }}</span>{% endif %}</div>
+        <div class="text-secondary">{{ e.occurred_at.strftime('%Y-%m-%d %H:%M') }}{% if e.note %} — {{ e.note }}{% endif %}</div></div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% if update_url and s.status not in ('delivered', 'cancelled') %}
+  <form method="post" action="{{ update_url }}" class="row g-2 mt-2 pt-3 border-top">{{ csrf_field() }}
+    <div class="col-md-3"><select name="status" class="form-select form-select-sm" required>
+      {% for k in update_statuses %}<option value="{{ k }}">{{ labels[k] }}</option>{% endfor %}</select></div>
+    <div class="col-md-3"><input name="location" class="form-control form-control-sm" placeholder="Location"></div>
+    <div class="col-md-3"><input name="note" class="form-control form-control-sm" placeholder="Note"></div>
+    <div class="col-md-2"><input name="received_net_t" type="number" step="0.001" min="0" class="form-control form-control-sm" placeholder="Received (t)"></div>
+    <div class="col-md-1"><button class="btn btn-sm btn-theme w-100"><i class="bi bi-send"></i></button></div>
+  </form>
+  {% endif %}
+</div></div>
+{% endmacro %}
+
+{% macro dispatch_modal(action, modes, order) %}
+<div class="modal fade" id="dispatchModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content">
+  <form method="post" action="{{ action }}">{{ csrf_field() }}
+    <div class="modal-header"><h6 class="modal-title"><i class="bi bi-truck"></i> Dispatch shipment</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body"><div class="row g-2">
+      <div class="col-md-4"><label class="form-label small">Transport mode</label><select name="transport_mode" class="form-select">{% for k, v in modes.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></div>
+      <div class="col-md-4"><label class="form-label small">Carrier</label><input name="carrier_name" class="form-control" maxlength="150"></div>
+      <div class="col-md-4"><label class="form-label small">Tracking / waybill no.</label><input name="tracking_number" class="form-control" maxlength="80"></div>
+      <div class="col-md-4"><label class="form-label small">Vehicle plate</label><input name="vehicle_plate" class="form-control" maxlength="30"></div>
+      <div class="col-md-4"><label class="form-label small">Driver</label><input name="driver_name" class="form-control" maxlength="120"></div>
+      <div class="col-md-4"><label class="form-label small">Driver phone</label><input name="driver_phone" class="form-control" maxlength="30"></div>
+      <div class="col-md-6"><label class="form-label small">Origin</label><input name="origin" class="form-control" maxlength="150"></div>
+      <div class="col-md-6"><label class="form-label small">Destination</label><input name="destination" class="form-control" maxlength="150" value="{{ order.delivery_location or order.rfq.delivery_location or '' }}"></div>
+      <div class="col-md-3"><label class="form-label small">Weighbridge ticket</label><input name="weighbridge_ticket" class="form-control" maxlength="60"></div>
+      <div class="col-md-3"><label class="form-label small">Gross (t)</label><input name="gross_weight_t" type="number" step="0.001" min="0" class="form-control"></div>
+      <div class="col-md-3"><label class="form-label small">Tare (t)</label><input name="tare_weight_t" type="number" step="0.001" min="0" class="form-control"></div>
+      <div class="col-md-3"><label class="form-label small">ETA</label><input name="eta" type="date" class="form-control"></div>
+      <div class="col-12"><label class="form-label small">Notes</label><textarea name="notes" rows="2" class="form-control"></textarea></div>
+    </div></div>
+    <div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button><button class="btn btn-theme"><i class="bi bi-truck"></i> Dispatch</button></div>
+  </form>
+</div></div></div>
+{% endmacro %}

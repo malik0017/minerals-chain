@@ -92,6 +92,11 @@ DEFINITIONS: list[SettingDef] = [
     SettingDef("prefix_subscription", "numbering", "Subscription charge prefix", "str", "SUB"),
     SettingDef("prefix_document", "numbering", "Order document prefix", "str", "DOC"),
     SettingDef("prefix_coa", "numbering", "Certificate of Analysis prefix", "str", "COA"),
+    SettingDef("prefix_shipment", "numbering", "Shipment prefix", "str", "SHP"),
+    SettingDef("allow_negative_stock", "policy", "Allow shipping more than recorded stock", "bool", True, "Off = shipping is blocked when the ledger shows insufficient stock."),
+    SettingDef("inventory_auto_issue", "policy", "Issue stock automatically when an order ships", "bool", True, "Creates a sale issue from the warehouse holding the most stock of the ordered listing."),
+    SettingDef("credential_auto_check", "policy", "Check CR / licence automatically at registration", "bool", True, "Runs the Wathq CR check (and MIM licence check for sellers) as soon as a company registers."),
+    SettingDef("prefix_stock", "numbering", "Stock movement prefix", "str", "STK"),
     SettingDef("reference_digits", "numbering", "Sequence digits", "int", 5, "RFQ-2026-00001 = 5 digits.", 3, 10),
 
     # --- Security ---

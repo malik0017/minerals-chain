@@ -31,3 +31,11 @@ app/static/uploads/avatars/*
 # --- Batch K: private uploads (company documents etc.) live outside app/static ---
 storage/*
 !storage/.gitkeep
+
+.env.bak-*
+/backups/
+/reports/
+/logs/
+
+.pytest_cache/
+/reports/

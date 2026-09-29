@@ -1,4 +1,6 @@
 {% extends "layouts/base.html" %}
+{% import "partials/dashboard_panels.html" as dp with context %}
+{% import "partials/charts.html" as ch with context %}
 {% block title %}{{ t('nav.dashboard') }}{% endblock %}
 {% block content %}
 
@@ -120,4 +122,7 @@
   </div>
 </div>
 
+{% if labx %}{{ dp.lab_panel(labx) }}{% endif %}
 {% endblock %}
+
+{% block extra_js %}{{ ch.scripts() }}{% endblock %}

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0e6e5c">
+  <title>Offline - Minerals Chain</title>
+  <link href="/static/css/app.css" rel="stylesheet"><link href="/static/css/theme-mineral.css" rel="stylesheet">
+  <style>body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f4f7f6;padding:16px}</style>
+</head>
+<body>
+  <div class="text-center" style="max-width:360px">
+    <img src="/static/img/icon-192.png" alt="" width="84" height="84" class="mb-3 rounded-4">
+    <h4 class="mb-2">{{ 'أنت غير متصل' if lang == 'ar' else "You're offline" }}</h4>
+    <p class="text-secondary mb-4">{{ 'تحقق من اتصالك بالإنترنت ثم أعد المحاولة.' if lang == 'ar' else 'Check your connection and try again. Your data stays safe on the server.' }}</p>
+    <button class="btn btn-theme px-4" onclick="location.reload()">{{ 'إعادة المحاولة' if lang == 'ar' else 'Try again' }}</button>
+  </div>
+</body>
+</html>

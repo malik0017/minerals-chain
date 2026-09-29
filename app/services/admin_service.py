@@ -34,6 +34,8 @@ def approve_company(db: Session, company_id: uuid.UUID, admin: User) -> Company:
     company.rejection_reason = None
 
     create_initial_subscription(db, company)
+    from app.services import company_document_service
+    company_document_service.approve_initial(db, company, admin)
 
     audit_log_repository.create(
         db,

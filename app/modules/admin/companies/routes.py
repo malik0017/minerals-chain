@@ -4,7 +4,7 @@ app/modules/admin/companies/routes.py
 import uuid
 
 from fastapi import APIRouter, Depends, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, Response
 from sqlalchemy.orm import Session
 
 from starlette.datastructures import FormData
@@ -121,6 +121,9 @@ def company_detail(
         "error": error,
     })
     context.update(company_admin_context(db))  # Batch K
+    from app.services import company_document_service, credential_check_service
+    context.update({"cred": credential_check_service.panel(db, company),
+                    "library": company_document_service.checklist(db, company)})
     return templates.TemplateResponse(request, "admin/company_detail.html", context)
 
 from urllib.parse import quote  
@@ -186,5 +189,12 @@ def company_document(company_id: uuid.UUID, kind: str, db: Session = Depends(get
     path = resolve_document_path(filename) if filename else None
     if path is None:
         return RedirectResponse(url=f"/admin/companies/{company_id}?error=" + quote("Document file not found."), status_code=303)
-    return FileResponse(path, filename=f"{company.cr_number}-{kind}{path.suffix}",
-                        headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"})
+    from app.services import file_crypto
+    from app.services.private_files import mime_for
+    try:
+        data = file_crypto.read(path)
+    except file_crypto.FileCryptoError as exc:
+        return RedirectResponse(url=f"/admin/companies/{company_id}?error=" + quote(str(exc)), status_code=303)
+    return Response(content=data, media_type=mime_for(path.name),
+                    headers={"Content-Disposition": f'inline; filename="{company.cr_number}-{kind}{path.suffix}"',
+                             "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"})

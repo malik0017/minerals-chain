@@ -4,11 +4,14 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
   <h4 class="mb-0"><i class="bi bi-graph-up-arrow"></i> Reports</h4>
-  <form method="get" class="d-flex flex-wrap gap-2 align-items-center">
-    <input type="date" name="start" value="{{ start }}" class="form-control form-control-sm">
-    <span class="text-secondary">→</span>
-    <input type="date" name="end" value="{{ end }}" class="form-control form-control-sm">
-    <button class="btn btn-sm btn-theme"><i class="bi bi-funnel"></i></button>
+  <form method="get" class="mc-filter-bar">
+    <div class="input-group input-group-sm flex-nowrap w-auto">
+      <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
+      <input type="date" name="start" value="{{ start }}" class="form-control" aria-label="From">
+      <span class="input-group-text">→</span>
+      <input type="date" name="end" value="{{ end }}" class="form-control" aria-label="To">
+      <button class="btn btn-theme" title="Apply"><i class="bi bi-funnel"></i></button>
+    </div>
     <a class="btn btn-sm btn-outline-theme text-nowrap" href="{{ url_for('admin_reports_csv') }}?start={{ start }}&end={{ end }}"><i class="bi bi-filetype-csv"></i> CSV</a>
   </form>
 </div>

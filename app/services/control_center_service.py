@@ -72,43 +72,8 @@ def system_health(db: Session) -> dict:
 
 
 def security_checklist(db: Session) -> list[dict]:
-    """Each item: level ok|warn|fail|info, title, detail, fix. Order = severity."""
-    from app.repositories import platform_settings_repository
-    ps = platform_settings_repository.get_settings(db)
-    admins_without_2fa = db.scalar(select(func.count()).select_from(User).where(
-        User.role == UserRole.ADMIN, User.totp_enabled.is_(False), User.is_active.is_(True)))
-    legacy_docs = document_upload_service.legacy_public_document_count()
-    items = [
-        {"level": "fail" if settings.SECRET_KEY.startswith("CHANGE_ME") else "ok",
-         "title": "Session signing key (SECRET_KEY)",
-         "detail": "Default development key in use — anyone who knows it can forge a login." if settings.SECRET_KEY.startswith("CHANGE_ME") else "Custom key configured.",
-         "fix": "Set a long random SECRET_KEY in .env (python -c \"import secrets;print(secrets.token_urlsafe(64))\")."},
-        {"level": "fail" if legacy_docs else "ok", "title": "Company documents not publicly downloadable",
-         "detail": f"{legacy_docs} CR/licence file(s) still in the public /static folder." if legacy_docs else "All company documents are in private storage.",
-         "fix": "Click “Secure legacy uploads” below.", "action": "secure_uploads" if legacy_docs else None},
-        {"level": "ok" if settings.cookie_secure_effective else "warn", "title": "Cookies marked Secure (HTTPS only)",
-         "detail": "On." if settings.cookie_secure_effective else "Off — fine on http://localhost, must be on in staging/production.",
-         "fix": "Serve over HTTPS and set COOKIE_SECURE=true (APP_ENV=production forces it)."},
-        {"level": "ok" if get_setting(db, "enforce_admin_2fa") else "warn", "title": "2FA enforced for administrators",
-         "detail": f"{admins_without_2fa} active admin(s) without 2FA.",
-         "fix": "System Settings → Security → Require 2FA for administrators (set up your own 2FA first)."},
-        {"level": "ok" if ps.require_email_otp else "warn", "title": "Email OTP on registration",
-         "detail": "On." if ps.require_email_otp else "Off — anyone can register with an unverified email.",
-         "fix": "Settings → Email verification."},
-        {"level": "warn" if get_setting(db, "allow_impersonation") else "ok", "title": "Admin impersonation",
-         "detail": "Enabled (dev tool)." if get_setting(db, "allow_impersonation") else "Disabled.",
-         "fix": "Turn off before go-live (always blocked when APP_ENV=production)."},
-        {"level": "warn" if settings.DEBUG else "ok", "title": "DEBUG mode", "detail": "On." if settings.DEBUG else "Off.",
-         "fix": "DEBUG=false in .env outside development (also stops SQL echo in logs)."},
-        {"level": "info", "title": "Rate limiting store", "detail": "In-memory, per process (Batch G).",
-         "fix": "Move to Redis before running multiple workers."},
-        {"level": "info" if settings.EMAIL_MODE == "console" else "ok", "title": "Email delivery",
-         "detail": f"EMAIL_MODE={settings.EMAIL_MODE}.", "fix": "Use smtp (or a KSA-hosted provider) in staging/production."},
-        {"level": "ok", "title": "Password hashing", "detail": "Argon2 (passlib).", "fix": ""},
-        {"level": "ok", "title": "CSRF protection", "detail": "Double-submit token on every POST (Batch G).", "fix": ""},
-    ]
-    order = {"fail": 0, "warn": 1, "info": 2, "ok": 3}
-    return sorted(items, key=lambda i: order[i["level"]])
+    from app.services.security_posture import checklist
+    return checklist(db)
 
 
 def secure_legacy_uploads(db: Session, admin: User) -> int:

@@ -10,7 +10,7 @@
       </button>
       <a
         class="navbar-brand"
-        href="{{ url_for('dashboard_home') if portal else '/' }}"
+        href="{{ url_for('home') }}"
       >
         <img
           data-bs-img="light"
@@ -138,6 +138,12 @@
                 <a class="dropdown-item" href="{{ url_for('my_profile') }}"
                   ><i data-feather="user" class="avatar avatar-18 me-1"></i> {{ t('header.my_profile') }}</a
                 >
+              </div>
+              <div>
+                <a class="dropdown-item d-none" href="#" data-pwa-install><i data-feather="download" class="avatar avatar-18 me-1"></i> {{ t('nav.install_app') }}</a>
+              </div>
+              <div>
+                <a class="dropdown-item" href="{{ url_for('my_api_tokens') }}"><i data-feather="key" class="avatar avatar-18 me-1"></i> {{ t('nav.api_access') }}</a>
               </div>
              
               <div>

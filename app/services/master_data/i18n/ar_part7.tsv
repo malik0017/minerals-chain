@@ -1,0 +1,497 @@
+Master lists	القوائم الرئيسية
+Records	السجلات
+Empty lists	قوائم فارغة
+Records by section	السجلات حسب القسم
+Traceability chain	سلسلة التتبع
+Last change {}	آخر تغيير {}
+List	القائمة
+empty	فارغة
+Open	فتح
+Add	إضافة
+Export CSV	تصدير CSV
+Suspend	إيقاف
+Suspend listing	إيقاف المنتج
+Removed from buyer browse and RFQ offers	يُزال من تصفح المشترين وعروض طلبات التسعير
+Seller is notified with your reason	يُبلَّغ البائع بالسبب
+Reactivate restores the previous status	إعادة التفعيل تستعيد الحالة السابقة
+Recorded in the audit log	يُسجَّل في سجل التدقيق
+Cancel	إلغاء
+Mineral	المعدن
+Product	المنتج
+Specification	المواصفة
+QC result	نتيجة الجودة
+COA	شهادة التحليل
+Apply	تطبيق
+From	من
+To	إلى
+{} / {} passed	{} / {} ناجح
+Fix	إصلاح
+Set up	إعداد
+Server environment fixes	إصلاحات بيئة الخادم
+Automatic	تلقائي
+Or paste into .env	أو الصق في ملف .env
+Copy	نسخ
+Restart the application after editing .env. Keep COOKIE_SECURE off only while testing over plain http on a LAN address.	أعد تشغيل التطبيق بعد تعديل ملف .env. أبقِ COOKIE_SECURE موقوفاً فقط أثناء الاختبار عبر http على الشبكة المحلية.
+No environment changes needed.	لا حاجة لتغييرات في البيئة.
+Security setting applied.	تم تطبيق إعداد الأمان.
+Test-environment banner	شريط بيئة الاختبار
+Shown on every page.	يظهر في كل صفحة.
+Hidden.	مخفي.
+Default or short key — sessions can be forged.	مفتاح افتراضي أو قصير — يمكن تزوير الجلسات.
+Strong custom key configured.	تم ضبط مفتاح قوي مخصص.
+Off — required once the site is served over HTTPS.	موقوف — مطلوب عند تشغيل الموقع عبر HTTPS.
+In-memory, per process.	في الذاكرة لكل عملية.
+Redis — shared across all workers.	Redis — مشترك بين جميع العمليات.
+Strong custom key configured.	تم ضبط مفتاح قوي مخصص.
+Backups & encryption	النسخ الاحتياطي والتشفير
+Back up now	نسخ احتياطي الآن
+Last backup	آخر نسخة احتياطية
+Backups kept	النسخ المحفوظة
+Files encrypted	الملفات المشفرة
+Encryption key	مفتاح التشفير
+Backup size (MB)	حجم النسخة (ميجابايت)
+Storage encryption	تشفير التخزين
+Encrypted	مشفر
+Plain	غير مشفر
+Backup	النسخة
+Trigger	المُشغِّل
+Size	الحجم
+Files	الملفات
+Schema	إصدار قاعدة البيانات
+No backups yet.	لا توجد نسخ احتياطية بعد.
+pruned	محذوفة
+never	أبداً
+set	مضبوط
+missing	غير مضبوط
+Uploaded documents encrypted at rest	المستندات المرفوعة مشفرة أثناء التخزين
+Daily backups	نسخ احتياطي يومي
+No successful backup yet.	لا توجد نسخة احتياطية ناجحة بعد.
+Verify checksums	التحقق من البصمات
+Database dump	نسخة قاعدة البيانات
+Documents archive	أرشيف المستندات
+Content-Security-Policy	سياسة أمان المحتوى
+Enforced	مُطبّق
+Report-only	مراقبة فقط
+Inventory	المخزون
+Receipt	استلام
+Transfer	تحويل
+Adjust	تسوية
+Warehouse	المستودع
+On hand (MT)	الرصيد (طن)
+Reserved for orders	محجوز للطلبات
+Stock value (SAR)	قيمة المخزون (ريال)
+Listings out of stock	منتجات نفد مخزونها
+Stock by listing (MT)	المخزون حسب المنتج (طن)
+In vs out · 12 weeks (MT)	الوارد مقابل الصادر · 12 أسبوعاً (طن)
+Stock by listing	المخزون حسب المنتج
+On hand	الرصيد
+Reserved	محجوز
+Available	متاح
+Value (SAR)	القيمة (ريال)
+No stock recorded yet — start with a receipt.	لا يوجد مخزون مسجل بعد — ابدأ بعملية استلام.
+Stock ledger	دفتر المخزون
+All listings	كل المنتجات
+All warehouses	كل المستودعات
+All types	كل الأنواع
+Qty	الكمية
+Order / note	الطلب / ملاحظة
+No movements.	لا توجد حركات.
+Sale issue	صرف مبيعات
+Adjustment	تسوية
+Transfer out	تحويل صادر
+Transfer in	تحويل وارد
+Customer return	مرتجع عميل
+Stock receipt	استلام مخزون
+Transfer between warehouses	تحويل بين المستودعات
+Stock adjustment	تسوية مخزون
+New warehouse	مستودع جديد
+Batch / lot (optional)	الدفعة (اختياري)
+Quantity (MT)	الكمية (طن)
+Unit cost (SAR)	تكلفة الوحدة (ريال)
+Quantity (+ gain / − loss)	الكمية (+ زيادة / − نقص)
+Capacity (MT)	السعة (طن)
+Stock on hand (MT)	رصيد المخزون (طن)
+Sellers holding stock	بائعون لديهم مخزون
+Movements	الحركات
+Stock by mineral (MT)	المخزون حسب المعدن (طن)
+All sellers	كل البائعين
+Receipt {} recorded.	تم تسجيل الاستلام {}.
+Adjustment {} recorded.	تم تسجيل التسوية {}.
+Transfer {} recorded.	تم تسجيل التحويل {}.
+Warehouse {} added.	تمت إضافة المستودع {}.
+Choose one of your listings.	اختر أحد منتجاتك.
+Choose a warehouse.	اختر مستودعاً.
+Enter a valid quantity.	أدخل كمية صحيحة.
+Quantity can't be zero.	لا يمكن أن تكون الكمية صفراً.
+Choose two different warehouses.	اختر مستودعين مختلفين.
+Not enough stock in the source warehouse.	لا يوجد مخزون كافٍ في المستودع المصدر.
+Explain the adjustment (e.g. stock count, spillage, moisture loss).	اشرح سبب التسوية (مثل الجرد أو الانسكاب أو فقد الرطوبة).
+Save	حفظ
+ERP export	التصدير إلى نظام ERP
+Platform-wide	على مستوى المنصة
+Exports	عمليات التصدير
+Last export	آخر تصدير
+Rows in last export	الصفوف في آخر تصدير
+Targets	الأنظمة المستهدفة
+New export	تصدير جديد
+Business partners	الشركاء التجاريون
+Items / products	الأصناف / المنتجات
+Sales orders	أوامر البيع
+Invoices	الفواتير
+Stock movements	حركات المخزون
+Build export	إنشاء ملف التصدير
+Rows exported by dataset	الصفوف المصدَّرة حسب مجموعة البيانات
+By target	حسب النظام
+Target	النظام
+Scope	النطاق
+Period	الفترة
+Rows	الصفوف
+No exports yet	لا توجد عمليات تصدير بعد
+Choose Odoo or SAP Business One.	اختر Odoo أو SAP Business One.
+Choose at least one dataset.	اختر مجموعة بيانات واحدة على الأقل.
+Start date is after end date.	تاريخ البداية بعد تاريخ النهاية.
+Shipments	الشحنات
+Open shipments	الشحنات المفتوحة
+Late	متأخرة
+On-time rate	نسبة التسليم في الموعد
+Avg transit (h)	متوسط مدة النقل (ساعة)
+By status	حسب الحالة
+By transport mode	حسب وسيلة النقل
+Top carriers	أبرز الناقلين
+Reference, carrier, plate or tracking no.	المرجع أو الناقل أو اللوحة أو رقم التتبع
+Shipment	الشحنة
+Seller → Buyer	البائع ← المشتري
+Route	المسار
+Carrier / vehicle	الناقل / المركبة
+Net (t)	الصافي (طن)
+ETA	موعد الوصول المتوقع
+No shipments	لا توجد شحنات
+Dispatched	تم الإرسال
+In transit	قيد النقل
+At checkpoint	عند نقطة تفتيش
+Delayed	متأخرة
+Arrived at site	وصلت إلى الموقع
+Delivered	تم التسليم
+Cancelled	ملغاة
+Truck	شاحنة
+Rail	سكة حديد
+Sea freight	شحن بحري
+Multimodal	متعدد الوسائط
+From	من
+To	إلى
+Vehicle	المركبة
+Driver	السائق
+Ticket	التذكرة
+Gross (t)	الإجمالي (طن)
+Tare (t)	الفارغ (طن)
+Received (t)	المستلم (طن)
+Variance (t)	الفرق (طن)
+Location	الموقع
+Note	ملاحظة
+Dispatch	الإرسال
+Dispatch shipment	إرسال الشحنة
+Record carrier, vehicle and weighbridge details. The buyer can track every update.	سجّل بيانات الناقل والمركبة والميزان. يستطيع المشتري تتبع كل تحديث.
+Transport mode	وسيلة النقل
+Carrier	الناقل
+Tracking / waybill no.	رقم التتبع / بوليصة الشحن
+Vehicle plate	لوحة المركبة
+Driver phone	هاتف السائق
+Origin	نقطة الانطلاق
+Destination	الوجهة
+Weighbridge ticket	تذكرة الميزان
+Notes	ملاحظات
+Tracking updated.	تم تحديث التتبع.
+Choose a transport mode.	اختر وسيلة النقل.
+Tare weight can't exceed gross weight.	لا يمكن أن يتجاوز الوزن الفارغ الوزن الإجمالي.
+Choose a tracking status.	اختر حالة التتبع.
+This shipment is closed.	هذه الشحنة مغلقة.
+Loaded and dispatched	تم التحميل والإرسال
+Order marked delivered	تم تحديد الطلب كمسلَّم
+Company documents	مستندات الشركة
+Upload document	رفع مستند
+Compliance file	الملف النظامي
+Complete	مكتمل
+Valid	ساري
+No expiry	بلا تاريخ انتهاء
+Expiring soon	قارب على الانتهاء
+Expired	منتهي
+Missing	غير موجود
+Rejected	مرفوض
+Expired / rejected	منتهي / مرفوض
+Required	مطلوب
+Health	الصلاحية
+Review	المراجعة
+Version	الإصدار
+Renew	تجديد
+Upload	رفع
+Issued on	تاريخ الإصدار
+Expires on	تاريخ الانتهاء
+Expires	ينتهي
+Number	الرقم
+Pending review	بانتظار المراجعة
+Approved	معتمد
+Expiring ≤ 60 days	ينتهي خلال 60 يوماً
+Companies with complete file	الشركات ذات الملف المكتمل
+Expiries — next 6 months	الانتهاءات — الأشهر الستة القادمة
+Review status	حالة المراجعة
+By type	حسب النوع
+Company or document number	الشركة أو رقم المستند
+All types	جميع الأنواع
+Any review	أي حالة مراجعة
+Any expiry	أي صلاحية
+No documents match	لا توجد مستندات مطابقة
+Reject document	رفض المستند
+Commercial Registration (CR)	السجل التجاري
+Operating licence / accreditation	الترخيص / الاعتماد
+MIM mining licence	رخصة التعدين من وزارة الصناعة والثروة المعدنية
+VAT registration certificate	شهادة التسجيل في ضريبة القيمة المضافة
+Zakat certificate (ZATCA)	شهادة الزكاة (هيئة الزكاة والضريبة والجمارك)
+GOSI certificate	شهادة التأمينات الاجتماعية
+Saudization (Nitaqat) certificate	شهادة السعودة (نطاقات)
+Chamber of Commerce membership	عضوية الغرفة التجارية
+National address proof	إثبات العنوان الوطني
+Bank IBAN letter	خطاب الآيبان البنكي
+ISO certificate	شهادة الآيزو
+Insurance policy	وثيقة التأمين
+ISO/IEC 17025 accreditation	اعتماد ISO/IEC 17025
+Choose a document type.	اختر نوع المستند.
+Expiry date must be after the issue date.	يجب أن يكون تاريخ الانتهاء بعد تاريخ الإصدار.
+Give a reason for rejecting (at least 5 characters).	اذكر سبب الرفض (5 أحرف على الأقل).
+Insights	التحليلات
+This tab	هذا التبويب
+All	الكل
+Price trends	اتجاهات الأسعار
+RFQ funnel	مسار طلبات التسعير
+Seller performance	أداء البائعين
+Buyer activity	نشاط المشترين
+Lab turnaround	زمن إنجاز المختبرات
+Billed last month (SAR)	المفوتر في آخر شهر (ريال)
+Minerals traded	المعادن المتداولة
+Volume (MT)	الكمية (طن)
+Biggest mover	الأكثر تغيراً
+Average order price per unit (SAR) — top 5 minerals	متوسط سعر الوحدة (ريال) — أعلى 5 معادن
+Mineral	المعدن
+Min price	أدنى سعر
+Avg price	متوسط السعر
+Max price	أعلى سعر
+Last month avg	متوسط آخر شهر
+Change %	نسبة التغير
+Avg quotes / RFQ	متوسط العروض لكل طلب
+Hours to first quote	ساعات حتى أول عرض
+RFQ → order	من طلب إلى أمر
+Conversion funnel	مسار التحويل
+RFQs by mineral	طلبات التسعير حسب المعدن
+RFQs posted	طلبات منشورة
+Received quotes	تلقت عروضاً
+Quote accepted	عرض مقبول
+Seller confirmed	أكّد البائع
+Quoted %	نسبة التسعير
+Avg quotes	متوسط العروض
+Converted %	نسبة التحويل
+Active sellers	البائعون النشطون
+Quotations	عروض الأسعار
+Win rate	نسبة الفوز
+On-time delivery	التسليم في الموعد
+Top 10 by GMV (SAR)	أعلى 10 حسب قيمة التداول (ريال)
+Quotes	العروض
+Win %	نسبة الفوز
+GMV (SAR)	قيمة التداول (ريال)
+Avg lead (days)	متوسط مدة التوريد (يوم)
+On-time %	نسبة الالتزام بالموعد
+Active buyers	المشترون النشطون
+Avg order (SAR)	متوسط الطلب (ريال)
+Top-5 share	حصة أكبر 5
+RFQ → order %	نسبة التحويل إلى طلب
+Last order	آخر طلب
+Requests	الطلبات
+Avg turnaround (days)	متوسط زمن الإنجاز (يوم)
+Pass rate	نسبة النجاح
+Turnaround distribution	توزيع زمن الإنجاز
+Avg days per lab	متوسط الأيام لكل مختبر
+Lab	المختبر
+Closed	مغلقة
+Pass %	نسبة النجاح
+Avg days	متوسط الأيام
+Priority	أولوية
+Fees (SAR)	الرسوم (ريال)
+Subscription billings by tier (SAR, net)	فواتير الاشتراكات حسب الفئة (ريال، صافي)
+Active subscriptions	الاشتراكات النشطة
+New in period	الجديدة في الفترة
+Expired in period	المنتهية في الفترة
+Subscription revenue by tier (SAR, net)	إيراد الاشتراكات حسب الفئة (ريال، صافي)
+Active by tier	النشطة حسب الفئة
+Month	الشهر
+Total	الإجمالي
+Monitoring	المراقبة
+Requests	الطلبات
+Avg response	متوسط الاستجابة
+Server errors (5xx)	أخطاء الخادم (5xx)
+Error rate	نسبة الأخطاء
+Open error reports	تقارير أخطاء مفتوحة
+Traffic per hour	الحركة لكل ساعة
+System health	صحة النظام
+Avg latency (ms)	متوسط زمن الاستجابة (مللي ثانية)
+Errors per hour	الأخطاء لكل ساعة
+Busiest routes	أكثر المسارات استخداماً
+Scheduled jobs	المهام المجدولة
+Run now	تشغيل الآن
+never run	لم تُشغَّل
+Slowest routes	أبطأ المسارات
+Calls	الاستدعاءات
+Avg ms	متوسط الزمن
+Max ms	أقصى زمن
+Slow	بطيئة
+No traffic recorded yet	لم تُسجَّل حركة بعد
+Recent job runs	آخر تشغيلات المهام
+Job	المهمة
+Started	البدء
+Time	المدة
+Result	النتيجة
+No runs yet	لا توجد تشغيلات بعد
+Error reports	تقارير الأخطاء
+Resolve all	حل الكل
+Mark resolved	تحديد كمحلول
+No errors recorded	لا توجد أخطاء مسجلة
+Database	قاعدة البيانات
+Migrations	الترحيلات
+Rate-limit store	مخزن تحديد المعدل
+Disk free	المساحة المتاحة
+Private storage	التخزين الخاص
+Backups	النسخ الاحتياطية
+Email	البريد الإلكتروني
+Process uptime	مدة التشغيل
+Runtime	بيئة التشغيل
+Subscription lifecycle	دورة حياة الاشتراكات
+Quotation expiry	انتهاء عروض الأسعار
+Document expiry reminders	تذكيرات انتهاء المستندات
+Late shipment alerts	تنبيهات الشحنات المتأخرة
+Database & storage backup	نسخ قاعدة البيانات والتخزين
+Metrics flush & retention	حفظ المقاييس والاحتفاظ بها
+Registry checks	التحقق من السجلات
+Government registry checks	التحقق من السجلات الحكومية
+Commercial Registration (Wathq)	السجل التجاري (واثق)
+Mining licence (MIM)	رخصة التعدين (وزارة الصناعة والثروة المعدنية)
+Name mismatch	عدم تطابق الاسم
+Inactive	غير نشط
+Not found	غير موجود
+Service error	خطأ في الخدمة
+Not checked	لم يتم التحقق
+Name on record	الاسم في السجل
+Checked	تاريخ التحقق
+Check again	تحقق مجدداً
+Verify now	تحقق الآن
+Checks run	عمليات التحقق
+Verified	تم التحقق
+Issues found	مشكلات مكتشفة
+Companies covered	الشركات المشمولة
+Results	النتائج
+By registry	حسب السجل
+Company or number	الشركة أو الرقم
+All registries	جميع السجلات
+All results	جميع النتائج
+Registry	السجل
+No checks yet	لا توجد عمليات تحقق بعد
+Document library	مكتبة المستندات
+Credential checks are switched off (WATHQ_MODE / MIM_MODE = off).	التحقق من السجلات متوقف.
+Mining licence checks apply to sellers only.	التحقق من رخصة التعدين للبائعين فقط.
+No number on file to check.	لا يوجد رقم مسجل للتحقق منه.
+API access	الوصول البرمجي
+New token	رمز جديد
+Your new token	رمزك الجديد
+Copy	نسخ
+Token	الرمز
+Scopes	الصلاحيات
+Last used	آخر استخدام
+Revoke	إلغاء
+revoked	ملغى
+never	أبداً
+No tokens yet	لا توجد رموز بعد
+Quick start	بداية سريعة
+New API token	رمز واجهة برمجية جديد
+Read data	قراءة البيانات
+Post updates (tracking, notifications)	نشر التحديثات (التتبع، الإشعارات)
+Expires after	ينتهي بعد
+Never	أبداً
+Create	إنشاء
+API tokens	رموز الواجهة البرمجية
+My tokens	رموزي
+Active tokens	الرموز النشطة
+Used at least once	استُخدمت مرة واحدة على الأقل
+Revoked / expired	ملغاة / منتهية
+Active tokens by portal	الرموز النشطة حسب البوابة
+No tokens issued	لم تصدر رموز
+Token not found.	الرمز غير موجود.
+All orders	جميع الطلبات
+Need your confirmation	بانتظار تأكيدك
+Order value (SAR)	قيمة الطلبات (ريال)
+Search mineral, reference or buyer…	ابحث بالمعدن أو المرجع أو المشتري…
+Search mineral, reference or seller…	ابحث بالمعدن أو المرجع أو البائع…
+Confirm	تأكيد
+Hidden until you confirm	مخفي حتى تؤكد الطلب
+Revealed when the seller confirms	يظهر عند تأكيد البائع
+Awaiting seller	بانتظار البائع
+Track	تتبع
+Verified (visible)	موثق (ظاهر)
+Drafts	المسودات
+Failed / suspended	فاشل / موقوف
+Search mineral or grade…	ابحث بالمعدن أو الدرجة…
+hidden	مخفي
+All quotations	جميع عروض الأسعار
+Awaiting buyer	بانتظار المشتري
+Won	تم الفوز
+Search mineral or RFQ reference…	ابحث بالمعدن أو مرجع الطلب…
+Not quoted yet	لم يُسعَّر بعد
+Quoted by you	سعّرتها
+Closing within 3 days	تُغلق خلال 3 أيام
+Not quoted	لم يُسعَّر
+Quoted	مُسعَّر
+Closing soon	تُغلق قريباً
+Search mineral, reference or city…	ابحث بالمعدن أو المرجع أو المدينة…
+Request	الطلب
+Your quote	عرضك
+Quote	سعّر
+All RFQs	جميع طلبات التسعير
+Quotes received	العروض المستلمة
+Compare quotes	مقارنة العروض
+New requests	طلبات جديدة
+Sampling scheduled	أخذ العينة مجدول
+Priority open	أولوية مفتوحة
+Search reference, mineral or seller…	ابحث بالمرجع أو المعدن أو البائع…
+Process	معالجة
+Review documents and registry checks, then approve or reject each company.	راجع المستندات والتحقق من السجلات ثم اعتمد أو ارفض كل شركة.
+Awaiting review	بانتظار المراجعة
+Oldest waiting	الأقدم انتظاراً
+Search company, CR or email…	ابحث بالشركة أو السجل التجاري أو البريد…
+Licence	الترخيص
+Every order with its frozen financial snapshot. Admins see both parties.	كل طلب مع لقطته المالية الثابتة. يرى المشرفون الطرفين.
+Search reference, mineral, buyer or seller…	ابحث بالمرجع أو المعدن أو المشتري أو البائع…
+Buyer → Seller	المشتري ← البائع
+Mineral Passport requests	طلبات الجواز المعدني
+Review each request against the verified listing and COA, then issue or reject.	راجع كل طلب مقابل الإعلان الموثق وشهادة التحليل ثم أصدره أو ارفضه.
+Expedited	مستعجل
+Renewals	التجديدات
+Export scope	نطاق التصدير
+Renewal	تجديد
+Export	تصدير
+Search company or mineral…	ابحث بالشركة أو المعدن…
+Needs your attention	يحتاج انتباهك
+Orders to confirm	طلبات للتأكيد
+Orders to dispatch	طلبات للإرسال
+RFQs you haven't quoted	طلبات لم تسعّرها
+Shipments on the road	شحنات في الطريق
+Documents expiring / rejected	مستندات قاربت على الانتهاء / مرفوضة
+RFQs with quotes to compare	طلبات بها عروض للمقارنة
+Deliveries to confirm	استلامات للتأكيد
+Orders & value — last 6 months	الطلبات والقيمة — آخر 6 أشهر
+Recent orders	أحدث الطلبات
+No orders yet	لا توجد طلبات بعد
+Tests completed — last 6 months	الاختبارات المنجزة — آخر 6 أشهر
+Work queue	قائمة العمل
+All requests	جميع الطلبات
+Waiting	بانتظار
+Queue is clear	القائمة فارغة
+No matching records	لا توجد سجلات مطابقة
+Search…	بحث…
+Page not found	الصفحة غير موجودة
+The page you asked for doesn't exist or has moved.	الصفحة المطلوبة غير موجودة أو تم نقلها.
+Go to my account	الذهاب إلى حسابي

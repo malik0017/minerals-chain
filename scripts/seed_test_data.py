@@ -111,6 +111,9 @@ def get_or_create_company_user(
 
 
 def main() -> None:
+    from app.core.config import settings as _s
+    if _s.APP_ENV == "production":
+        raise SystemExit("Refusing to load test/demo accounts (password admin123) when APP_ENV=production.")
     db = SessionLocal()
     try:
         print("=== Minerals Chain — seeding test data ===\n")

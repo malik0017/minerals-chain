@@ -28580,6 +28580,7 @@ select,
 textarea {
   box-shadow: none;
   outline: none;
+  border-radius: var(--radius-lg);
 }
 .form-control:focus,
 .form-select:focus,
@@ -28588,6 +28589,7 @@ select:focus,
 textarea:focus {
   border-color: rgba(var(--adminuiux-theme-1-rgb), 0.5);
   box-shadow: 0 0 0 0.25rem rgba(var(--adminuiux-theme-1-rgb), 0.15);
+  border-radius: var(--radius-lg);
 }
 .form-check {
   --bs-border-width: 1px;
@@ -30440,6 +30442,8 @@ textarea:focus {
 .nav-pills .nav-link.active {
   background-color: var(--bs-nav-pills-link-active-bg);
   color: var(--bs-nav-pills-link-active-color);
+  border-radius: var(--radius-lg);
+
 }
 .nav-pills.adminuiux-nav-pills .nav-link {
   align-items: center;

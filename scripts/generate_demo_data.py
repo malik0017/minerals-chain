@@ -13,6 +13,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 os.environ.setdefault("DEBUG", "false")
 
 from sqlalchemy import text  
@@ -785,6 +786,9 @@ def summary(db):
 
 
 def main():
+    from app.core.config import settings as _s
+    if _s.APP_ENV == "production":
+        raise SystemExit("Refusing to load test/demo accounts (password admin123) when APP_ENV=production.")
     global HASH
     t0 = time.time()
     HASH = hash_password(PASSWORD)
@@ -801,7 +805,11 @@ def main():
         phase_companies(db, admin)
         phase_locations(db)
         phase_listings(db, admin)
+        import demo_data_ops as ops
+        ctx = {"Clock": Clock, "R": R, "NOW": NOW, "days_ago": days_ago, "admin": admin, "upload": upload, "PDF": PDF}
+        ops.before_trade(db, ctx)
         phase_trade(db, admin)
+        ops.after_trade(db, ctx)
         phase_subscriptions(db, admin)
         phase_data_requests(db, admins[3])
         phase_batches(db, admin)

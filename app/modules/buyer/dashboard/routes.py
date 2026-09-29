@@ -49,4 +49,7 @@ def buyer_dashboard(
         context["orders_in_progress"] = None
         context["rfq_donut"] = None
 
+    if user.company is not None:
+        from app.services import portal_dashboard_service
+        context["trade"] = portal_dashboard_service.trade(db, user.company, "buyer")
     return templates.TemplateResponse(request, "buyer/dashboard.html", context)

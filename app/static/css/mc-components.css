@@ -1,0 +1,64 @@
+.mc-kpi-icon{width:40px;height:40px;border-radius:.75rem;display:inline-flex;align-items:center;justify-content:center;font-size:1.15rem;flex-shrink:0}
+.mc-chain{display:flex;flex-wrap:wrap;gap:.35rem}
+.mc-chain-step{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .6rem;border-radius:999px;background:var(--bs-tertiary-bg,#f1f3f5);font-size:.8rem;position:relative}
+.mc-chain-step:not(:last-child)::after{content:"›";margin-inline-start:.35rem;opacity:.5}
+.mc-filter-bar{display:flex;align-items:center;gap:.5rem;flex-wrap:nowrap}
+.mc-filter-bar .form-control,.mc-filter-bar .form-select{width:auto!important;min-width:0}
+.mc-filter-bar input[type=date]{width:150px!important}
+@media (max-width:575.98px){.mc-filter-bar{flex-wrap:wrap}.mc-filter-bar input[type=date]{width:100%!important}}
+.mc-action-cell{white-space:nowrap}
+.input-group.mc-filter-bar>.form-control{flex:1 1 auto;width:1%!important}
+@media (max-width:767.98px){
+  .input-group.mc-filter-bar{flex-wrap:wrap;gap:.4rem}
+  .input-group.mc-filter-bar>*{border-radius:.5rem!important;margin-left:0!important}
+  .input-group.mc-filter-bar>.form-control{flex:1 1 calc(100% - 3rem);width:auto!important}
+  .input-group.mc-filter-bar>.form-select{flex:1 1 45%;max-width:none!important}
+  .input-group.mc-filter-bar>.btn{flex:1 1 100%}
+  .mc-kpi-icon{width:34px;height:34px;font-size:1rem}
+  .card-body .fs-4{font-size:1.2rem!important}
+  .card-body .fs-5{font-size:1.05rem!important}
+  h4{font-size:1.15rem}
+  .nav-pills.flex-nowrap{scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .nav-pills.flex-nowrap::-webkit-scrollbar{display:none}
+  .table{font-size:.85rem}
+  .table td,.table th{padding:.45rem .5rem}
+  .mc-action-cell .btn{padding:.2rem .45rem}
+  .modal-dialog{margin:.5rem}
+  pre{white-space:pre-wrap;word-break:break-all}
+}
+@media (max-width:575.98px){
+  .modal-dialog.modal-lg,.modal-dialog{max-width:none}
+  .btn-group-sm>.btn{padding:.25rem .5rem}
+  .mc-hide-xs{display:none!important}
+  .card-body{padding:.85rem}
+}
+@media (display-mode:standalone){
+  body{padding-bottom:env(safe-area-inset-bottom)}
+  .adminuiux-header{padding-top:env(safe-area-inset-top)}
+}
+@media (hover:none){.btn,.form-control,.form-select{min-height:38px}}
+@media (max-width:991.98px){
+  .adminuiux-header .navbar>.container-fluid{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center}
+  .adminuiux-header .navbar>.container-fluid>.ms-auto{display:flex;align-items:center;flex-wrap:nowrap;gap:.1rem}
+  .adminuiux-header .navbar-brand{display:flex;align-items:center;min-width:0}
+}
+@media (max-width:575.98px){
+  .adminuiux-header .navbar-brand>div{display:none}
+  .adminuiux-header .navbar-brand img{height:34px;width:auto}
+  .adminuiux-header .btn-link-header{width:36px;height:36px;padding:0}
+}
+.mc-kpi{transition:transform .15s ease,box-shadow .15s ease}
+.mc-kpi-click{cursor:pointer}
+.mc-kpi-click:hover{transform:translateY(-2px);box-shadow:0 .5rem 1.25rem rgba(15,23,42,.08)}
+.mc-toolbar-search{max-width:340px;flex:1 1 220px}
+.mc-pill{border:1px solid var(--bs-border-color);background:var(--bs-body-bg);color:var(--bs-body-color);border-radius:999px;padding:.2rem .7rem;font-size:.8rem}
+.mc-pill .badge{background:var(--bs-tertiary-bg);color:var(--bs-secondary-color);font-weight:600}
+.mc-pill.active{background:var(--adminuiux-theme-1,#0e6e5c);border-color:var(--adminuiux-theme-1,#0e6e5c);color:#fff}
+.mc-pill.active .badge{background:rgba(255,255,255,.25);color:#fff}
+.mc-pill.active i{color:#fff!important}
+.mc-empty-icon{width:72px;height:72px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:2rem;background:var(--bs-tertiary-bg);color:var(--bs-secondary-color)}
+.mc-list-table thead th{font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;color:var(--bs-secondary-color);font-weight:600;white-space:nowrap}
+.mc-list-table tbody tr{transition:background .12s ease}
+.mc-list-table tbody tr:hover{background:var(--bs-tertiary-bg)}
+.min-w-0{min-width:0}
+.mc-progress-thin{height:6px;border-radius:999px}

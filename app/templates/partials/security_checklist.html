@@ -1,0 +1,63 @@
+{% set open_items = checklist | rejectattr('level', 'equalto', 'ok') | list %}
+<div class="card adminuiux-card h-100"><div class="card-body">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h6 class="mb-0"><i class="bi bi-list-check"></i> Security checklist</h6>
+    <span class="badge {{ 'bg-success' if not open_items else 'bg-warning text-dark' }}">{{ checklist | length - open_items | length }} / {{ checklist | length }} passed</span>
+  </div>
+  <div class="table-responsive"><table class="table table-sm align-middle mb-0 small">
+  {% for item in checklist %}
+    {% set c = {'ok':'success','warn':'warning','fail':'danger','info':'info'}[item.level] %}
+    {% set ic = {'ok':'bi-check-circle-fill','warn':'bi-exclamation-triangle-fill','fail':'bi-x-octagon-fill','info':'bi-info-circle-fill'}[item.level] %}
+    <tr>
+      <td style="width:24px"><i class="bi {{ ic }} text-{{ c }}"></i></td>
+      <td class="fw-semibold">{{ item.title }}</td>
+      <td class="text-secondary">{{ item.detail }}</td>
+      <td class="text-end text-nowrap">
+        {% if item.level != 'ok' %}
+          {% if item.toggle == 'enforce_admin_2fa' and not current_user.totp_enabled %}
+            <a class="btn btn-sm btn-outline-{{ c }} py-0" href="{{ url_for('my_profile_2fa_setup') }}" title="Set up your own 2FA first, then enforce it"><i class="bi bi-shield-lock"></i> My 2FA</a>
+          {% elif item.kind == 'toggle' and item.toggle %}
+            <form method="post" action="{{ url_for('admin_security_fix') }}" class="d-inline">{{ csrf_field() }}
+              <input type="hidden" name="item" value="{{ item.toggle }}">
+              <button class="btn btn-sm btn-{{ c }} py-0" title="{{ item.fix }}"><i class="bi bi-magic"></i> Fix</button></form>
+          {% elif item.kind == 'action' and item.link %}
+            <form method="post" action="{{ url_for(item.link) }}" class="d-inline">{{ csrf_field() }}
+              <button class="btn btn-sm btn-{{ c }} py-0" title="{{ item.fix }}"><i class="bi bi-magic"></i> Fix</button></form>
+          {% elif item.kind == 'link' and item.link %}
+            <a class="btn btn-sm btn-outline-{{ c }} py-0" href="{{ url_for(item.link) }}" title="{{ item.fix }}"><i class="bi bi-arrow-right-circle"></i> Set up</a>
+          {% elif item.kind == 'env' %}
+            <button type="button" class="btn btn-sm btn-outline-{{ c }} py-0" data-bs-toggle="modal" data-bs-target="#envFixModal" title="{{ item.fix }}"><i class="bi bi-terminal"></i> .env</button>
+          {% endif %}
+          {% if item.key == 'email' %}
+            <form method="post" action="{{ url_for('admin_security_test_email') }}" class="d-inline">{{ csrf_field() }}
+              <button class="btn btn-sm btn-outline-secondary py-0" title="Send a test email to yourself"><i class="bi bi-send"></i></button></form>
+          {% endif %}
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </table></div>
+</div></div>
+
+<div class="modal fade" id="envFixModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content">
+  <div class="modal-header"><h6 class="modal-title"><i class="bi bi-terminal"></i> Server environment fixes</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body">
+    {% if env_fixes %}
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="fw-semibold small mb-1"><span class="badge bg-primary">1</span> Automatic</div>
+        <pre class="bg-body-tertiary p-2 rounded small mb-1" translate="no">python scripts/harden_env.py --profile production</pre>
+        <div class="small text-secondary">Writes a strong SECRET_KEY, DEBUG=false and secure cookies into .env (a backup is kept).</div>
+      </div>
+      <div class="col-md-6">
+        <div class="fw-semibold small mb-1"><span class="badge bg-primary">2</span> Or paste into .env</div>
+        <pre class="bg-body-tertiary p-2 rounded small mb-1" id="envFixText" translate="no">{% for k, v in env_fixes.items() %}{{ k }}={{ v }}
+{% endfor %}</pre>
+        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText(document.getElementById('envFixText').innerText)"><i class="bi bi-clipboard"></i> Copy</button>
+        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin_security_env') }}"><i class="bi bi-download"></i> Download</a>
+      </div>
+    </div>
+    <div class="alert alert-light small mt-3 mb-0"><i class="bi bi-arrow-repeat"></i> Restart the application after editing .env. Keep COOKIE_SECURE off only while testing over plain http on a LAN address.</div>
+    {% else %}<div class="text-success"><i class="bi bi-check-circle-fill"></i> No environment changes needed.</div>{% endif %}
+  </div>
+</div></div></div>

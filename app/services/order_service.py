@@ -116,6 +116,11 @@ def confirm_order(db: Session, order: Order, confirmed_by=None) -> Order:
 def mark_shipped(db: Session, order: Order) -> Order:
     if order.status != OrderStatus.CONFIRMED:
         raise OrderActionError(f"This order is {order.status.value.replace('_', ' ')} — it must be confirmed first.")
+    from app.services import inventory_service
+    try:
+        inventory_service.issue_for_order(db, order)
+    except inventory_service.InventoryError as exc:
+        raise OrderActionError(str(exc))
     order.status = OrderStatus.IN_TRANSIT
     order.shipped_at = datetime.now(timezone.utc)
     _notify_company_users(
@@ -135,6 +140,8 @@ def mark_delivered(db: Session, order: Order) -> Order:
         raise OrderActionError(f"This order is {order.status.value.replace('_', ' ')} — it must be in transit first.")
     order.status = OrderStatus.DELIVERED
     order.delivered_at = datetime.now(timezone.utc)
+    from app.services import shipment_service
+    shipment_service.close_for_order(db, order)
     _notify_company_users(
         db, order.buyer_company,
         type_="order_delivered",

@@ -55,13 +55,22 @@ def _form_context(db: Session, entity, values: dict, obj=None) -> dict:
 @router.get("", name="admin_master_data_index")
 def index(request: Request, db: Session = Depends(get_db),
           admin: User = Depends(require_admin("master_data")),
-          msg: str | None = None, error: str | None = None):
+          msg: str | None = None, error: str | None = None, section: str = ""):
     entities = visible_entities()
-    counts = {e.key: service.count_rows(db, e) for e in entities}
+    stats = {e.key: service.entity_stats(db, e) for e in entities}
+    counts = {k: v["total"] for k, v in stats.items()}
+    sections = [(sid, title, icon, [e for e in entities if e.section == sid]) for sid, title, icon in SECTIONS]
+    sections = [s for s in sections if s[3]]
+    by_section = [{"name": title, "value": sum(stats[e.key]["total"] for e in ents)} for _, title, _, ents in sections]
+    lasts = [v["last"] for v in stats.values() if v["last"]]
+    total = sum(counts.values())
+    active = sum(v["active"] for v in stats.values())
     context = build_portal_context(admin, UserRole.ADMIN, active_path="/admin/master-data")
     context.update({
-        "sections": [(sid, title, icon, [e for e in entities if e.section == sid]) for sid, title, icon in SECTIONS],
-        "counts": counts, "total_rows": sum(counts.values()), "msg": msg, "error": error,
+        "sections": sections, "stats": stats, "counts": counts, "total_rows": total, "active_rows": active,
+        "entity_count": len(entities), "last_change": max(lasts) if lasts else None, "by_section": by_section,
+        "empty_entities": [e for e in entities if counts[e.key] == 0], "section": section,
+        "msg": msg, "error": error,
     })
     return templates.TemplateResponse(request, "admin/master_data/index.html", context)
 

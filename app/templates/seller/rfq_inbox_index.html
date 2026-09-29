@@ -1,50 +1,36 @@
 {% extends "layouts/base.html" %}
+{% from "partials/list_kit.html" import page_head, kpis, toolbar, row_label, empty_row, empty_state, QUOTE_ST with context %}
 {% block title %}RFQ Inbox{% endblock %}
 {% block content %}
-
-<h4 class="mb-1">RFQ Inbox</h4>
-<p class="text-secondary mb-4">Open requests for quotation from buyers on the platform.</p>
-
+{{ page_head('bi-inbox', 'RFQ Inbox', 'Open requests for quotation from buyers on the platform. Buyer identity stays hidden until an order is confirmed.') }}
 {% if not rfqs %}
-<div class="card adminuiux-card">
-  <div class="card-body text-center py-5">
-    <i class="bi bi-inbox fs-1 text-secondary opacity-50"></i>
-    <p class="text-secondary mt-3 mb-0">No open RFQs right now.</p>
-  </div>
-</div>
+{{ empty_state('bi-inbox', 'No open RFQs right now — new requests appear here and in your notifications.') }}
 {% else %}
-<div class="card adminuiux-card">
-  <div class="table-responsive">
-    <table class="table align-middle mb-0">
-      <thead>
-        <tr>
-          <th>Mineral</th>
-          <th>Quantity</th>
-          <th>Delivery</th>
-          <th>Posted</th>
-          <th>Closes</th>
-          <th>Your quote</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for r in rfqs %}
-        <tr>
-          <td>{{ r.mineral_type }}<div class="small text-secondary">{{ r.rfq_reference }}{% if r.specs %} · {{ r.specs|length }} spec parameter(s){% endif %}</div></td>
-          <td>{{ r.quantity_value }} {{ r.quantity_unit }}</td>
-          <td>{{ r.delivery_location }}</td>
-          <td class="text-secondary small">{{ r.created_at.strftime("%Y-%m-%d") }}</td>
-          <td class="small">{{ r.closes_at.strftime("%Y-%m-%d") if r.closes_at else '—' }}</td>
-          <td>{% set mq = quoted.get(r.id) %}{% if mq %}<span class="badge bg-success-subtle text-success">{{ mq.status.value }}{% if mq.revision_no and mq.revision_no > 1 %} · rev {{ mq.revision_no }}{% endif %}</span>{% else %}<span class="small text-secondary">—</span>{% endif %}</td>
-          <td class="text-end">
-            <a href="{{ url_for('seller_rfq_inbox_detail', rfq_id=r.id) }}" class="btn btn-sm btn-outline-theme">View</a>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
+{% set ns = namespace(quoted=0, soon=0) %}
+{% for r in rfqs %}{% if quoted.get(r.id) %}{% set ns.quoted = ns.quoted + 1 %}{% endif %}{% if r.closes_at and (r.closes_at - now_utc).days < 3 %}{% set ns.soon = ns.soon + 1 %}{% endif %}{% endfor %}
+{{ kpis([
+  ('bi-broadcast', 'Open RFQs', rfqs | length, 'primary', ''),
+  ('bi-hourglass-top', 'Not quoted yet', (rfqs | length) - ns.quoted, 'warning', 'new'),
+  ('bi-send-check', 'Quoted by you', ns.quoted, 'success', 'quoted'),
+  ('bi-alarm', 'Closing within 3 days', ns.soon, 'danger', 'soon'),
+], 'inboxTable') }}
+{{ toolbar('inboxTable', {'new': ('Not quoted', 'warning', 'bi-hourglass-top'), 'quoted': ('Quoted', 'success', 'bi-send-check'), 'soon': ('Closing soon', 'danger', 'bi-alarm')}, 'Search mineral, reference or city…') }}
+<div class="card adminuiux-card"><div class="table-responsive"><table class="table align-middle mb-0 mc-list-table" id="inboxTable">
+  <thead><tr><th>Request</th><th class="text-end">Quantity</th><th>Delivery</th><th>Posted</th><th>Closes</th><th>Your quote</th><th></th></tr></thead>
+  <tbody>
+  {% for r in rfqs %}{% set mq = quoted.get(r.id) %}{% set soon = r.closes_at and (r.closes_at - now_utc).days < 3 %}
+    <tr data-status="{{ 'quoted' if mq else 'new' }}{% if soon %} soon{% endif %}">
+      <td>{{ row_label(r.mineral_type, (r.rfq_reference or '') ~ ((' · ' ~ (r.specs | length) ~ ' spec parameter(s)') if r.specs else '')) }}</td>
+      <td class="text-end small text-nowrap">{{ '{:,.0f}'.format(r.quantity_value) }} {{ r.quantity_unit }}</td>
+      <td class="small"><i class="bi bi-geo-alt text-secondary"></i> {{ r.delivery_location }}</td>
+      <td class="text-secondary small text-nowrap">{{ r.created_at.strftime("%Y-%m-%d") }}</td>
+      <td class="small text-nowrap {{ 'text-danger fw-semibold' if soon else '' }}">{{ r.closes_at.strftime("%Y-%m-%d") if r.closes_at else '—' }}</td>
+      <td>{% if mq %}{% set m = QUOTE_ST.get(mq.status.value, ('Submitted', 'info', 'bi-send')) %}<span class="badge bg-{{ m[1] }}-subtle text-{{ m[1] }}"><i class="bi {{ m[2] }}"></i> {{ m[0] }}{% if mq.revision_no and mq.revision_no > 1 %} · rev {{ mq.revision_no }}{% endif %}</span>{% else %}<span class="badge bg-warning-subtle text-warning"><i class="bi bi-hourglass-top"></i> Not quoted</span>{% endif %}</td>
+      <td class="text-end"><a href="{{ url_for('seller_rfq_inbox_detail', rfq_id=r.id) }}" class="btn btn-sm {{ 'btn-outline-theme' if mq else 'btn-theme' }}">{{ 'View' if mq else 'Quote' }}</a></td>
+    </tr>
+  {% endfor %}
+  {{ empty_row(7) }}
+  </tbody>
+</table></div></div>
 {% endif %}
-
 {% endblock %}

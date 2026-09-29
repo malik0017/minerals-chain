@@ -1,0 +1,83 @@
+{% import "partials/charts.html" as ch with context %}
+{% from "partials/list_kit.html" import badge, row_label, ORDER_ST, VR_ST with context %}
+
+{% macro attention(actions) %}
+<div class="card adminuiux-card h-100"><div class="card-body">
+  <h6 class="mb-3"><i class="bi bi-bell"></i> Needs your attention</h6>
+  <div class="list-group list-group-flush">
+  {% for icon, label, n, color, url in actions %}
+    <a href="{{ url }}" class="list-group-item list-group-item-action d-flex align-items-center gap-2 px-0 {{ 'opacity-50' if not n else '' }}">
+      <span class="mc-kpi-icon bg-{{ color }}-subtle text-{{ color }}" style="width:34px;height:34px;font-size:1rem"><i class="bi {{ icon }}"></i></span>
+      <span class="flex-grow-1 small">{{ label }}</span>
+      <span class="badge rounded-pill bg-{{ color if n else 'light' }} {{ 'text-dark' if not n or color in ('warning', 'light') else '' }}">{{ n }}</span>
+    </a>
+  {% endfor %}
+  </div>
+</div></div>
+{% endmacro %}
+
+{% macro trade_panel(trade, side) %}
+<div class="row g-3 mb-3">
+  <div class="col-lg-8"><div class="card adminuiux-card h-100"><div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h6 class="mb-0"><i class="bi bi-graph-up-arrow"></i> Orders & value — last 6 months</h6>
+      <span class="badge bg-success-subtle text-success">SAR {{ '{:,.0f}'.format(trade.total_value) }}</span>
+    </div>
+    {{ ch.combo('dashTrade', trade.months, trade.orders, trade.value, 'Orders', 'Value (SAR)', 270) }}
+  </div></div></div>
+  <div class="col-lg-4">{{ attention(trade.actions) }}</div>
+</div>
+<div class="card adminuiux-card mb-3"><div class="card-body pb-0">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h6 class="mb-0"><i class="bi bi-clock-history"></i> Recent orders</h6>
+    <a href="/{{ side }}/orders" class="small">All orders <i class="bi bi-arrow-right"></i></a>
+  </div>
+</div>
+{% if trade.recent %}
+<div class="table-responsive"><table class="table align-middle mb-0 mc-list-table">
+  <thead><tr><th>Order</th><th>{{ 'Buyer' if side == 'seller' else 'Seller' }}</th><th class="text-end">Total (SAR)</th><th>Status</th><th></th></tr></thead>
+  <tbody>{% for o in trade.recent %}{% set other = o.buyer_company if side == 'seller' else o.seller_company %}
+    <tr>
+      <td>{{ row_label(o.rfq.mineral_type, (o.order_reference or '') ~ ' · ' ~ o.created_at.strftime('%Y-%m-%d')) }}</td>
+      <td class="small">{% if o.confirmed_at %}{{ other.company_name }}{% else %}<span class="text-secondary"><i class="bi bi-eye-slash"></i> Hidden until confirmed</span>{% endif %}</td>
+      <td class="text-end fw-semibold text-nowrap">{{ '{:,.2f}'.format(o.total_value_sar) if o.total_value_sar is not none else '—' }}</td>
+      <td>{{ badge(o.status.value, ORDER_ST) }}</td>
+      <td class="text-end"><a class="btn btn-sm btn-outline-theme" href="/{{ side }}/orders/{{ o.id }}">Open</a></td>
+    </tr>{% endfor %}</tbody>
+</table></div>
+{% else %}<div class="card-body text-center text-secondary pt-0"><i class="bi bi-inbox"></i> No orders yet</div>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro lab_panel(labx) %}
+<div class="row g-3 mb-3">
+  <div class="col-lg-8"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6 class="mb-2"><i class="bi bi-bar-chart"></i> Tests completed — last 6 months</h6>
+    {{ ch.stacked_bar('labDone', labx.months, labx.series, 250) }}
+  </div></div></div>
+  <div class="col-lg-4"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6 class="mb-2"><i class="bi bi-stopwatch"></i> Avg turnaround (days)</h6>
+    {{ ch.lines('labTat', labx.months, labx.turnaround, 250, area=True) }}
+  </div></div></div>
+</div>
+<div class="card adminuiux-card mb-3"><div class="card-body pb-0">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h6 class="mb-0"><i class="bi bi-list-check"></i> Work queue</h6>
+    <a href="/lab/verification-requests" class="small">All requests <i class="bi bi-arrow-right"></i></a>
+  </div>
+</div>
+{% if labx.queue %}
+<div class="table-responsive"><table class="table align-middle mb-0 mc-list-table">
+  <thead><tr><th>Request</th><th>Seller</th><th>Status</th><th>Waiting</th><th></th></tr></thead>
+  <tbody>{% for vr in labx.queue %}
+    <tr>
+      <td>{{ row_label(vr.product.mineral_type, vr.request_reference or '') }}{% if vr.is_priority %} <span class="badge bg-warning text-dark ms-5"><i class="bi bi-lightning-charge"></i> Priority</span>{% endif %}</td>
+      <td class="small">{{ vr.product.seller_company.company_name }}</td>
+      <td>{{ badge(vr.status.value, VR_ST) }}</td>
+      <td class="small text-nowrap">{{ vr.created_at.strftime('%Y-%m-%d') }}</td>
+      <td class="text-end"><a class="btn btn-sm btn-theme" href="/lab/verification-requests/{{ vr.id }}">Process</a></td>
+    </tr>{% endfor %}</tbody>
+</table></div>
+{% else %}<div class="card-body text-center text-secondary pt-0"><i class="bi bi-emoji-smile"></i> Queue is clear</div>{% endif %}
+</div>
+{% endmacro %}

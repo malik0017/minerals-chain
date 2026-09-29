@@ -15,7 +15,7 @@
   var HEADER_FILLS = ["bg", "white", "black", "theme", "accent"];
   var SIDEBAR_LAYOUTS = ["iconic", "boxed", "iconic-boxed"];
   var HEADER_LAYOUTS = ["boxed"];
-  var BG_IMAGE_BASE = "/static/img/backgorund-image/backgorund-image-";
+  var BG_IMAGE_BASE = "/static/img/background-image/backgorund-image-";
 
   function loadPrefs() {
     try {

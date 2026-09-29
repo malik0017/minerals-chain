@@ -1,0 +1,76 @@
+{% extends "layouts/base.html" %}
+{% import "partials/charts.html" as ch with context %}
+{% block title %}ERP export{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <h4 class="mb-0"><i class="bi bi-box-arrow-up-right"></i> ERP export</h4>
+  <span class="badge bg-secondary-subtle text-secondary">{{ scope.company_name if scope else 'Platform-wide' }}</span>
+</div>
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+
+<div class="row g-3 mb-3">
+{% set kpis = [
+  ('bi-archive', 'Exports', runs | length, 'primary'),
+  ('bi-clock-history', 'Last export', last.created_at.strftime('%Y-%m-%d %H:%M') if last else 'never', 'success' if last else 'secondary'),
+  ('bi-list-ol', 'Rows in last export', (last.row_counts.values() | sum) if last else 0, 'info'),
+  ('bi-diagram-2', 'Targets', targets | length, 'warning'),
+] %}
+{% for icon, label, value, color in kpis %}
+  <div class="col-6 col-lg-3"><div class="card adminuiux-card h-100"><div class="card-body d-flex justify-content-between align-items-center">
+    <div><div class="small text-secondary">{{ label }}</div><div class="fs-5 fw-bold">{{ value }}</div></div>
+    <span class="mc-kpi-icon bg-{{ color }}-subtle text-{{ color }}"><i class="bi {{ icon }}"></i></span>
+  </div></div></div>
+{% endfor %}
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-lg-5"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6 class="mb-3"><i class="bi bi-gear"></i> New export</h6>
+    <form method="post" action="{{ base }}">{{ csrf_field() }}
+      <div class="btn-group w-100 mb-3" role="group">
+        {% for k, label in targets.items() %}
+        <input type="radio" class="btn-check" name="target" id="t_{{ k }}" value="{{ k }}" {% if loop.first %}checked{% endif %}>
+        <label class="btn btn-outline-primary" for="t_{{ k }}">{{ label.split(' (')[0] }}</label>
+        {% endfor %}
+      </div>
+      <div class="row g-2 mb-3">
+        {% for k, label in datasets.items() %}
+        <div class="col-6"><div class="form-check">
+          <input class="form-check-input" type="checkbox" name="datasets" value="{{ k }}" id="d_{{ k }}" checked>
+          <label class="form-check-label" for="d_{{ k }}">{{ label }}</label></div></div>
+        {% endfor %}
+      </div>
+      <div class="input-group input-group-sm mb-3 mc-filter-bar">
+        <span class="input-group-text"><i class="bi bi-calendar-range"></i></span>
+        <input type="date" name="start" class="form-control" value="{{ month_start }}">
+        <span class="input-group-text">→</span>
+        <input type="date" name="end" class="form-control" value="{{ today }}">
+      </div>
+      <button class="btn btn-theme w-100"><i class="bi bi-file-earmark-zip"></i> Build export</button>
+    </form>
+  </div></div></div>
+  <div class="col-lg-4"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6 class="mb-2"><i class="bi bi-bar-chart"></i> Rows exported by dataset</h6>
+    {{ ch.hbars('erpDatasets', by_dataset, 240) }}
+  </div></div></div>
+  <div class="col-lg-3"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6 class="mb-2"><i class="bi bi-pie-chart"></i> By target</h6>
+    {{ ch.donut('erpTargets', by_target, 240) }}
+  </div></div></div>
+</div>
+
+<div class="card adminuiux-card"><div class="table-responsive"><table class="table align-middle mb-0">
+<thead><tr><th>Created</th><th>Target</th>{% if not scope %}<th>Scope</th>{% endif %}<th>Period</th><th>Rows</th><th class="text-end">Size</th><th class="text-end"></th></tr></thead>
+<tbody>{% for r in runs %}<tr>
+  <td class="small text-nowrap">{{ r.created_at.strftime('%Y-%m-%d %H:%M') }}<div class="text-secondary">{{ r.created_by.full_name if r.created_by else 'system' }}</div></td>
+  <td><span class="badge bg-{{ 'primary' if r.target == 'odoo' else 'info' }}-subtle text-{{ 'primary' if r.target == 'odoo' else 'info' }}">{{ targets[r.target].split(' (')[0] }}</span></td>
+  {% if not scope %}<td class="small">{{ r.scope_company.company_name if r.scope_company else 'Platform' }}</td>{% endif %}
+  <td class="small text-nowrap">{{ r.period_start or '…' }} → {{ r.period_end or '…' }}</td>
+  <td class="small">{% for k, n in r.row_counts.items() %}<span class="badge bg-light text-dark border me-1"><span>{{ datasets.get(k, k) }}</span> <b>{{ n }}</b></span>{% endfor %}</td>
+  <td class="text-end small text-nowrap">{{ '%.1f' % ((r.file_size or 0) / 1024) }} KB</td>
+  <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{{ base }}/{{ r.id }}/download"><i class="bi bi-download"></i></a></td>
+</tr>{% else %}<tr><td colspan="7" class="text-center text-secondary py-4"><i class="bi bi-inbox"></i> No exports yet</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% endblock %}
+{% block extra_js %}{{ ch.scripts() }}{% endblock %}

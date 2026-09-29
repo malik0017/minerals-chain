@@ -49,12 +49,18 @@ AR_TEMPLATES: dict[str, tuple[str, str]] = {
     "data_request_updated": ("تحديث طلب البيانات", "طلبك {reference} الآن: {status}."),
     "product_suspended": ("تم تعليق المنتج", "علّقت الإدارة منتج {mineral}. السبب: {reason}"),
     "product_reactivated": ("تمت إعادة تفعيل المنتج", "أعادت الإدارة تفعيل منتج {mineral}."),
+    "document_uploaded": ("مستند شركة بانتظار المراجعة", "رفعت {company} مستند {doc_type}."),
+    "document_reviewed": ("مراجعة المستند: {doc_type}", "تمت مراجعة {doc_type}: {status}. {note}"),
+    "document_expiring": ("مستند قارب على الانتهاء: {doc_type}", "ارفع النسخة المجددة من {doc_type} قبل {until} لمواصلة التداول."),
+    "documents_expiring": ("مستندات شركات قاربت على الانتهاء", "أُرسل {count} تذكير إلى الشركات."),
+    "shipment_late": ("الشحنة {shipment} تجاوزت موعد الوصول", "أضف تحديث تتبع أو موعد وصول جديد للمشتري."),
+    "shipment_update": ("تحديث الشحنة {shipment}", "الشحنة {shipment}: {status_ar} {where}"),
 }
 
 ICONS = {
     "registration": "bi-building-check", "verification": "bi-eyedropper", "passport": "bi-shield-check",
     "rfq": "bi-file-earmark-text", "quotation": "bi-tags", "order": "bi-box-seam", "dispute": "bi-flag",
-    "subscription": "bi-stars", "data": "bi-person-lock", "product": "bi-diagram-3",
+    "subscription": "bi-stars", "data": "bi-person-lock", "product": "bi-diagram-3", "shipment": "bi-truck", "document": "bi-folder2-open", "documents": "bi-folder2-open",
 }
 
 

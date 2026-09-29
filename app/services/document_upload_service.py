@@ -69,5 +69,6 @@ def legacy_public_document_count() -> int:
 def save_company_document(company_id: uuid.UUID, field_name: str, contents: bytes, extension: str) -> str:
     DOCUMENT_DIR.mkdir(parents=True, exist_ok=True)
     filename = f"{company_id}-{field_name}-{uuid.uuid4().hex[:8]}.{extension}"
-    (DOCUMENT_DIR / filename).write_bytes(contents)
+    from app.services import file_crypto
+    file_crypto.write(DOCUMENT_DIR / filename, contents)
     return filename

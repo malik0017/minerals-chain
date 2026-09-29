@@ -1,0 +1,43 @@
+{% extends "layouts/base.html" %}
+{% import "partials/charts.html" as ch with context %}
+{% block title %}Inventory{% endblock %}
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-boxes"></i> Inventory</h4>
+<div class="row g-3 mb-3">
+{% set kpis = [
+  ('bi-boxes', 'Stock on hand (MT)', '{:,.0f}'.format(s.on_hand), 'primary'),
+  ('bi-cash-stack', 'Stock value (SAR)', '{:,.0f}'.format(s.value), 'success'),
+  ('bi-building', 'Sellers holding stock', companies | length, 'info'),
+  ('bi-arrow-left-right', 'Movements', '{:,}'.format(total), 'secondary'),
+] %}
+{% for icon, label, value, color in kpis %}
+  <div class="col-6 col-lg-3"><div class="card adminuiux-card h-100"><div class="card-body d-flex justify-content-between align-items-center">
+    <div><div class="small text-secondary">{{ label }}</div><div class="fs-4 fw-bold">{{ value }}</div></div>
+    <span class="mc-kpi-icon bg-{{ color }}-subtle text-{{ color }}"><i class="bi {{ icon }}"></i></span>
+  </div></div></div>
+{% endfor %}
+</div>
+<div class="row g-3 mb-3">
+  <div class="col-lg-5"><div class="card adminuiux-card h-100"><div class="card-body"><h6><i class="bi bi-gem"></i> Stock by mineral (MT)</h6>{{ ch.hbars('invMin', minerals, 260) }}</div></div></div>
+  <div class="col-lg-7"><div class="card adminuiux-card h-100"><div class="card-body"><h6><i class="bi bi-graph-up"></i> In vs out · 12 weeks (MT)</h6>
+    {{ ch.lines('invFlowA', s.weeks, [{"name": "In", "data": s.ins}, {"name": "Out", "data": s.outs}], 260, area=True) }}</div></div></div>
+</div>
+<div class="row g-3">
+  <div class="col-lg-5"><div class="card adminuiux-card h-100"><div class="table-responsive"><table class="table table-sm align-middle mb-0">
+    <thead><tr><th>Seller</th><th class="text-end">MT</th><th class="text-end">SAR</th></tr></thead>
+    <tbody>{% for c in companies %}<tr><td class="small"><a href="?company={{ c.id }}">{{ c.name }}</a></td><td class="text-end small">{{ '{:,.1f}'.format(c.on_hand) }}</td><td class="text-end small">{{ '{:,.0f}'.format(c.value) }}</td></tr>
+    {% else %}<tr><td colspan="3" class="text-secondary small">No stock recorded.</td></tr>{% endfor %}</tbody></table></div></div></div>
+  <div class="col-lg-7"><div class="card adminuiux-card h-100">
+    <div class="card-body pb-2"><form method="get" class="d-flex gap-2"><input type="hidden" name="company" value="{{ company }}">
+      <select name="type" class="form-select form-select-sm w-auto" onchange="this.form.submit()"><option value="">All types</option>{% for k, v in types.items() %}<option value="{{ k }}" {% if type == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select>
+      {% if company %}<a class="btn btn-sm btn-outline-secondary" href="/admin/inventory">All sellers</a>{% endif %}</form></div>
+    <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+    <thead><tr><th>Ref</th><th>Date</th><th>Seller</th><th>Type</th><th>Listing</th><th class="text-end">Qty</th></tr></thead>
+    <tbody>{% for m in moves %}<tr><td class="small">{{ m.reference }}</td><td class="small">{{ m.movement_date }}</td><td class="small">{{ m.company.company_name }}</td>
+      <td class="small">{{ m.type_label }}</td><td class="small">{{ m.product.mineral_type if m.product else '—' }}</td>
+      <td class="text-end small {{ 'text-success' if m.quantity > 0 else 'text-danger' }}">{{ '{:+,.2f}'.format(m.quantity) }}</td></tr>
+    {% else %}<tr><td colspan="6" class="text-secondary small">No movements.</td></tr>{% endfor %}</tbody></table></div>
+  </div>{% include "partials/pager.html" %}</div>
+</div>
+{% endblock %}
+{% block extra_js %}{{ ch.scripts() }}{% endblock %}

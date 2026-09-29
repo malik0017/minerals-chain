@@ -45,10 +45,8 @@ def _anon_lang(request: Request) -> str:
 
 
 def _client_ip(request: Request) -> str:
-    forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return request.client.host if request.client else "unknown"
+    from app.core.client_ip import client_ip
+    return client_ip(request)
 
 PHONE_COUNTRY_CODES = [
     {"flag": "🇸🇦", "iso2": "sa", "name": "Saudi Arabia", "dial": "+966"},

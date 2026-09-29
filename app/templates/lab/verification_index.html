@@ -1,46 +1,36 @@
 {% extends "layouts/base.html" %}
+{% from "partials/list_kit.html" import page_head, kpis, toolbar, badge, row_label, empty_row, empty_state, VR_ST with context %}
 {% block title %}Verification Requests{% endblock %}
 {% block content %}
-
-<h4 class="mb-1">Verification Requests</h4>
-<p class="text-secondary mb-4">Incoming requests for {{ current_user.company_name }}</p>
-
+{{ page_head('bi-eyedropper', 'Verification Requests', 'Incoming requests for ' ~ current_user.company_name) }}
 {% if not requests %}
-<div class="card adminuiux-card">
-  <div class="card-body text-center py-5">
-    <i class="bi bi-eyedropper fs-1 text-secondary opacity-50"></i>
-    <p class="text-secondary mt-3 mb-0">No verification requests yet.</p>
-  </div>
-</div>
+{{ empty_state('bi-eyedropper', 'No verification requests yet.') }}
 {% else %}
-<div class="card adminuiux-card">
-  <div class="table-responsive">
-    <table class="table align-middle mb-0">
-      <thead>
-        <tr><th>Reference</th><th>Mineral</th><th>Status</th><th>Collection</th><th>Requested</th><th></th></tr>
-      </thead>
-      <tbody>
-        {% for vr in requests %}
-        <tr>
-          <td class="fw-semibold small">{{ vr.request_reference or '' }}{% if vr.is_priority %} <span class="badge bg-warning text-dark" title="Premium seller — priority"><i class="bi bi-lightning-charge"></i></span>{% endif %}</td>
-          <td>{{ vr.product.mineral_type }}{% if vr.product.grade %} · {{ vr.product.grade }}{% endif %}</td>
-          <td>
-            {% if vr.status.value == "completed" %}<span class="badge bg-success-subtle text-success">Completed</span>
-            {% elif vr.status.value == "failed" %}<span class="badge bg-danger-subtle text-danger">Failed</span>
-            {% else %}<span class="badge bg-warning-subtle text-warning">{{ vr.status.value | replace("_", " ") | capitalize }}</span>
-            {% endif %}
-          </td>
-          <td class="small">{{ vr.collection_date or '—' }}</td>
-          <td class="text-secondary small">{{ vr.created_at.strftime("%Y-%m-%d") }}</td>
-          <td class="text-end">
-            <a href="{{ url_for('lab_verification_detail', request_id=vr.id) }}" class="btn btn-sm btn-outline-theme">View</a>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
+{% set st = requests | map(attribute='status') | map(attribute='value') | list %}
+{% set open_n = st | select('in', ['requested', 'sample_scheduled', 'testing_in_progress']) | list | length %}
+{{ kpis([
+  ('bi-inbox', 'New requests', st | select('equalto', 'requested') | list | length, 'warning', 'requested'),
+  ('bi-calendar-event', 'Sampling scheduled', st | select('equalto', 'sample_scheduled') | list | length, 'info', 'sample_scheduled'),
+  ('bi-eyedropper', 'Testing', st | select('equalto', 'testing_in_progress') | list | length, 'primary', 'testing_in_progress'),
+  ('bi-patch-check', 'Completed', st | select('equalto', 'completed') | list | length, 'success', 'completed'),
+  ('bi-lightning-charge', 'Priority open', requests | selectattr('is_priority') | selectattr('status.value', 'in', ['requested', 'sample_scheduled', 'testing_in_progress']) | list | length, 'danger', 'priority'),
+], 'vrTable') }}
+{{ toolbar('vrTable', VR_ST, 'Search reference, mineral or seller…') }}
+<div class="card adminuiux-card"><div class="table-responsive"><table class="table align-middle mb-0 mc-list-table" id="vrTable">
+  <thead><tr><th>Request</th><th>Seller</th><th>Status</th><th>Collection</th><th>Requested</th><th></th></tr></thead>
+  <tbody>
+  {% for vr in requests %}{% set active = vr.status.value in ('requested', 'sample_scheduled', 'testing_in_progress') %}
+    <tr data-status="{{ vr.status.value }}{% if vr.is_priority and active %} priority{% endif %}">
+      <td>{{ row_label(vr.product.mineral_type ~ (' · ' ~ vr.product.grade if vr.product.grade else ''), vr.request_reference or '', vr.product.mineral_type) }}{% if vr.is_priority %}<span class="badge bg-warning text-dark ms-5 mt-1" title="Premium seller — priority"><i class="bi bi-lightning-charge"></i> Priority</span>{% endif %}</td>
+      <td class="small">{{ vr.product.seller_company.company_name }}</td>
+      <td>{{ badge(vr.status.value, VR_ST) }}</td>
+      <td class="small text-nowrap">{{ vr.collection_date or '—' }}</td>
+      <td class="text-secondary small text-nowrap">{{ vr.created_at.strftime("%Y-%m-%d") }}</td>
+      <td class="text-end"><a href="{{ url_for('lab_verification_detail', request_id=vr.id) }}" class="btn btn-sm {{ 'btn-theme' if active else 'btn-outline-theme' }}">{{ 'Process' if active else 'View' }}</a></td>
+    </tr>
+  {% endfor %}
+  {{ empty_row(6) }}
+  </tbody>
+</table></div></div>
 {% endif %}
-
 {% endblock %}

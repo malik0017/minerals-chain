@@ -1,0 +1,61 @@
+{% extends "layouts/base.html" %}
+{% import "partials/charts.html" as ch with context %}
+{% block title %}Backups & encryption{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <h4 class="mb-0"><i class="bi bi-hdd-stack"></i> Backups & encryption</h4>
+  <form method="post" action="{{ url_for('admin_backup_run') }}">{{ csrf_field() }}
+    <button class="btn btn-sm btn-theme"><i class="bi bi-cloud-arrow-up"></i> Back up now</button></form>
+</div>
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+
+<div class="row g-3 mb-3">
+{% set enc_pct = ((100 * storage.encrypted / storage.total) | round | int) if storage.total else 100 %}
+{% set kpis = [
+  ('bi-clock-history', 'Last backup', last.started_at.strftime('%Y-%m-%d %H:%M') if last else 'never', 'success' if last else 'warning'),
+  ('bi-archive', 'Backups kept', (on_disk | length) ~ ' / ' ~ keep, 'primary'),
+  ('bi-lock', 'Files encrypted', enc_pct ~ '%', 'success' if enc_pct == 100 and encryption_on else 'warning'),
+  ('bi-key', 'Encryption key', 'set' if encryption_on else 'missing', 'success' if encryption_on else 'danger'),
+] %}
+{% for icon, label, value, color in kpis %}
+  <div class="col-6 col-lg-3"><div class="card adminuiux-card h-100"><div class="card-body d-flex justify-content-between align-items-center">
+    <div><div class="small text-secondary">{{ label }}</div><div class="fs-5 fw-bold">{{ value }}</div></div>
+    <span class="mc-kpi-icon bg-{{ color }}-subtle text-{{ color }}"><i class="bi {{ icon }}"></i></span>
+  </div></div></div>
+{% endfor %}
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-lg-8"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6 class="mb-2"><i class="bi bi-bar-chart"></i> Backup size (MB)</h6>
+    {{ ch.bars('bkSizes', sizes, 220) }}
+  </div></div></div>
+  <div class="col-lg-4"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6 class="mb-2"><i class="bi bi-shield-lock"></i> Storage encryption</h6>
+    {{ ch.donut('bkEnc', [{"name": "Encrypted", "value": storage.encrypted}, {"name": "Plain", "value": storage.plain}], 180) }}
+    {% if encryption_on and storage.plain %}
+    <form method="post" action="{{ url_for('admin_encrypt_storage') }}" class="mt-2">{{ csrf_field() }}
+      <button class="btn btn-sm btn-warning w-100"><i class="bi bi-lock"></i> Encrypt {{ storage.plain }} file(s)</button></form>
+    {% elif not encryption_on %}<div class="small text-danger mt-2"><i class="bi bi-exclamation-triangle"></i> FILE_ENCRYPTION_KEY not set</div>{% endif %}
+  </div></div></div>
+</div>
+
+<div class="card adminuiux-card"><div class="table-responsive"><table class="table align-middle mb-0">
+<thead><tr><th>Backup</th><th>Status</th><th>Trigger</th><th class="text-end">Size</th><th class="text-end">Files</th><th>Schema</th><th class="text-end"></th></tr></thead>
+<tbody>{% for r in runs %}{% set c = {'success':'success','failed':'danger','running':'info'}.get(r.status,'secondary') %}<tr>
+  <td class="fw-semibold small">{{ r.name }}<div class="text-secondary fw-normal">{{ r.started_at.strftime('%Y-%m-%d %H:%M') }}</div></td>
+  <td><span class="badge bg-{{ c }}-subtle text-{{ c }}">{{ r.status }}</span>{% if r.status == 'failed' %}<i class="bi bi-info-circle text-danger ms-1" title="{{ r.message }}"></i>{% endif %}</td>
+  <td class="small">{{ r.trigger }}{% if r.triggered_by %} · {{ r.triggered_by.full_name }}{% endif %}</td>
+  <td class="text-end small">{{ '%.2f' % ((r.size_bytes or 0) / 1048576) }} MB</td>
+  <td class="text-end small">{{ r.files_count or 0 }}</td>
+  <td class="small font-monospace">{{ r.alembic_revision or '—' }}</td>
+  <td class="text-end text-nowrap">{% if r.status == 'success' and r.name in on_disk %}
+    <form method="post" action="{{ url_for('admin_backup_verify', name=r.name) }}" class="d-inline">{{ csrf_field() }}<button class="btn btn-sm btn-outline-secondary" title="Verify checksums"><i class="bi bi-shield-check"></i></button></form>
+    <a class="btn btn-sm btn-outline-theme" href="{{ url_for('admin_backup_download', name=r.name, part='db.dump') }}" title="Database dump"><i class="bi bi-database-down"></i></a>
+    <a class="btn btn-sm btn-outline-theme" href="{{ url_for('admin_backup_download', name=r.name, part='storage.tar.gz') }}" title="Documents archive"><i class="bi bi-file-earmark-zip"></i></a>
+  {% elif r.status == 'success' %}<span class="small text-secondary">pruned</span>{% endif %}</td>
+</tr>{% else %}<tr><td colspan="7" class="text-secondary">No backups yet.</td></tr>{% endfor %}</tbody></table></div></div>
+<div class="small text-secondary mt-2"><i class="bi bi-folder2"></i> <span translate="no">{{ backup_dir }}</span> · schedule <code translate="no">python scripts/backup.py</code> daily · restore with <code translate="no">python scripts/restore_backup.py NAME</code></div>
+{% endblock %}
+{% block extra_js %}{{ ch.scripts() }}{% endblock %}

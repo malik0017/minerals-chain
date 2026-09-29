@@ -9,6 +9,13 @@
     {% block title %}Minerals Chain{% endblock %} - Minerals Chain
   </title>
   <link rel="icon" type="image/png" href="{{ url_for('static', path='img/favicon.png') }}" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="{{ url_for('static', path='img/apple-touch-icon.png') }}" />
+  <meta name="theme-color" content="#0e6e5c" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Minerals Chain" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -26,6 +33,7 @@
   <link href="{{ url_for('static', path='css/theme-mineral.css') }}" rel="stylesheet" />
   <link href="{{ url_for('static', path='css/batch-f-polish.css') }}" rel="stylesheet" />
   <link href="{{ url_for('static', path='css/design_system.css') }}" rel="stylesheet" />
+  <link href="{{ url_for('static', path='css/mc-components.css') }}" rel="stylesheet" />
 
   {% block extra_css %}{% endblock %}
 
@@ -114,6 +122,8 @@
   {% include "partials/personlize_footer_button.html" %}
 
   {% block extra_js %}{% endblock %}
+  <script src="{{ url_for('static', path='js/pwa.js') }}" defer></script>
+  <script src="{{ url_for('static', path='js/mc_table.js') }}" defer></script>
 
   <script src="{{ url_for('static', path='js/investment/investment-dashboard.js') }}"></script>
 </body>

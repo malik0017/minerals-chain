@@ -285,6 +285,7 @@ input[name="q"],
 textarea,
 input[class="form-control form-control-sm"],
 select[class="form-select"],
+input[class="form-control"],
 select[name="status"],
 select[name="action"],
 select[name="role"] {

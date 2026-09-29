@@ -12,9 +12,10 @@ from app.core.identity_guard import is_identity_revealed
 from app.core.permissions import require_buyer_company
 from app.core.portal_nav import build_portal_context
 from app.database.base import get_db
+from app.models.shipment import SHIPMENT_STATUSES
 from app.models.user import User, UserRole
 from app.repositories import order_repository
-from app.services import dispute_service
+from app.services import dispute_service, shipment_service
 from app.services import order_document_service as ods
 from app.services.order_service import OrderActionError, confirm_receipt, get_owned_order
 
@@ -55,6 +56,8 @@ def order_detail(
         "seller_company": order.seller_company if revealed else None,
         "error": error,
         "disputes": dispute_service.for_order(db, order),
+        "shipments": shipment_service.for_order(db, order),
+        "shipment_statuses": SHIPMENT_STATUSES,
         "documents": ods.visible_documents(order, "buyer"),
         "credentials": ods.linked_credentials(db, order),
         "doc_types": {**ods.DOC_TYPES, **ods.GENERATED_TYPES},

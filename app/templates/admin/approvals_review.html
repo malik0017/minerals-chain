@@ -1,5 +1,6 @@
 {% extends "layouts/base.html" %}
 {% block title %}Review {{ company.company_name }}{% endblock %}
+{% from "partials/credential_checks.html" import credential_panel with context %}
 {% block content %}
 
 <a href="{{ url_for('admin_approvals_list') }}" class="text-secondary text-decoration-none small">&larr; Back to queue</a>
@@ -10,6 +11,7 @@
 {% if error %}
 <div class="alert alert-danger py-2">{{ error }}</div>
 {% endif %}
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
 
 <div class="card border-0 shadow-sm mb-4">
   <div class="card-body">
@@ -38,6 +40,8 @@
     </dl>
   </div>
 </div>
+
+{{ credential_panel(company, cred) }}
 
 <div class="d-flex gap-2 mb-4">
   <form method="post" action="{{ url_for('admin_approvals_approve', company_id=company.id) }}">

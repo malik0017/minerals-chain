@@ -7,16 +7,19 @@ from urllib.parse import quote
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
+from starlette.datastructures import FormData
 
+from app.core.forms import form_data
 from app.core.identity_guard import is_identity_revealed
 from app.core.permissions import require_seller_company
 from app.core.portal_nav import build_portal_context
 from app.database.base import get_db
 from app.models.user import User, UserRole
 from app.repositories import order_repository
-from app.services import dispute_service
+from app.services import dispute_service, shipment_service
 from app.services import order_document_service as ods
-from app.services.order_service import OrderActionError, confirm_order, get_owned_order, mark_delivered, mark_shipped
+from app.models.shipment import SHIPMENT_STATUSES, TRANSPORT_MODES
+from app.services.order_service import OrderActionError, confirm_order, get_owned_order, mark_delivered
 
 router = APIRouter(prefix="/seller/orders", tags=["seller-orders"])
 from app.core.templates import templates
@@ -60,6 +63,10 @@ def order_detail(
         "doc_types": {**ods.DOC_TYPES, **ods.GENERATED_TYPES},
         "upload_types": ods.DOC_TYPES,
         "msg": request.query_params.get("msg"),
+        "shipments": shipment_service.for_order(db, order),
+        "transport_modes": TRANSPORT_MODES,
+        "shipment_statuses": SHIPMENT_STATUSES,
+        "update_statuses": shipment_service.UPDATE_STATUSES,
     })
     context["can_raise"], context["why"] = dispute_service.can_raise(db, order)
     return templates.TemplateResponse(request, "seller/order_detail.html", context)
@@ -90,17 +97,40 @@ def order_ship(
     order_id: uuid.UUID,
     db: Session = Depends(get_db),
     user: User = Depends(require_seller_company),
+    form: FormData = Depends(form_data),
 ):
     try:
         order = get_owned_order(db, order_id, user.company_id, "seller")
-        mark_shipped(db, order)
-    except OrderActionError as exc:
+        s = shipment_service.dispatch(db, order, form, user)
+    except (OrderActionError, shipment_service.ShipmentError) as exc:
         db.rollback()
         return RedirectResponse(
             url=f"{request.url_for('seller_order_detail', order_id=order_id)}?error={quote(str(exc))}",
             status_code=303,
         )
-    return RedirectResponse(url=request.url_for("seller_order_detail", order_id=order_id), status_code=303)
+    return RedirectResponse(url=f"{request.url_for('seller_order_detail', order_id=order_id)}?msg={quote(f'Shipment {s.reference} dispatched.')}",
+                            status_code=303)
+
+
+@router.post("/{order_id}/shipments/{shipment_id}/update", name="seller_shipment_update")
+def shipment_update(
+    request: Request,
+    order_id: uuid.UUID,
+    shipment_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_seller_company),
+    form: FormData = Depends(form_data),
+):
+    url = request.url_for("seller_order_detail", order_id=order_id)
+    s = shipment_service.get_scoped(db, shipment_id, user.company, "seller")
+    if s is None or s.order_id != order_id:
+        return RedirectResponse(url=url, status_code=303)
+    try:
+        shipment_service.add_update(db, s, form, user)
+    except (OrderActionError, shipment_service.ShipmentError) as exc:
+        db.rollback()
+        return RedirectResponse(url=f"{url}?error={quote(str(exc))}", status_code=303)
+    return RedirectResponse(url=f"{url}?msg={quote('Tracking updated.')}", status_code=303)
 
 
 @router.post("/{order_id}/mark-delivered", name="seller_order_mark_delivered")

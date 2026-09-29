@@ -73,3 +73,11 @@ from app.models.data_request import DataRequest  # noqa: F401
 from app.models.dispute import Dispute, DisputeCorrection, DisputeMessage  # noqa: F401
 from app.models.lab_partner import LabPartnerTerms  # noqa: F401
 from app.models.subscription import SubscriptionCharge  # noqa: F401
+from app.models.backup import BackupRun  # noqa: F401
+from app.models.inventory import InventoryMovement  # noqa: F401
+from app.models.erp_export import ErpExportRun  # noqa: F401
+from app.models.shipment import Shipment, ShipmentEvent  # noqa: F401
+from app.models.company_document import CompanyDocument  # noqa: F401
+from app.models.monitoring import ErrorEvent, JobRun, RequestStat  # noqa: F401
+from app.models.credential_check import CredentialCheck  # noqa: F401
+from app.models.api_token import ApiToken  # noqa: F401

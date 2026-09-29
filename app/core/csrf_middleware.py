@@ -6,7 +6,7 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from app.core.config import settings
-from app.core.csrf import CSRF_COOKIE_NAME, CSRF_FORM_FIELD, EXEMPT_PATHS, generate_csrf_token
+from app.core.csrf import CSRF_COOKIE_NAME, CSRF_FORM_FIELD, EXEMPT_PATHS, EXEMPT_PREFIXES, generate_csrf_token
 
 _UNSAFE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
 
@@ -17,7 +17,7 @@ class CSRFMiddleware(BaseHTTPMiddleware):
         effective_token = cookie_token or generate_csrf_token()
         request.state.csrf_token = effective_token
 
-        if request.method in _UNSAFE_METHODS and request.url.path not in EXEMPT_PATHS:
+        if request.method in _UNSAFE_METHODS and request.url.path not in EXEMPT_PATHS and not request.url.path.startswith(EXEMPT_PREFIXES):
             content_type = request.headers.get("content-type", "")
             submitted_token = None
             if "multipart/form-data" in content_type or "application/x-www-form-urlencoded" in content_type:

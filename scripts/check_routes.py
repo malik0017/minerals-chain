@@ -207,7 +207,7 @@ def main() -> int:
     # --- report non-GET routes as informational only ---
     for route in other_routes:
         methods = ",".join(sorted(m for m in route.methods if m != "HEAD"))
-        results.append((methods, route.path, route.name, "-", "SKIPPED (mutating — see tests_selenium/)"))
+        results.append((methods, route.path, route.name, "-", "SKIPPED (mutating — covered by tests/)"))
 
     # --- print table ---
     col = "{:<8} {:<55} {:<32} {:<8} {}"

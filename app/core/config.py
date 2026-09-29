@@ -36,6 +36,25 @@ class Settings(BaseSettings):
     SMTP_FROM_EMAIL: str = "no-reply@mineralschain.com"
     SMTP_FROM_NAME: str = "Minerals Chain"
 
+    REDIS_URL: str = ""
+    FILE_ENCRYPTION_KEY: str = ""
+    BACKUP_DIR: str = "backups"
+    BACKUP_KEEP: int = 14
+    PG_BIN_DIR: str = ""
+    CSP_MODE: str = "report-only"
+    WATHQ_MODE: str = "sandbox"
+    WATHQ_API_KEY: str = ""
+    WATHQ_BASE_URL: str = "https://api.wathq.sa/v5/commercialregistration"
+    WATHQ_TIMEOUT: float = 10.0
+    MIM_MODE: str = "sandbox"
+    MIM_API_URL: str = ""
+    MIM_API_KEY: str = ""
+    PUBLIC_BASE_URL: str = "http://localhost:8000"
+    FORWARDED_ALLOW_IPS: str = "127.0.0.1,::1,testclient"
+    LOG_LEVEL: str = "INFO"
+    DB_POOL_SIZE: int = 10
+    DB_MAX_OVERFLOW: int = 20
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

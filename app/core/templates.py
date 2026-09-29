@@ -86,7 +86,7 @@ def _combine_stack(s: dict) -> dict:
 
 
 def _as_line(s: dict, area: bool = False, stack: bool = False) -> dict:
-    out = {"type": "line", "smooth": True, "symbolSize": 5, **s}
+    out = {"type": "line", "smooth": True, "symbolSize": 5, "connectNulls": True, **s}
     if area:
         out["areaStyle"] = {"opacity": 0.15}
     if stack:

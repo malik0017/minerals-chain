@@ -1,6 +1,7 @@
 {% extends "layouts/base.html" %}
 {% from "partials/dispute_macros.html" import order_disputes with context %}
 {% from "partials/order_document_macros.html" import order_documents with context %}
+{% from "partials/shipment_macros.html" import shipment_card with context %}
 {% block title %}Order — {{ order.rfq.mineral_type }}{% endblock %}
 {% block content %}
 
@@ -73,6 +74,7 @@
 </div>
 {% endif %}
 
+{% for sh in shipments %}{{ shipment_card(sh, shipment_statuses) }}{% endfor %}
 {{ order_documents(order, 'buyer', documents, credentials, doc_types, 'buyer_order_document') }}
 {{ order_disputes(disputes, 'buyer', can_raise, why, order) }}
 

@@ -14,8 +14,8 @@ pyotp==2.9.0
 qrcode==7.4.2
 Pillow==10.4.0
 
-# TEST & DEVELOPMENT DEPENDENCIES
-httpx2==0.1.1
-selenium==4.25.0
-pytest==8.3.4
-pytest-asyncio==0.24.0
+httpx==0.28.1
+redis==5.2.1
+cryptography>=43
+openpyxl==3.1.5
+gunicorn==23.0.0; sys_platform != "win32"

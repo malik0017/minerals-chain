@@ -1,0 +1,79 @@
+{% extends "layouts/base.html" %}
+{% import "partials/charts.html" as ch with context %}
+{% from "partials/doc_health.html" import health_badge, status_badge with context %}
+{% block title %}Company documents{% endblock %}
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-folder2-open"></i> Company documents</h4>
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+
+<div class="row g-3 mb-3">
+{% for icon, label, value, color, link in [
+  ('bi-inbox', 'Pending review', s.pending, 'warning', '?status=pending'),
+  ('bi-hourglass-split', 'Expiring ≤ 60 days', s.expiring, 'warning', '?health=expiring'),
+  ('bi-x-octagon', 'Expired', s.expired, 'danger', '?health=expired'),
+  ('bi-x-circle', 'Rejected', s.rejected, 'danger', '?status=rejected'),
+  ('bi-clipboard-check', 'Companies with complete file', s.complete_pct ~ '%', 'success', '')] %}
+  <div class="col-6 col-lg"><a class="text-decoration-none text-reset" href="{{ url_for('admin_documents') }}{{ link }}"><div class="card adminuiux-card h-100"><div class="card-body d-flex justify-content-between align-items-center">
+    <div><div class="small text-secondary">{{ label }}</div><div class="fs-4 fw-bold">{{ value }}</div></div>
+    <span class="mc-kpi-icon bg-{{ color }}-subtle text-{{ color }}"><i class="bi {{ icon }}"></i></span></div></div></a></div>
+{% endfor %}
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-lg-5"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6 class="mb-2"><i class="bi bi-calendar3"></i> Expiries — next 6 months</h6>{{ ch.bars('docExpiry', s.expiry_months, 230) }}</div></div></div>
+  <div class="col-lg-3"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6 class="mb-2"><i class="bi bi-pie-chart"></i> Review status</h6>{{ ch.donut('docStatus', s.by_status, 230) }}</div></div></div>
+  <div class="col-lg-4"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6 class="mb-2"><i class="bi bi-files"></i> By type</h6>{{ ch.hbars('docTypes', s.by_type, 230) }}</div></div></div>
+</div>
+
+<form method="get" class="mb-3"><div class="input-group mc-filter-bar">
+  <span class="input-group-text"><i class="bi bi-search"></i></span>
+  <input name="q" value="{{ f.q }}" class="form-control" placeholder="Company or document number">
+  <select name="type" class="form-select" style="max-width:230px"><option value="">All types</option>{% for k, v in types.items() %}<option value="{{ k }}" {% if f.type == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select>
+  <select name="status" class="form-select" style="max-width:170px"><option value="">Any review</option>{% for k, v in status_labels.items() %}<option value="{{ k }}" {% if f.status == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select>
+  <select name="health" class="form-select" style="max-width:170px"><option value="">Any expiry</option><option value="expiring" {% if f.health == 'expiring' %}selected{% endif %}>Expiring soon</option><option value="expired" {% if f.health == 'expired' %}selected{% endif %}>Expired</option></select>
+  <button class="btn btn-theme"><i class="bi bi-funnel"></i> Filter</button>
+</div></form>
+
+<div class="card adminuiux-card"><div class="table-responsive"><table class="table align-middle mb-0">
+<thead><tr><th>Company</th><th>Document</th><th>Number</th><th>Expires</th><th>Health</th><th>Review</th><th class="text-end">Action</th></tr></thead>
+<tbody>{% for d in rows %}{% set h = health_of(d) %}<tr>
+  <td class="small"><a href="{{ url_for('admin_company_detail', company_id=d.company_id) }}" class="fw-semibold text-decoration-none">{{ d.company.company_name }}</a><div class="text-secondary">{{ d.company.role.value }}</div></td>
+  <td class="small">{{ types.get(d.doc_type, d.doc_type) }} <span class="text-secondary">v{{ d.version }}</span></td>
+  <td class="small">{{ d.number or '—' }}</td>
+  <td class="small text-nowrap">{{ d.expires_on or '—' }}</td>
+  <td class="text-nowrap">{{ health_badge(h, d.days_left()) }}</td>
+  <td>{{ status_badge(d.status, status_labels) }}{% if d.review_note %} <i class="bi bi-chat-left-text text-secondary" title="{{ d.review_note }}"></i>{% endif %}</td>
+  <td class="text-end mc-action-cell text-nowrap">
+    <a class="btn btn-sm btn-outline-secondary" target="_blank" href="{{ url_for('admin_document_file', doc_id=d.id) }}"><i class="bi bi-eye"></i></a>
+    {% if d.status != 'approved' %}<form method="post" action="{{ url_for('admin_document_review', doc_id=d.id) }}" class="d-inline">{{ csrf_field() }}
+      <input type="hidden" name="decision" value="approve"><input type="hidden" name="back" value="{{ back }}">
+      <button class="btn btn-sm btn-success"><i class="bi bi-check-lg"></i> Approve</button></form>{% endif %}
+    {% if d.status != 'rejected' %}<button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal"
+      data-action="{{ url_for('admin_document_review', doc_id=d.id) }}" data-name="{{ d.company.company_name }} · {{ types.get(d.doc_type) }}"><i class="bi bi-x-lg"></i> Reject</button>{% endif %}
+  </td>
+</tr>{% else %}<tr><td colspan="7" class="text-center text-secondary py-4"><i class="bi bi-inbox"></i> No documents match</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% include "partials/pager.html" %}
+
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+  <form method="post" id="rejectForm">{{ csrf_field() }}<input type="hidden" name="decision" value="reject"><input type="hidden" name="back" value="{{ back }}">
+    <div class="modal-header"><h6 class="modal-title"><i class="bi bi-x-circle text-danger"></i> Reject document</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body"><div class="fw-semibold mb-2" id="rejectName"></div>
+      <label class="form-label">Reason</label><textarea name="note" class="form-control" rows="3" minlength="5" required placeholder="e.g. Scan is unreadable — upload a clear copy"></textarea></div>
+    <div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button><button class="btn btn-danger">Reject</button></div>
+  </form>
+</div></div></div>
+{% endblock %}
+{% block extra_js %}{{ ch.scripts() }}
+<script>
+document.getElementById('rejectModal').addEventListener('show.bs.modal', function (ev) {
+  var b = ev.relatedTarget;
+  document.getElementById('rejectForm').action = b.getAttribute('data-action');
+  document.getElementById('rejectName').textContent = b.getAttribute('data-name');
+});
+</script>
+{% endblock %}
