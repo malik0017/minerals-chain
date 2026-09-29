@@ -1,5 +1,21 @@
 {% extends "layouts/base.html" %}
-{% block title %}{{ target.full_name }}{% endblock %}
+{% block title %}{{ target.full_name }}{% if target.role.value != 'admin' %}
+<div class="card adminuiux-card mt-3">
+  <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <div>
+      <h6 class="mb-1"><i class="bi bi-person-badge"></i> View as this user</h6>
+      <p class="small text-secondary mb-0">Opens their portal exactly as they see it (1 hour, audit-logged). A banner lets you return to admin.
+        {% if not impersonation_allowed %}<br><span class="text-warning">Disabled — enable “Allow admin ‘View as user’” in System Settings → Dev tools.</span>{% endif %}</p>
+    </div>
+    <form method="post" action="{{ url_for('admin_impersonate', user_id=target.id) }}">
+      {{ csrf_field() }}
+      <button class="btn btn-outline-theme" {% if not impersonation_allowed or not target.is_active %}disabled{% endif %}><i class="bi bi-box-arrow-in-right"></i> View as {{ target.full_name }}</button>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
 {% block content %}
 
 <a href="{{ url_for('admin_users_list') }}" class="text-secondary text-decoration-none small">&larr; Back to users</a>
@@ -121,6 +137,30 @@
         <label class="form-label" for="full_name">Full name</label>
         <input class="form-control" id="full_name" name="full_name" value="{{ target.full_name }}" type="text" required />
       </div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-4"><label class="form-label" for="phone">Phone</label>
+          <input class="form-control" id="phone" name="phone" value="{{ target.phone or '' }}" /></div>
+        <div class="col-md-4"><label class="form-label" for="job_title">Job title</label>
+          <input class="form-control" id="job_title" name="job_title" value="{{ target.job_title or '' }}" /></div>
+        <div class="col-md-2"><label class="form-label" for="company_role">Company role</label>
+          <select class="form-select" id="company_role" name="company_role">
+            {% for r in ['owner','manager','operator','viewer'] %}<option value="{{ r }}" {% if target.company_role == r %}selected{% endif %}>{{ r }}</option>{% endfor %}
+          </select></div>
+        <div class="col-md-2"><label class="form-label" for="preferred_language">Language</label>
+          <select class="form-select" id="preferred_language" name="preferred_language">
+            <option value="en" {% if target.preferred_language == 'en' %}selected{% endif %}>English</option>
+            <option value="ar" {% if target.preferred_language == 'ar' %}selected{% endif %}>العربية</option>
+          </select></div>
+      </div>
+      {% if target.role.value == 'admin' %}
+      <div class="mb-3">
+        <label class="form-label" for="admin_role">Admin permission level</label>
+        <select class="form-select" id="admin_role" name="admin_role">
+          {% for k, v in admin_roles.items() %}<option value="{{ k }}" {% if (target.admin_role or 'super_admin') == k %}selected{% endif %}>{{ v.label }}</option>{% endfor %}
+        </select>
+        <div class="form-text">Only a super administrator can change this.</div>
+      </div>
+      {% endif %}
       <div class="form-check mb-3">
         <input class="form-check-input " type="checkbox" id="is_active" name="is_active" value="1" {% if target.is_active %}checked{% endif %} {% if is_self %}disabled{% endif %} />
         <label class="form-check-label" for="is_active">Account active</label>
@@ -130,5 +170,21 @@
     </form>
   </div>
 </div>
+
+{% if target.role.value != 'admin' %}
+<div class="card adminuiux-card mt-3">
+  <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <div>
+      <h6 class="mb-1"><i class="bi bi-person-badge"></i> View as this user</h6>
+      <p class="small text-secondary mb-0">Opens their portal exactly as they see it (1 hour, audit-logged). A banner lets you return to admin.
+        {% if not impersonation_allowed %}<br><span class="text-warning">Disabled — enable “Allow admin ‘View as user’” in System Settings → Dev tools.</span>{% endif %}</p>
+    </div>
+    <form method="post" action="{{ url_for('admin_impersonate', user_id=target.id) }}">
+      {{ csrf_field() }}
+      <button class="btn btn-outline-theme" {% if not impersonation_allowed or not target.is_active %}disabled{% endif %}><i class="bi bi-box-arrow-in-right"></i> View as {{ target.full_name }}</button>
+    </form>
+  </div>
+</div>
+{% endif %}
 
 {% endblock %}

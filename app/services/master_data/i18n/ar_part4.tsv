@@ -1,0 +1,277 @@
+Title	العنوان
+Title (Arabic)	العنوان (عربي)
+Title (English)	العنوان (إنجليزي)
+To meet legal obligations, including tax (ZATCA) record keeping and security logging.	للوفاء بالالتزامات النظامية، ومنها حفظ السجلات الضريبية (زاتكا) وسجلات الأمان.
+To run the marketplace: listings, lab verification, RFQs, orders, documents and disputes.	لتشغيل السوق: المنتجات والتحقق المخبري وطلبات التسعير والطلبات والمستندات والنزاعات.
+To verify that every participant is a legitimate licensed business (registration review).	للتحقق من أن كل مشارك منشأة نظامية مرخصة (مراجعة التسجيل).
+Toggle navigation	إظهار/إخفاء القائمة
+Top minerals by GMV	أعلى المعادن من حيث قيمة التداول
+Top of the hierarchy: Industrial, Metallic, Construction, Processed, By-products.	أعلى التسلسل: صناعية، فلزية، إنشائية، معالجة، منتجات ثانوية.
+Total	الإجمالي
+Total (SAR)	الإجمالي (ريال)
+Total incl. VAT (SAR)	الإجمالي شامل الضريبة (ريال)
+Total listings	إجمالي المنتجات
+Total requests	إجمالي الطلبات
+Traceability	التتبع
+Trade terms	شروط التجارة
+Trader / distributor	تاجر / موزع
+Transaction, certificate, invoice and dispute records are kept for the period required by Saudi law (tax records for at least six years). Account data is kept while your account is active and then deleted or anonymised, unless the law requires us to keep it.	تُحفظ سجلات المعاملات والشهادات والفواتير والنزاعات للمدة التي يتطلبها النظام السعودي (السجلات الضريبية ست سنوات على الأقل). تُحفظ بيانات الحساب ما دام نشطاً ثم تُحذف أو تُجهَّل ما لم يُلزمنا النظام بحفظها.
+Transport requirements	متطلبات النقل
+Turn off any role's ability to create a new account on /register. Existing accounts are never affected.	إيقاف إمكانية إنشاء حساب جديد لأي دور عبر صفحة التسجيل. لا تتأثر الحسابات الحالية.
+Turn off before go-live (always blocked when APP_ENV=production).	أوقفه قبل الإطلاق (محظور دائماً في بيئة الإنتاج).
+Turnaround (days)	مدة الإنجاز (أيام)
+Two-factor auth	المصادقة الثنائية
+Two-factor authentication	المصادقة الثنائية
+Type	النوع
+Type something here...	اكتب هنا...
+Under review	قيد المراجعة
+Under verification	قيد التحقق
+Under verification — {} ({}%)	قيد التحقق — {} ({}٪)
+Unit	الوحدة
+Unit price	سعر الوحدة
+United Kingdom	المملكة المتحدة
+United States	الولايات المتحدة
+Units & Packaging	الوحدات والتعبئة
+Units of Measure	وحدات القياس
+Unlock	فك القفل
+Unread	غير مقروء
+Update	تحديث
+Updated	تاريخ التحديث
+Upgrade	ترقية
+Upload	رفع
+Upload new photo	رفع صورة جديدة
+Usage	الاستخدام
+Use smtp (or a KSA-hosted provider) in staging/production.	استخدم SMTP (أو مزوداً مستضافاً في المملكة) في بيئتي الاختبار والإنتاج.
+Use the language button in the header (or the LTR/RTL switch in Personalize) to change between English and Arabic. The whole interface switches language and direction together.	استخدم زر اللغة في الترويسة (أو مفتاح الاتجاه في صفحة التخصيص) للتبديل بين الإنجليزية والعربية. تتغير لغة الواجهة واتجاهها معاً.
+User	المستخدم
+Users	المستخدمون
+Users ({})	المستخدمون ({})
+VALID	ساري
+VAT number ({} digits)	الرقم الضريبي ({} رقماً)
+VAT rate (%)	نسبة ضريبة القيمة المضافة (٪)
+VAT registration no. ({} digits)	رقم التسجيل الضريبي ({} رقماً)
+VAT {}%	ضريبة القيمة المضافة {}٪
+Valid until	صالح حتى
+Verification Request	طلب التحقق
+Verification Requests	طلبات التحقق
+Verification attempts	محاولات التحقق
+Verification before trade	التحقق قبل التداول
+Verification is in progress — this listing can't be edited until the lab responds.	التحقق جارٍ — لا يمكن تعديل هذا المنتج حتى يرد المختبر.
+Verified	موثّق
+Verified (all sellers)	موثّق (كل البائعين)
+Verified listings available	منتجات موثّقة متاحة
+Verified — {} ({}%)	موثّق — {} ({}٪)
+Verify	تحقق
+Verify a Mineral Passport	التحقق من جواز معدني
+Verify your email above before submitting.	تحقق من بريدك الإلكتروني أعلاه قبل الإرسال.
+Verify your email first	تحقق من بريدك الإلكتروني أولاً
+Verifying your email up front means you won't need to re-attach documents later — file selections don't survive a page reload, so this step comes before them on purpose.	التحقق من بريدك أولاً يعني أنك لن تحتاج لإعادة إرفاق المستندات لاحقاً — اختيارات الملفات لا تبقى بعد إعادة تحميل الصفحة، لذا تأتي هذه الخطوة قبلها عمداً.
+Version	الإصدار
+View	عرض
+View / print	عرض / طباعة
+View RFQ	عرض طلب التسعير
+View all	عرض الكل
+View as this user	العرض كهذا المستخدم
+View verification requests	عرض طلبات التحقق
+Waive settlement fees for founding members	إعفاء الأعضاء المؤسسين من رسوم التسوية
+Warehouse	المستودع
+Warehouse Bins	مواقع المستودعات
+Warehouses	المستودعات
+We do not sell personal data and we collect only what these purposes need.	لا نبيع البيانات الشخصية ولا نجمع إلا ما تحتاجه هذه الأغراض.
+We respond within {} days. Records the law requires us to keep (invoices, certificates, orders) are retained but disconnected from your identity.	نرد خلال {} يوماً. السجلات التي يلزمنا النظام بحفظها (الفواتير والشهادات والطلبات) تُحفظ لكن تُفصل عن هويتك.
+Weighbridge certificate	شهادة الميزان
+Welcome back to Minerals Chain	مرحباً بعودتك إلى سلسلة المعادن
+What do you need?	ماذا تحتاج؟
+What we collect	ما نجمعه
+When	متى
+When off, /register no longer requires proving control of the email address before submitting. Dev/staging convenience only — keep this on in production.	عند الإيقاف لا يتطلب التسجيل إثبات ملكية البريد الإلكتروني. للتطوير والاختبار فقط — أبقه مفعلاً في الإنتاج.
+When on, sellers must pick a Product Master item (clean, comparable catalog). Off = free-text allowed.	عند التفعيل يجب على البائعين اختيار منتج من الكتالوج الرئيسي. عند الإيقاف يُسمح بالنص الحر.
+Which packaging each catalog product is sold in (PDF §{} — no duplicate products per pack size).	التعبئة التي يُباع بها كل منتج في الكتالوج (الملف §{} — دون تكرار المنتج لكل حجم تعبئة).
+White	أبيض
+Why not for your application? Let's personalize your application experience for user interface now.	لم لا؟ لنخصص تجربة الواجهة الآن.
+Why we use it	لماذا نستخدمها
+Withdrawn	مسحوب
+Yellow	أصفر
+You	أنت
+You can access your data, ask us to correct it, ask us to delete it, restrict or object to processing. Use My Profile → Privacy & my data to download your data or submit a request. We respond within {} days.	يمكنك الاطلاع على بياناتك وطلب تصحيحها أو حذفها أو تقييد معالجتها أو الاعتراض عليها. استخدم ملفي الشخصي ← الخصوصية وبياناتي لتنزيل بياناتك أو تقديم طلب. نرد خلال {} يوماً.
+You can't deactivate your own account.	لا يمكنك تعطيل حسابك.
+You're trading with	أنت تتعامل مع
+Your company identity stays confidential — sellers see this request, not who posted it, until an order is confirmed.	تبقى هوية منشأتك سرية — يرى البائعون الطلب دون معرفة صاحبه حتى تأكيد الطلب.
+Your full name	اسمك الكامل
+Your price	سعرك
+Your quotation	عرض سعرك
+Your rights	حقوقك
+Your rights under the Personal Data Protection Law (PDPL).	حقوقك بموجب نظام حماية البيانات الشخصية.
+ZATCA-ready documentation	مستندات جاهزة لمتطلبات زاتكا
+accepted	مقبول
+active	نشط
+admin	مسؤول
+and	و
+approved	معتمد
+auto	تلقائي
+avg days	متوسط الأيام
+basic	أساسي
+blocked	محجوز
+buyer	مشترٍ
+buyer company	منشأة مشترية
+buyers	المشترون
+by_product	منتج ثانوي
+cancelled	ملغى
+changed	تم التغيير
+chemical	كيميائي
+closed	مغلق
+company_approved	اعتماد منشأة
+company_rejected	رفض منشأة
+company_suspended	إيقاف منشأة
+completed	مكتمل
+confirmed	مؤكد
+consumed	مستهلك
+count	العدد
+create a listing, add its specification, request lab verification, then answer RFQs in your RFQ inbox.	أنشئ منتجاً وأضف مواصفته واطلب التحقق المخبري ثم رد على طلبات التسعير في صندوقك.
+create an RFQ with the specification you need, compare anonymous quotations side by side, and accept the best one.	أنشئ طلب تسعير بالمواصفة التي تحتاجها، وقارن العروض المجهولة جنباً إلى جنب، واقبل الأفضل.
+data_request_created	إنشاء طلب بيانات
+data_request_updated	تحديث طلب بيانات
+delivered	تم التسليم
+density	الكثافة
+discontinued	متوقف
+dispute_corrected	تصحيح قرار نزاع
+dispute_decided	قرار نزاع
+dispute_message	رسالة نزاع
+dispute_note	ملاحظة نزاع داخلية
+dispute_raised	رفع نزاع
+dispute_status	تغيير حالة نزاع
+dispute_withdrawn	سحب نزاع
+disputed	متنازع عليه
+draft	مسودة
+e.g. ASTM C25, ISO 13320	مثال: ASTM C25، ISO 13320
+e.g. CaCO3	مثال: CaCO3
+e.g. FOB Jubail	مثال: FOB الجبيل
+e.g. Grade A	مثال: الدرجة A
+e.g. Jubail Industrial City	مثال: مدينة الجبيل الصناعية
+e.g. SiO₂	مثال: SiO₂
+e.g. Silica sand {}%	مثال: رمل سيليكا {}٪
+e.g. Silica, Barite, Bentonite	مثال: سيليكا، باريت، بنتونايت
+e.g. Within {} days	مثال: خلال {} يوماً
+e.g. XRF, LOI, particle size	مثال: XRF، الفقد بالحرق، حجم الحبيبات
+e.g. per MT	مثال: للطن
+entry	الأساسية
+entry | mid | premium	الأساسية | المتوسطة | المميزة
+extended	موسّع
+extraction	الاستخراج
+failed	فشل
+finished	منتهٍ
+finished_product	منتج نهائي
+for buyer	لصالح المشتري
+for seller	لصالح البائع
+full	كامل
+hardness	الصلادة
+in progress	قيد التنفيذ
+in transit	قيد الشحن
+inactive	غير نشط
+invoice_issued	إصدار فاتورة
+invoiced	صدرت الفاتورة
+lab	مختبر
+lab company	منشأة مختبر
+labs	المختبرات
+length	الطول
+login	تسجيل دخول
+manager	مدير
+mandatory	إلزامي
+mass	الكتلة
+mid	المتوسطة
+on Earth ❤️	على الأرض ❤️
+open	مفتوح
+open_pit	تعدين سطحي
+operator	مشغّل
+optional	اختياري
+order_document_uploaded	رفع مستند طلب
+order_status_override	تغيير حالة طلب
+other	أخرى
+owner	مالك
+paid	مدفوع
+particle_size	حجم الحبيبات
+pass rate	نسبة النجاح
+passed	ناجح
+passport_approved	اعتماد جواز
+passport_rejected	رفض جواز
+pending	معلق
+pending confirmation	بانتظار التأكيد
+per MT	للطن
+percentage	نسبة مئوية
+personal_data_exported	تصدير بيانات شخصية
+physical	فيزيائي
+placer	رسوبي
+premium	المميزة
+privacy, terms, help, …	الخصوصية، الشروط، المساعدة، …
+processed	معالج
+processing	المعالجة
+processing_plant	مصنع معالجة
+quarantine	حجر
+quarry	محجر
+quotation_revised	تعديل عرض سعر
+raised by buyer	رفعه المشتري
+raised by seller	رفعه البائع
+raw_material	مادة خام
+refunded	مسترد
+rejected	مرفوض
+released	مُفرج عنه
+report_exported	تصدير تقرير
+requested	مطلوب
+requests	الطلبات
+resolved	تم الحل
+rfq_cancelled	إلغاء طلب تسعير
+sample scheduled	جُدولت العينة
+schedule the sample, record results for each parameter, and the system issues the Certificate of Analysis.	جدول العينة وسجّل نتائج كل معيار، وسيصدر النظام شهادة التحليل.
+seller	بائع
+seller company	منشأة بائعة
+sellers	البائعون
+settlement_fee_updated	تحديث رسوم تسوية
+subscription_changed	تغيير اشتراك
+subscription_renewed	تجديد اشتراك
+suspended	موقوف
+testing in progress	قيد الاختبار
+under verification	قيد التحقق
+underground	تعدين تحت الأرض
+verification_results	نتائج التحقق
+verification_scheduled	جدولة التحقق
+verification_testing	بدء الاختبار
+verified	موثّق
+view	عرض
+viewer	مشاهد
+volume	الحجم
+vs	مقابل
+waived	معفى
+with	مع
+{} awaiting review	{} بانتظار المراجعة
+{} day(s)	{} يوم
+{} h ago	قبل {} ساعة
+{} keeps today's behavior (lab certificates never expire).	{} يُبقي السلوك الحالي (شهادات المختبر بلا انتهاء).
+{} kg bags	أكياس {} كجم
+{} listings	{} منتج
+{} min ago	قبل {} دقيقة
+{} open RFQs	{} طلب تسعير مفتوح
+{} unread	{} غير مقروء
+{} verified listing(s)	{} منتج موثّق
+· for seller	· لصالح البائع
+— / no expiry	— / بلا انتهاء
+— assign to me —	— أسند إليّ —
+— free text —	— نص حر —
+— free-text listing —	— منتج بنص حر —
+…or Product (override)	…أو منتج (استثناء)
+← All Companies	→ جميع المنشآت
+← All RFQs	→ كل طلبات التسعير
+← All disputes	→ كل النزاعات
+← Back to RFQs	→ العودة لطلبات التسعير
+← Back to all companies	→ العودة لجميع المنشآت
+← Back to browse	→ العودة للتصفح
+← Back to inbox	→ العودة للصندوق
+← Back to listings	→ العودة للمنتجات
+← Back to orders	→ العودة للطلبات
+← Back to profile	→ العودة للملف الشخصي
+← Back to queue	→ العودة للقائمة
+← Back to requests	→ العودة للطلبات
+← Back to users	→ العودة للمستخدمين
+← Data requests	→ طلبات البيانات
+← My Profile	→ ملفي الشخصي
+← Orders console	→ وحدة الطلبات
+← Users	→ المستخدمون

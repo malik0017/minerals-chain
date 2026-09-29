@@ -17,11 +17,12 @@
   <div class="table-responsive">
     <table class="table align-middle mb-0">
       <thead>
-        <tr><th>Mineral</th><th>Status</th><th>Requested</th><th></th></tr>
+        <tr><th>Reference</th><th>Mineral</th><th>Status</th><th>Collection</th><th>Requested</th><th></th></tr>
       </thead>
       <tbody>
         {% for vr in requests %}
         <tr>
+          <td class="fw-semibold small">{{ vr.request_reference or '' }}{% if vr.is_priority %} <span class="badge bg-warning text-dark" title="Premium seller — priority"><i class="bi bi-lightning-charge"></i></span>{% endif %}</td>
           <td>{{ vr.product.mineral_type }}{% if vr.product.grade %} · {{ vr.product.grade }}{% endif %}</td>
           <td>
             {% if vr.status.value == "completed" %}<span class="badge bg-success-subtle text-success">Completed</span>
@@ -29,6 +30,7 @@
             {% else %}<span class="badge bg-warning-subtle text-warning">{{ vr.status.value | replace("_", " ") | capitalize }}</span>
             {% endif %}
           </td>
+          <td class="small">{{ vr.collection_date or '—' }}</td>
           <td class="text-secondary small">{{ vr.created_at.strftime("%Y-%m-%d") }}</td>
           <td class="text-end">
             <a href="{{ url_for('lab_verification_detail', request_id=vr.id) }}" class="btn btn-sm btn-outline-theme">View</a>

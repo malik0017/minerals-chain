@@ -1,4 +1,5 @@
 {% extends "layouts/base.html" %}
+{% from "partials/spec_table_macros.html" import spec_view, results_table with context %}
 {% block title %}{{ product.mineral_type }}{% endblock %}
 {% block content %}
 
@@ -51,6 +52,12 @@
   </div>
 </div>
 
+<div class="card adminuiux-card mb-3"><div class="card-body">
+  <div class="d-flex justify-content-between align-items-center mb-2"><h6 class="mb-0"><i class="bi bi-rulers"></i> Declared specification</h6>
+    {% if product.status.value in ("draft", "failed_verification") %}<a class="small" href="{{ url_for('seller_listing_edit_form', product_id=product.id) }}">Edit</a>{% endif %}</div>
+  {{ spec_view(spec_rows, 'No specification yet — add parameters and ranges before requesting verification.') }}
+</div></div>
+
 {% if error %}
 <div class="alert alert-danger py-2">{{ error }}</div>
 {% endif %}
@@ -65,10 +72,10 @@
       {% else %}
       <form method="post" action="{{ url_for('seller_listing_request_verification', product_id=product.id) }}" class="d-flex gap-2">
   {{ csrf_field() }}
-        <select name="lab_company_id" class="form-select w-auto" required>
+        <select name="lab_company_id" class="form-select" required>
           <option value="" disabled selected>Choose a lab...</option>
-          {% for lab in available_labs %}
-          <option value="{{ lab.id }}">{{ lab.company_name }}</option>
+          {% for o in available_labs %}
+          <option value="{{ o.lab.id }}">{% if o.preferred %}★ {% endif %}{{ o.lab.company_name }} — SAR {{ '{:,.0f}'.format(o.fee or 0) }}{% if o.turnaround %} · {{ o.turnaround }} days{% endif %}{% if o.accreditation %} · {{ o.accreditation }}{% endif %}</option>
           {% endfor %}
         </select>
         <button type="submit" class="btn btn-theme">
@@ -81,9 +88,11 @@
     {% elif product.status.value == "verified" %}
       <p class="text-success mb-0"><i class="bi bi-patch-check-fill"></i> This listing is verified and eligible for buyer visibility.</p>
       {% if certificate %}
-      <div class="mt-2 small text-secondary">
-        Certificate <strong>{{ certificate.certificate_number }}</strong> — issued {{ certificate.issue_date.strftime("%Y-%m-%d") }}
+      <div class="mt-2 small text-secondary d-flex justify-content-between align-items-center">
+        <span>Certificate <strong>{{ certificate.certificate_number }}</strong> — issued {{ certificate.issue_date.strftime("%Y-%m-%d") }}{% if certificate.expiry_date %} · valid until {{ certificate.expiry_date }}{% endif %}</span>
+        <a class="btn btn-sm btn-outline-theme" target="_blank" href="{{ url_for('certificate_document', cert_id=certificate.id) }}"><i class="bi bi-printer"></i> COA</a>
       </div>
+      {% if certificate.results %}<div class="mt-2">{{ results_table(certificate) }}</div>{% endif %}
       {% endif %}
     {% endif %}
 
@@ -116,7 +125,20 @@
       {% set pending_passport = passport_history | selectattr("status.value", "equalto", "pending") | first %}
       {% if active_passport %}
         <p class="text-success mb-1"><i class="bi bi-patch-check-fill"></i> Active passport: <strong>{{ active_passport.certificate_number }}</strong></p>
-        <p class="text-secondary small mb-0">{{ active_passport.category | replace("_", " ") | capitalize }} · valid until {{ active_passport.expiry_date }}</p>
+        <p class="text-secondary small mb-2">{{ active_passport.category | replace("_", " ") | capitalize }} · valid until {{ active_passport.expiry_date }}
+          · <a target="_blank" href="{{ url_for('certificate_document', cert_id=active_passport.id) }}">view</a></p>
+        {% set days_left = (active_passport.expiry_date - today).days if active_passport.expiry_date else 9999 %}
+        {% if pending_passport %}
+          <p class="text-secondary small mb-0"><i class="bi bi-hourglass-split"></i> Renewal request awaiting admin review{% if pending_passport.is_expedited %} (expedited){% endif %}.</p>
+        {% elif days_left <= renewal_window %}
+          <form method="post" action="{{ url_for('seller_listing_request_passport', product_id=product.id) }}" class="d-flex gap-2 align-items-center">
+            {{ csrf_field() }}<input type="hidden" name="scope" value="{{ active_passport.category }}">
+            <span class="small text-warning"><i class="bi bi-exclamation-triangle"></i> Expires in {{ days_left }} days.</span>
+            <button class="btn btn-sm btn-warning"><i class="bi bi-arrow-repeat"></i> Request renewal</button>
+          </form>
+        {% else %}
+          <p class="text-secondary small mb-0">Renewal opens {{ renewal_window }} days before expiry.</p>
+        {% endif %}
       {% elif pending_passport %}
         <p class="text-secondary mb-0"><i class="bi bi-hourglass-split"></i> A {{ pending_passport.category | replace("_", " ") }} passport request is awaiting admin review.</p>
       {% else %}

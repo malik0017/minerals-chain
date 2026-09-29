@@ -1,34 +1,12 @@
 """
 app/models/subscription.py
-
-BRD §6.11: "The system must associate each company account with
-exactly one active subscription tier at any given time" and must
-track expiry/grace-period/renewal behavior. A bare enum column on
-Company can't represent any of that — no start/end dates, no history
-of what tier a company was on last quarter, no per-company overrides.
-
-This table is the real source of truth. Company.subscription_tier
-(see its docstring) stays as a fast-access cache of "what tier is
-this company on right now" — reading it avoids a join on every page
-that needs to check a limit, but every write goes through
-subscription_service.py, which updates both together. Never write one
-without the other.
-
-`attributes` (JSONB) exists for the "attributes" BRD calls for without
-over-specifying today what any of them are — BRD's illustrative
-permissions matrix (§6.11) lists things like "priority placement" and
-"expedited review" that aren't tied to real enforcement logic yet.
-Rather than adding narrow boolean columns for features that don't
-exist, a flexible bag here lets a specific company's subscription
-carry a one-off override (e.g. a negotiated custom listing limit)
-without a schema change — and a real feature migrates OUT of here
-into its own column once there's actual enforcement code reading it.
 """
 import enum
 import uuid
-from datetime import date
+from datetime import date, datetime
+from decimal import Decimal
 
-from sqlalchemy import Date, Enum as SAEnum, ForeignKey, String
+from sqlalchemy import Date, DateTime, Enum as SAEnum, ForeignKey, Numeric, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -38,6 +16,7 @@ from app.models.company import SubscriptionTier
 
 class SubscriptionStatus(str, enum.Enum):
     ACTIVE = "active"
+    GRACE = "grace"          
     EXPIRED = "expired"
     CANCELLED = "cancelled"
 
@@ -54,12 +33,10 @@ class Subscription(Base, TimestampMixin):
         SAEnum(SubscriptionTier, name="subscription_tier", values_callable=lambda e: [m.value for m in e]),
         nullable=False,
     )
-    # Free-text plan variant (e.g. "annual", "monthly") — deliberately not an enum yet;
-    # there's no commercial billing cadence defined in BRD to lock into a fixed set.
     subtype: Mapped[str | None] = mapped_column(String(30), nullable=True)
 
     start_date: Mapped[date] = mapped_column(Date, nullable=False)
-    end_date: Mapped[date | None] = mapped_column(Date, nullable=True)  # null = open-ended (e.g. entry tier default)
+    end_date: Mapped[date | None] = mapped_column(Date, nullable=True)  
 
     status: Mapped[SubscriptionStatus] = mapped_column(
         SAEnum(SubscriptionStatus, name="subscription_status", values_callable=lambda e: [m.value for m in e]),
@@ -68,6 +45,9 @@ class Subscription(Base, TimestampMixin):
     )
 
     attributes: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    expiry_notified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    changed_by_user_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    change_note: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     company: Mapped["Company"] = relationship("Company", foreign_keys=[company_id])
 
@@ -81,3 +61,23 @@ class Subscription(Base, TimestampMixin):
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"<Subscription {self.tier.value} for company {self.company_id} ({self.status.value})>"
+
+
+class SubscriptionCharge(Base, TimestampMixin):
+    __tablename__ = "subscription_charges"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    reference: Mapped[str] = mapped_column(String(30), nullable=False, unique=True)
+    company_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("companies.id"), nullable=False, index=True)
+    subscription_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("subscriptions.id"), nullable=True)
+    tier: Mapped[str] = mapped_column(String(20), nullable=False)
+    period_start: Mapped[date] = mapped_column(Date, nullable=False)
+    period_end: Mapped[date | None] = mapped_column(Date, nullable=True)
+    amount_sar: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+    vat_amount_sar: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+    total_sar: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")  # pending|paid|waived|cancelled
+    paid_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    payment_reference: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
+    company: Mapped["Company"] = relationship("Company")

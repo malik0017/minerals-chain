@@ -1,0 +1,9 @@
+{% extends "layouts/base_public.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="card border-0 shadow-sm"><div class="card-body p-4 p-md-5">
+  <h2 class="mb-1">{{ title }}</h2>
+  <p class="text-secondary small mb-4">Version {{ page.version }} · Updated {{ page.updated_at.strftime('%Y-%m-%d') }}</p>
+  <div class="mc-content" translate="no">{{ body | markup }}</div>
+</div></div>
+{% endblock %}

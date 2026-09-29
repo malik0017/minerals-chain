@@ -1,11 +1,8 @@
 """
 app/modules/buyer/orders/routes.py
-
-BRD §6.6. Gated by require_buyer_company. Identity reveal is handled
-entirely through core/identity_guard.py — see order_detail() below for
-exactly where that's applied.
 """
 import uuid
+from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
@@ -17,6 +14,8 @@ from app.core.portal_nav import build_portal_context
 from app.database.base import get_db
 from app.models.user import User, UserRole
 from app.repositories import order_repository
+from app.services import dispute_service
+from app.services import order_document_service as ods
 from app.services.order_service import OrderActionError, confirm_receipt, get_owned_order
 
 router = APIRouter(prefix="/buyer/orders", tags=["buyer-orders"])
@@ -53,12 +52,16 @@ def order_detail(
     context.update({
         "order": order,
         "revealed": revealed,
-        # Only ever pass the seller company into the template once
-        # revealed — see identity_guard.py's docstring for why this
-        # matters more than just hiding it in the HTML.
         "seller_company": order.seller_company if revealed else None,
         "error": error,
+        "disputes": dispute_service.for_order(db, order),
+        "documents": ods.visible_documents(order, "buyer"),
+        "credentials": ods.linked_credentials(db, order),
+        "doc_types": {**ods.DOC_TYPES, **ods.GENERATED_TYPES},
+        "upload_types": ods.DOC_TYPES,
+        "msg": request.query_params.get("msg"),
     })
+    context["can_raise"], context["why"] = dispute_service.can_raise(db, order)
     return templates.TemplateResponse(request, "buyer/order_detail.html", context)
 
 
@@ -75,7 +78,7 @@ def order_confirm_receipt(
     except OrderActionError as exc:
         db.rollback()
         return RedirectResponse(
-            url=f"{request.url_for('buyer_order_detail', order_id=order_id)}?error={exc}",
+            url=f"{request.url_for('buyer_order_detail', order_id=order_id)}?error={quote(str(exc))}",
             status_code=303,
         )
     return RedirectResponse(url=request.url_for("buyer_order_detail", order_id=order_id), status_code=303)

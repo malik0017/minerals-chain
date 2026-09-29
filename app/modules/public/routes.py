@@ -23,8 +23,6 @@ def passport_verify(
     searched = number is not None and number.strip() != ""
     if searched:
         candidate = certification_repository.get_by_number(db, number.strip().upper())
-        # Only ever resolve to an actual Mineral Passport here — a lab
-        # certificate number should never validate on this lookup.
         if candidate is not None and candidate.cert_type == CertificationType.MINERAL_PASSPORT:
             passport = candidate
 

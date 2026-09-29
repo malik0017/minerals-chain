@@ -1,19 +1,12 @@
 """
 app/modules/admin/audit_log/routes.py
-
-Task #7: admin-facing audit log viewer. Shows every AuditLog row (which
-Batch G already writes for company/passport approvals, user-account
-admin actions, and — as of this batch — every completed login) with the
-actor's name, the action, what it was performed on, and when.
-
-Read-only: no POST endpoints, nothing here writes an AuditLog row itself.
 """
 import uuid
 
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
-from app.core.permissions import require_portal
+from app.core.permissions import require_admin, require_portal
 from app.core.portal_nav import build_portal_context
 from app.database.base import get_db
 from app.models.user import User, UserRole
@@ -29,7 +22,7 @@ PAGE_SIZE = 50
 def audit_log_list(
     request: Request,
     db: Session = Depends(get_db),
-    admin: User = Depends(require_portal(UserRole.ADMIN)),
+    admin: User = Depends(require_admin("audit")),
     page: int = 1,
     actor: str | None = None,
     action: str | None = None,

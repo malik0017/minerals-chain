@@ -13,8 +13,8 @@ from app.repositories import order_repository, product_repository, rfq_repositor
 router = APIRouter(prefix="/buyer", tags=["buyer"])
 from app.core.templates import templates
 
-_RFQ_COLORS = {RFQStatus.OPEN: "#198754", RFQStatus.CLOSED: "#6c757d"}
-_RFQ_LABELS = {RFQStatus.OPEN: "Open", RFQStatus.CLOSED: "Closed"}
+_RFQ_COLORS = {RFQStatus.OPEN: "#198754", RFQStatus.CLOSED: "#6c757d", RFQStatus.CANCELLED: "#dc3545"}
+_RFQ_LABELS = {RFQStatus.OPEN: "Open", RFQStatus.CLOSED: "Closed", RFQStatus.CANCELLED: "Cancelled"}
 
 
 @router.get("/dashboard", name="buyer_dashboard")
@@ -25,9 +25,6 @@ def buyer_dashboard(
 ):
     context = build_portal_context(user, UserRole.BUYER, active_path=request.url.path)
     context["company"] = user.company
-    # Batch 11: this is a platform-wide number for EVERY buyer (and
-    # admin preview) alike — there's no "my listings" concept for a
-    # buyer, unlike the seller/lab dashboards' company-scoped counts.
     context["verified_listing_count"] = len(product_repository.list_verified(db))
 
     if user.company is not None:
@@ -37,7 +34,9 @@ def buyer_dashboard(
 
         orders = order_repository.list_for_buyer_company(db, user.company_id)
         context["order_count"] = len(orders)
-        context["orders_in_progress"] = sum(1 for o in orders if o.status.value != "completed")
+        context["orders_in_progress"] = sum(
+            1 for o in orders if o.status.value not in ("completed", "cancelled", "resolved")
+        )
 
         context["rfq_donut"] = build_donut([
             (_RFQ_LABELS[status], sum(1 for r in rfqs if r.status == status), _RFQ_COLORS[status])

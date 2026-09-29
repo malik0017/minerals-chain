@@ -60,135 +60,36 @@
             <li><a class="dropdown-item{% if lang == 'ar' %} active{% endif %}" href="{{ url_for('language_set') }}?lang=ar&next={{ request.url.path }}">AR - العربية</a></li>
           </ul>
         </div>
+        {# Batch M6: real notifications (was vendor mock-up content) #}
+        {% set nn = nav_notifications(request) %}
         <div class="dropdown d-inline-block">
-          <button
-            class="btn btn-link btn-square btn-icon btn-link-header dropdown-toggle no-caret"
-            type="button"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-          >
+          <button class="btn btn-link btn-square btn-icon btn-link-header dropdown-toggle no-caret" type="button"
+                  data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
             <i data-feather="bell"></i>
-            <span
-              class="position-absolute top-0 end-0 badge rounded-pill bg-danger p-1"
-              ><small>9+</small>
-              <span class="visually-hidden">unread messages</span></span
-            >
+            {% if nn.unread %}<span class="position-absolute top-0 end-0 badge rounded-pill bg-danger p-1"><small>{{ '9+' if nn.unread > 9 else nn.unread }}</small></span>{% endif %}
           </button>
-          <ul
-            class="dropdown-menu dropdown-menu-end notification-dd sm-mi-95px"
-          >
+          <ul class="dropdown-menu dropdown-menu-end notification-dd sm-mi-95px" style="min-width:320px">
+            <li class="px-3 pt-2 pb-1 d-flex justify-content-between align-items-center">
+              <span class="fw-semibold">Notifications</span>
+              {% if nn.unread %}<span class="badge bg-danger-subtle text-danger">{{ nn.unread }} unread</span>{% endif %}
+            </li>
+            {% for n in nn.entries %}
             <li>
-              <a class="dropdown-item p-2" href="#">
-                <div class="row gx-3">
-                  <div class="col-auto">
-                    <figure class="avatar avatar-40 rounded-circle bg-pink">
-                      <i class="bi bi-gift text-white"></i>
-                    </figure>
-                  </div>
-                  <div class="col">
-                    <p class="mb-2 small">
-                      Congratulation! Your property
-                      <span class="fw-bold">#H10215</span> has reached 1000
-                      views.
-                    </p>
-                    <span class="row"
-                      ><span class="col"
-                        ><span
-                          class="badge badge-light rounded-pill text-bg-warning small"
-                          >Directory</span
-                        ></span
-                      >
-                      <span class="col-auto small opacity-75"
-                        >1:00 am</span
-                      ></span
-                    >
+              <a class="dropdown-item p-2 {% if not n.is_read %}bg-primary-subtle{% endif %}" href="{{ n.action_url or url_for('notifications_index') }}">
+                <div class="d-flex gap-2">
+                  <i class="bi {{ n.icon }} text-theme mt-1"></i>
+                  <div class="small">
+                    <div class="fw-semibold text-wrap">{{ n.title }}</div>
+                    <div class="text-secondary text-wrap">{{ n.body[:110] }}{% if n.body|length > 110 %}…{% endif %}</div>
+                    <div class="opacity-75">{{ n.when }}</div>
                   </div>
                 </div>
               </a>
             </li>
-            <li>
-              <a class="dropdown-item p-2" href="#">
-                <div class="row gx-3">
-                  <div class="col-auto">
-                    <figure class="avatar avatar-40 rounded-circle bg-success">
-                      <i class="bi bi-patch-check text-white"></i>
-                    </figure>
-                  </div>
-                  <div class="col">
-                    <p class="mb-2 small">
-                      Your property <span class="fw-bold">#H10215</span> is
-                      published and live now.
-                    </p>
-                    <span class="row"
-                      ><span class="col"
-                        ><span
-                          class="badge badge-light rounded-pill text-bg-primary small"
-                          >System</span
-                        ></span
-                      >
-                      <span class="col-auto small opacity-75"
-                        >1:00 am</span
-                      ></span
-                    >
-                  </div>
-                </div>
-              </a>
-            </li>
-            <li>
-              <a class="dropdown-item p-2" href="#">
-                <div class="row gx-3">
-                  <div class="col-auto">
-                    <figure class="avatar avatar-40 rounded-circle bg-info">
-                      <i class="bi bi-clipboard-check text-white"></i>
-                    </figure>
-                  </div>
-                  <div class="col">
-                    <p class="mb-2 small">
-                      User <span class="fw-bold">Rahana</span> has updated
-                      <span class="fw-bold">#H10215</span> property.
-                    </p>
-                    <span class="row"
-                      ><span class="col"
-                        ><span
-                          class="badge badge-light rounded-pill text-bg-success small"
-                          >team</span
-                        ></span
-                      >
-                      <span class="col-auto small opacity-75"
-                        >1:00 am</span
-                      ></span
-                    >
-                  </div>
-                </div>
-              </a>
-            </li>
-            <li>
-              <div class="dropdown-item p-2">
-                <div class="row gx-3">
-                  <div class="col-auto">
-                    <figure class="avatar avatar-40 rounded-circle bg-warning">
-                      <i class="bi bi-bell text-white"></i>
-                    </figure>
-                  </div>
-                  <div class="col">
-                    <p class="mb-2 small">
-                      Your subscription going to expire soon. Please
-                      <a href="#">upgrade</a> to get
-                      service interrupt free.
-                    </p>
-                    <p class="opacity-75 small">4 days ago</p>
-                  </div>
-                </div>
-              </div>
-            </li>
-            <li class="text-center">
-              <button
-                class="btn btn-link text-center"
-                onclick="notifcationAll()"
-              >
-                View all <i class="bi bi-arrow-right fs-14"></i>
-              </button>
-            </li>
+            {% else %}
+            <li class="px-3 py-3 small text-secondary">No notifications yet.</li>
+            {% endfor %}
+            <li class="text-center"><a class="btn btn-link" href="{{ url_for('notifications_index') }}">View all <i class="bi bi-arrow-right fs-14"></i></a></li>
           </ul>
         </div>
         <div class="dropdown d-inline-block">
@@ -240,7 +141,7 @@
               </div>
              
               <div>
-                <a class="dropdown-item" href="#">
+                <a class="dropdown-item" href="{{ url_for('my_subscription') if current_user.company_name != 'Platform Administration' else url_for('admin_subscriptions') }}">
                   <div class="row">
                     <div class="col">
                       <i data-feather="gift" class="avatar avatar-18 me-1"></i>

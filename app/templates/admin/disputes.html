@@ -1,0 +1,35 @@
+{% extends "layouts/base.html" %}
+{% from "partials/dispute_macros.html" import dispute_badge with context %}
+{% block title %}Disputes{% endblock %}
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-exclamation-octagon"></i> Disputes</h4>
+<div class="row g-2 mb-3">
+{% for s in statuses %}{% set c = {'open':'warning','under_review':'info','awaiting_info':'primary','resolved':'success','withdrawn':'secondary'}[s.value] %}
+  <div class="col-6 col-md"><a class="text-decoration-none" href="?status={{ s.value }}"><div class="card adminuiux-card border-{{ c }} border-opacity-50"><div class="card-body py-2">
+    <div class="small text-secondary">{{ s.value.replace('_',' ') | capitalize }}</div><div class="fs-4 fw-semibold text-{{ c }}">{{ counts[s.value] }}</div></div></div></a></div>
+{% endfor %}
+</div>
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-3"><input name="q" value="{{ q }}" class="form-control" placeholder="Dispute or order reference"></div>
+  <div class="col-md-3"><select name="status" class="form-select"><option value="">All statuses</option><option value="active" {% if status=='active' %}selected{% endif %}>Active</option>
+    {% for s in statuses %}<option value="{{ s.value }}" {% if status==s.value %}selected{% endif %}>{{ s.value.replace('_',' ') | capitalize }}</option>{% endfor %}</select></div>
+  <div class="col-md-3"><select name="category" class="form-select"><option value="">All categories</option>
+    {% for k, v in categories.items() %}<option value="{{ k }}" {% if category==k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+  <div class="col-md-2 d-flex align-items-center"><div class="form-check"><input class="form-check-input" type="checkbox" name="mine" value="1" id="mine" {% if mine %}checked{% endif %}><label class="form-check-label" for="mine">Assigned to me</label></div></div>
+  <div class="col-md-1"><button class="btn btn-theme w-100"><i class="bi bi-funnel"></i></button></div>
+</form>
+{% if not rows %}<div class="alert alert-secondary">No disputes match.</div>{% else %}
+<div class="card adminuiux-card"><div class="table-responsive"><table class="table align-middle mb-0">
+<thead><tr><th>Reference</th><th>Order</th><th>Parties</th><th>Category</th><th>Status</th><th>Handler</th><th>Opened</th><th></th></tr></thead>
+<tbody>{% for d in rows %}<tr>
+  <td class="fw-semibold">{{ d.reference }}</td>
+  <td>{{ d.order.order_reference }}<div class="small text-secondary">{{ d.order.rfq.mineral_type }}</div></td>
+  <td class="small">{{ d.order.buyer_company.company_name }}<br><span class="text-secondary">vs</span> {{ d.order.seller_company.company_name }}<div class="text-secondary">raised by {{ d.raised_by_party }}</div></td>
+  <td class="small">{{ categories[d.category] }}</td>
+  <td>{{ dispute_badge(d.status) }}{% if d.ruling %}<div class="small">for {{ d.ruling.value }}</div>{% endif %}</td>
+  <td class="small">{{ d.assigned_admin.full_name if d.assigned_admin else '—' }}</td>
+  <td class="small">{{ d.created_at.strftime('%Y-%m-%d') }}</td>
+  <td class="text-end"><a class="btn btn-sm btn-outline-theme" href="{{ url_for('admin_dispute_detail', dispute_id=d.id) }}">Open</a></td>
+</tr>{% endfor %}</tbody></table></div></div>
+{% include "partials/pager.html" %}{% endif %}
+{% endblock %}

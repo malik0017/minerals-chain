@@ -2,52 +2,67 @@
 {% block title %}Users{% endblock %}
 {% block content %}
 
-<h4 class="mb-1">Users</h4>
-<p class="text-secondary mb-4">Every account on the platform, any role.</p>
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <h4 class="mb-1"><i class="bi bi-people"></i> Users <span class="badge bg-secondary-subtle text-secondary align-middle">{{ total }}</span></h4>
+    <p class="text-secondary mb-0">Every account on the platform — search, filter, and act on many at once.</p>
+  </div>
+  {% if can_manage %}<a href="{{ url_for('admin_user_new') }}" class="btn btn-theme"><i class="bi bi-person-plus"></i> Create user</a>{% endif %}
+</div>
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
 
-<div class="card adminuiux-card">
-  <div class="table-responsive">
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-4"><input type="search" name="q" value="{{ f.q }}" class="form-control" placeholder="Name, email or company"></div>
+  <div class="col-auto"><select name="role" class="form-select">
+    <option value="">All roles</option>{% for r in roles %}<option value="{{ r.value }}" {% if f.role == r.value %}selected{% endif %}>{{ r.value | capitalize }}</option>{% endfor %}</select></div>
+  <div class="col-auto"><select name="status" class="form-select">
+    <option value="">Any status</option>
+    {% for v, l in [('active','Active'),('disabled','Disabled'),('locked','Locked'),('no2fa','Without 2FA')] %}<option value="{{ v }}" {% if f.status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <div class="col-auto"><select name="admin_role" class="form-select">
+    <option value="">Any admin level</option>{% for k, v in admin_roles.items() %}<option value="{{ k }}" {% if f.admin_role == k %}selected{% endif %}>{{ v.label }}</option>{% endfor %}</select></div>
+  <div class="col-auto"><button class="btn btn-outline-theme"><i class="bi bi-search"></i> Filter</button></div>
+</form>
+
+<form method="post" action="{{ url_for('admin_users_bulk') }}" id="bulkForm">
+  {{ csrf_field() }}
+  {% if can_manage %}
+  <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+    <select name="action" class="form-select form-select-sm w-auto" id="bulkAction">
+      <option value="">Bulk action…</option><option value="activate">Activate</option><option value="deactivate">Deactivate</option>
+      <option value="unlock">Unlock</option><option value="reset_password">Reset password</option>
+    </select>
+    <input name="new_password" type="text" class="form-control form-control-sm w-auto" placeholder="New password (for reset)" autocomplete="off">
+    <button class="btn btn-sm btn-outline-theme" onclick="return confirm('Apply to the ticked users?')">Apply to selected</button>
+  </div>
+  {% endif %}
+  <div class="card adminuiux-card"><div class="table-responsive">
     <table class="table align-middle mb-0 mc-table-colorful">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Role</th>
-          <th>Company</th>
-          <th>Status</th>
-          <th>2FA</th>
-          <th></th>
-        </tr>
-      </thead>
+      <thead><tr>
+        {% if can_manage %}<th style="width:32px"><input type="checkbox" class="form-check-input" onclick="document.querySelectorAll('.u-chk').forEach(c=>c.checked=this.checked)"></th>{% endif %}
+        <th>Name</th><th>Email</th><th>Role</th><th>Company</th><th>Status</th><th>2FA</th><th>Last login</th><th></th>
+      </tr></thead>
       <tbody>
         {% for u in users %}
         <tr class="mc-accent-{{ avatar_class(u.email) | replace('mc-avatar-', '') }}">
-          <td>
-            <div class="mc-row-label">
-              <div class="mc-avatar-chip {{ avatar_class(u.email) }}">{{ initials(u.full_name) }}</div>
-              <div class="mc-row-title">{{ u.full_name }}</div>
-            </div>
-          </td>
-          <td class="text-secondary">{{ u.email }}</td>
-          <td><span class="badge bg-secondary-subtle text-secondary">{{ u.role.value }}</span></td>
-          <td>{{ u.company.company_name if u.company else "—" }}</td>
-          <td>
-            {% if u.locked_until and u.locked_until > now %}<span class="badge bg-danger-subtle text-danger">Locked</span>
-            {% elif u.is_active %}<span class="badge bg-success-subtle text-success">Active</span>
-            {% else %}<span class="badge bg-danger-subtle text-danger">Disabled</span>
-            {% endif %}
-          </td>
-          <td>
-            {% if u.totp_enabled %}<i class="bi bi-shield-check text-success"></i>{% else %}<span class="text-secondary">—</span>{% endif %}
-          </td>
-          <td class="text-end">
-            <a href="{{ url_for('admin_user_detail', user_id=u.id) }}" class="btn btn-sm btn-outline-theme">View</a>
-          </td>
+          {% if can_manage %}<td><input type="checkbox" class="form-check-input u-chk" name="user_ids" value="{{ u.id }}"></td>{% endif %}
+          <td><div class="mc-row-label"><div class="mc-avatar-chip {{ avatar_class(u.email) }}">{{ initials(u.full_name) }}</div>
+            <div><div class="mc-row-title">{{ u.full_name }}</div>{% if u.job_title %}<div class="small text-secondary">{{ u.job_title }}</div>{% endif %}</div></div></td>
+          <td class="text-secondary small">{{ u.email }}</td>
+          <td><span class="badge bg-secondary-subtle text-secondary">{{ u.role.value }}</span>
+            {% if u.role.value == 'admin' %}<div class="small text-secondary">{{ admin_roles[u.admin_role or 'super_admin'].label }}</div>{% else %}<div class="small text-secondary">{{ u.company_role }}</div>{% endif %}</td>
+          <td class="small">{% if u.company %}<a href="{{ url_for('admin_company_detail', company_id=u.company_id) }}">{{ u.company.company_name }}</a>{% else %}—{% endif %}</td>
+          <td>{% if u.locked_until and u.locked_until > now %}<span class="badge bg-danger-subtle text-danger">Locked</span>
+              {% elif u.is_active %}<span class="badge bg-success-subtle text-success">Active</span>
+              {% else %}<span class="badge bg-danger-subtle text-danger">Disabled</span>{% endif %}</td>
+          <td>{% if u.totp_enabled %}<i class="bi bi-shield-check text-success"></i>{% else %}<span class="text-secondary">—</span>{% endif %}</td>
+          <td class="small text-secondary">{{ u.last_login_at.strftime('%Y-%m-%d') if u.last_login_at else '—' }}</td>
+          <td class="text-end"><a href="{{ url_for('admin_user_detail', user_id=u.id) }}" class="btn btn-sm btn-outline-theme">View</a></td>
         </tr>
-        {% endfor %}
+        {% else %}<tr><td colspan="9" class="text-secondary">No users match.</td></tr>{% endfor %}
       </tbody>
     </table>
-  </div>
-</div>
-
+  </div></div>
+</form>
+{% include "partials/pager.html" %}
 {% endblock %}

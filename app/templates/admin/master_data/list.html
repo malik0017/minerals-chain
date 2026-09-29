@@ -1,0 +1,105 @@
+{% extends "layouts/base.html" %}
+{% block title %}{{ entity.title }}{% endblock %}
+{% block content %}
+
+<a href="{{ url_for('admin_master_data_index') }}" class="text-secondary text-decoration-none small">&larr; {{ t('md.title') }}</a>
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mt-2 mb-3">
+  <div>
+    <h4 class="mb-1"><i class="bi {{ entity.icon }}"></i> {% if lang == 'ar' %}{{ entity.title_ar }}{% else %}{{ entity.title }}{% endif %}
+      <span class="badge bg-secondary-subtle text-secondary align-middle">{{ total }}</span></h4>
+    <p class="text-secondary mb-0 small">{{ entity.description }}</p>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{{ url_for('admin_master_data_new', entity_key=entity.key) }}" class="btn btn-theme"><i class="bi bi-plus-lg"></i> {{ t('md.add') }}</a>
+    <a href="{{ url_for('admin_master_data_export', entity_key=entity.key) }}" class="btn btn-outline-theme"><i class="bi bi-download"></i> {{ t('md.export') }}</a>
+    <button class="btn btn-outline-theme" type="button" data-bs-toggle="collapse" data-bs-target="#importBox"><i class="bi bi-upload"></i> {{ t('md.import') }}</button>
+  </div>
+</div>
+
+{% include "admin/master_data/_flash.html" %}
+
+<div class="collapse mb-3" id="importBox">
+  <div class="card adminuiux-card"><div class="card-body">
+    <form method="post" enctype="multipart/form-data" action="{{ url_for('admin_master_data_import', entity_key=entity.key) }}" class="row g-2 align-items-end">
+      {{ csrf_field() }}
+      <div class="col-md-6">
+        <label class="form-label small">CSV file (UTF-8). Rows are matched on <code>{{ entity.natural_key | join(' + ') }}</code> — existing rows are updated, new ones created.</label>
+        <input type="file" name="file" accept=".csv,text/csv" class="form-control" required />
+      </div>
+      <div class="col-auto"><button type="submit" class="btn btn-theme">{{ t('md.import') }}</button></div>
+      <div class="col-auto"><a href="{{ url_for('admin_master_data_template', entity_key=entity.key) }}" class="btn btn-link">{{ t('md.template') }}</a></div>
+      <div class="col-12 small text-secondary">Columns: <code>{{ csv_columns | join(', ') }}</code>. For linked fields (…_id) put the linked record's code, not an ID.</div>
+    </form>
+  </div></div>
+</div>
+
+<form method="get" class="d-flex gap-2 mb-3 flex-wrap">
+  {% if entity.search_fields %}
+  <input type="search" name="q" value="{{ q }}" class="form-control w-auto" placeholder="{{ t('md.search') }}" />
+  {% endif %}
+  {% if entity.has_active %}
+  <select name="active" class="form-select w-auto" onchange="this.form.submit()">
+    <option value="">{{ t('md.all') }}</option>
+    <option value="1" {% if active == '1' %}selected{% endif %}>{{ t('md.active_only') }}</option>
+    <option value="0" {% if active == '0' %}selected{% endif %}>{{ t('md.inactive_only') }}</option>
+  </select>
+  {% endif %}
+  {% if entity.search_fields %}<button class="btn btn-outline-theme" type="submit"><i class="bi bi-search"></i></button>{% endif %}
+</form>
+
+{% if not table %}
+<div class="alert alert-secondary">{{ t('md.no_rows') }}</div>
+{% else %}
+<div class="card adminuiux-card">
+  <div class="table-responsive">
+    <table class="table align-middle mb-0 mc-table-colorful">
+      <thead><tr>{% for c in columns %}<th>{{ c }}</th>{% endfor %}<th class="text-end"></th></tr></thead>
+      <tbody>
+      {% for row in table %}
+        <tr {% if entity.has_active and not row.obj.is_active %}class="opacity-50"{% endif %}>
+          {% for cell in row.cells %}
+          {% set col = list_fields[loop.index0] %}
+          <td>
+            {% if cell in ('True', 'False') %}
+              {% if cell == 'True' %}<i class="bi bi-check-circle-fill text-success"></i>{% else %}<i class="bi bi-dash-circle text-secondary"></i>{% endif %}
+            {% elif col in ('status', 'qc_status') %}
+              {% set c = {'active':'success','released':'success','passed':'success','quarantine':'warning','pending':'warning','inactive':'secondary','blocked':'danger','rejected':'danger','failed':'danger','discontinued':'secondary','consumed':'secondary'}.get(cell, 'secondary') %}
+              <span class="badge bg-{{ c }}-subtle text-{{ c }}">{{ cell }}</span>
+            {% elif loop.first %}<span class="fw-semibold">{{ cell }}</span>
+            {% else %}{{ cell }}{% endif %}
+          </td>
+          {% endfor %}
+          <td class="text-end text-nowrap">
+            {% if entity.detail_route %}
+            <a href="{{ url_for(entity.detail_route, batch_id=row.obj.id) }}" class="btn btn-sm btn-theme"><i class="bi bi-clipboard2-check"></i> QC</a>
+            {% endif %}
+            <a href="{{ url_for('admin_master_data_edit', entity_key=entity.key, row_id=row.obj.id) }}" class="btn btn-sm btn-outline-theme"><i class="bi bi-pencil"></i></a>
+            {% if entity.has_active %}
+            <form method="post" action="{{ url_for('admin_master_data_toggle', entity_key=entity.key, row_id=row.obj.id) }}" class="d-inline">
+              {{ csrf_field() }}
+              <button class="btn btn-sm btn-outline-secondary" title="{{ 'Deactivate' if row.obj.is_active else 'Activate' }}">
+                <i class="bi {{ 'bi-toggle-on' if row.obj.is_active else 'bi-toggle-off' }}"></i></button>
+            </form>
+            {% endif %}
+            <form method="post" action="{{ url_for('admin_master_data_delete', entity_key=entity.key, row_id=row.obj.id) }}" class="d-inline"
+                  onsubmit="return confirm('Delete permanently? If it is used anywhere the delete is refused — deactivate it instead.');">
+              {{ csrf_field() }}
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% if pages > 1 %}
+<nav class="mt-3"><ul class="pagination">
+  {% for p in range(1, pages + 1) %}
+  <li class="page-item {% if p == page %}active{% endif %}"><a class="page-link" href="?page={{ p }}&q={{ q }}&active={{ active }}">{{ p }}</a></li>
+  {% endfor %}
+</ul></nav>
+{% endif %}
+{% endif %}
+
+{% endblock %}

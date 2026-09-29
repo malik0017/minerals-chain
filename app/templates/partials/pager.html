@@ -1,0 +1,11 @@
+{# Batch Q1: shared pager. Needs `page`, `pages`, and `qs` (query string without page=). #}
+{% if pages > 1 %}
+<nav class="mt-3" aria-label="Pages"><ul class="pagination pagination-sm flex-wrap">
+  {% set lo = [1, page - 3]|max %}{% set hi = [pages, page + 3]|min %}
+  <li class="page-item {% if page == 1 %}disabled{% endif %}"><a class="page-link" href="?{{ qs }}&page={{ page - 1 }}">&laquo;</a></li>
+  {% if lo > 1 %}<li class="page-item"><a class="page-link" href="?{{ qs }}&page=1">1</a></li>{% if lo > 2 %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}{% endif %}
+  {% for p in range(lo, hi + 1) %}<li class="page-item {% if p == page %}active{% endif %}"><a class="page-link" href="?{{ qs }}&page={{ p }}">{{ p }}</a></li>{% endfor %}
+  {% if hi < pages %}{% if hi < pages - 1 %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}<li class="page-item"><a class="page-link" href="?{{ qs }}&page={{ pages }}">{{ pages }}</a></li>{% endif %}
+  <li class="page-item {% if page == pages %}disabled{% endif %}"><a class="page-link" href="?{{ qs }}&page={{ page + 1 }}">&raquo;</a></li>
+</ul></nav>
+{% endif %}

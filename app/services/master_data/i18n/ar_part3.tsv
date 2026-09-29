@@ -1,0 +1,326 @@
+Other requirements	متطلبات أخرى
+Overview	نظرة عامة
+Owner account	حساب المالك
+Owner company	المنشأة المالكة
+Owner company (blank = platform/3PL)	المنشأة المالكة (فارغ = المنصة/طرف ثالث)
+Owner name (if not on platform)	اسم المالك (إن لم يكن على المنصة)
+PASS	ناجح
+PASS → RELEASED and FAIL → REJECTED automatically. Off = a person releases each batch.	ناجح ← مُفرج عنه، وراسب ← مرفوض تلقائياً. عند الإيقاف يفرج شخص عن كل دفعة.
+PDPL	نظام حماية البيانات الشخصية
+PDPL data-request response time (days)	مدة الرد على طلبات البيانات (أيام)
+PDPL: respond to access / correction / deletion requests within {} days.	نظام حماية البيانات: الرد على طلبات الاطلاع/التصحيح/الحذف خلال {} يوماً.
+PENDING	معلق
+Packaging	التعبئة
+Packaging (standard)	التعبئة (قياسية)
+Packaging Types	أنواع التعبئة
+Packing list	قائمة التعبئة
+Pages	الصفحات
+Pakistan	باكستان
+Parameter	المعيار
+Parent batch	الدفعة الأم
+Partial refund	استرداد جزئي
+Particle Sizes	أحجام الحبيبات
+Particle size	حجم الحبيبات
+Parties	الأطراف
+Parties must not try to identify or contact each other outside the platform before an order is confirmed.	يُمنع على الأطراف محاولة التعرف على بعضهم أو التواصل خارج المنصة قبل تأكيد الطلب.
+Party	الطرف
+Pass	ناجح
+Pass rate	نسبة النجاح
+Passed	ناجح
+Passed (auto)	ناجح (تلقائي)
+Passport	الجواز
+Passport #	رقم الجواز
+Passport renewal window (days before expiry)	مهلة تجديد الجواز (أيام قبل الانتهاء)
+Passport · domestic	جواز · محلي
+Passport · gcc export	جواز · تصدير خليجي
+Passport · international export	جواز · تصدير دولي
+Passports to review	جوازات للمراجعة
+Password	كلمة المرور
+Password hashing	تشفير كلمات المرور
+Paused	متوقف مؤقتاً
+Payment Terms	شروط الدفع
+Payment ref	مرجع الدفع
+Payment terms (days)	شروط الدفع (أيام)
+Pending	معلق
+Pending Approvals	الاعتمادات المعلقة
+Pending Mineral Passport requests	طلبات الجواز المعدني المعلقة
+Pending approvals	اعتمادات معلقة
+Pending registrations	تسجيلات معلقة
+Per	لكل
+Period	الفترة
+Personal-data requests (PDPL)	طلبات البيانات الشخصية (نظام حماية البيانات)
+Personalization	التخصيص
+Personalize	تخصيص
+Phone	الجوال
+Photo available	تتوفر صورة
+Picking a catalog product fills mineral type and grade and links your listing to the platform's quality specification.	اختيار منتج من الكتالوج يملأ نوع المعدن والدرجة ويربط منتجك بمواصفة الجودة للمنصة.
+Pink	وردي
+Placed	تم الطلب
+Plan	الباقة
+Plans	الباقات
+Plans, expiry and subscription revenue. Plan names, prices and limits: Master Data → Subscription Plans.	الباقات والانتهاء وإيرادات الاشتراكات. أسماء الباقات وأسعارها وحدودها من: البيانات الرئيسية ← باقات الاشتراك.
+Platform	المنصة
+Platform Administration	إدارة المنصة
+Platform Administration · Industrial Buyer	إدارة المنصة · مشترٍ صناعي
+Platform Administration · Mine Operator	إدارة المنصة · مشغل منجم
+Platform Administration · Testing Laboratory	إدارة المنصة · مختبر فحص
+Platform Settings	إعدادات المنصة
+Platform administrator	مسؤول المنصة
+Platform revenue	إيرادات المنصة
+Platform revenue (SAR)	إيرادات المنصة (ريال)
+Platform settlement fees (a taxable supply — VAT included). Manual reconciliation until payment gateway integration (Batch N).	رسوم تسوية المنصة (توريد خاضع للضريبة — شامل ضريبة القيمة المضافة). تسوية يدوية حتى ربط بوابة الدفع.
+Platform team	فريق المنصة
+Post	نشر
+Post RFQ	نشر طلب التسعير
+Posted	تاريخ النشر
+Posted / closes	النشر / الإغلاق
+Preferred	مفضّل
+Premium seller — priority	بائع مميز — أولوية
+Price	السعر
+Price adjustment	تعديل السعر
+Price or invoice disagreement	خلاف على السعر أو الفاتورة
+Pricing	التسعير
+Print / Save as PDF	طباعة / حفظ PDF
+Priority lab scheduling	أولوية جدولة المختبر
+Privacy & my data	الخصوصية وبياناتي
+Privacy Notice	إشعار الخصوصية
+Privacy Policy	سياسة الخصوصية
+Processing method	طريقة المعالجة
+Product	المنتج
+Product Catalog	كتالوج المنتجات
+Product Master	المنتج الرئيسي
+Product code	رمز المنتج
+Product name (Arabic)	اسم المنتج (عربي)
+Product name (English)	اسم المنتج (إنجليزي)
+Product type	نوع المنتج
+Product ↔ Application	المنتج ↔ الاستخدام
+Product ↔ Packaging	المنتج ↔ التعبئة
+Production date	تاريخ الإنتاج
+Products	المنتجات
+Profile details	بيانات الملف الشخصي
+Profile picture	الصورة الشخصية
+Proof of delivery	إثبات التسليم
+Published	منشور
+Purchase UOM	وحدة الشراء
+Purchase item	صنف شراء
+Purple	بنفسجي
+QC PASSED	اجتاز فحص الجودة
+QC status	حالة فحص الجودة
+QR code	رمز QR
+Qatar	قطر
+Quality & Specifications	الجودة والمواصفات
+Quality / inspection report	تقرير الجودة / الفحص
+Quality / specification mismatch	عدم مطابقة الجودة / المواصفة
+Quality Parameters	معايير الجودة
+Quality Specifications	مواصفات الجودة
+Quality class	فئة الجودة
+Quality level	مستوى الجودة
+Quantity	الكمية
+Quantity & delivery	الكمية والتسليم
+Quantity / weight difference	فرق في الكمية / الوزن
+Quantity: {} MT	الكمية: {} طن
+Quick Links	روابط سريعة
+Quick actions	إجراءات سريعة
+Quotation	عرض السعر
+Quotation prefix	بادئة عرض السعر
+Quotes	العروض
+Quoting closed — choose a quote	انتهى التسعير — اختر عرضاً
+RFQ Inbox	صندوق طلبات التسعير
+RFQ Inbox ({} open)	صندوق طلبات التسعير ({} مفتوح)
+RFQ open period (days)	مدة فتح طلب التسعير (أيام)
+RFQ prefix	بادئة طلب التسعير
+RFQs	طلبات التسعير
+RFQs (all buyers)	طلبات التسعير (كل المشترين)
+Raise a dispute	رفع نزاع
+Raised by	رُفع بواسطة
+Range	النطاق
+Rate limiting store	مخزن تحديد معدل الطلبات
+Re-evaluate	إعادة التقييم
+Read the Privacy Notice	اقرأ إشعار الخصوصية
+Reason	السبب
+Reason (required to suspend/reject)	السبب (مطلوب للإيقاف/الرفض)
+Reason (required, goes to audit log)	السبب (مطلوب، يُسجل في سجل التدقيق)
+Reason (shared with sellers who quoted)	السبب (يُرسل للبائعين الذين قدموا عروضاً)
+Reason for cancelling (policy breach, duplicate…)	سبب الإلغاء (مخالفة سياسة، تكرار…)
+Reason for rejection (shown to the applicant)	سبب الرفض (يظهر لمقدم الطلب)
+Reason for rejection (shown to the seller)	سبب الرفض (يظهر للبائع)
+Record a lab result	تسجيل نتيجة مخبرية
+Record decision	تسجيل القرار
+Records	السجلات
+Red	أحمر
+Ref	المرجع
+Reference	المرجع
+Reference, mineral or buyer	المرجع أو المعدن أو المشتري
+Referral	إحالة
+Region	المنطقة
+Regions	المناطق
+Register	تسجيل
+Register as a mine operator, buyer, or testing lab	سجّل كمشغل منجم أو مشترٍ أو مختبر فحص
+Register as a mine operator, buyer, or testing lab and get started on Saudi Arabia's verified minerals marketplace.	سجّل كمشغل منجم أو مشترٍ أو مختبر فحص وابدأ في سوق المعادن الموثّقة في المملكة العربية السعودية.
+Registered	تاريخ التسجيل
+Registered by	سجّله
+Registration documents	مستندات التسجيل
+Reject	رفض
+Reject request	رفض الطلب
+Reject without testing (e.g. sample unavailable)	رفض دون اختبار (مثلاً عدم توفر العينة)
+Rejected	مرفوض
+Remove	إزالة
+Renew	تجديد
+Renewal opens {} days before expiry.	يُتاح التجديد قبل الانتهاء بـ {} يوماً.
+Replacement shipment	شحنة بديلة
+Reports	التقارير
+Request a quote	طلب عرض سعر
+Request status breakdown	توزيع حالات الطلبات
+Requested	مطلوب
+Requested outcome	النتيجة المطلوبة
+Requested — {} ({}%)	مطلوب — {} ({}٪)
+Requests (all labs)	الطلبات (كل المختبرات)
+Require a catalog product on new listings	اشتراط منتج من الكتالوج للمنتجات الجديدة
+Require an invoice before the buyer can complete	اشتراط الفاتورة قبل أن يكمل المشتري الطلب
+Require email OTP verification before submitting registration	اشتراط التحقق من البريد برمز قبل إرسال التسجيل
+Require specification rows before lab verification	اشتراط أسطر المواصفة قبل التحقق المخبري
+Required	مطلوب
+Required by	مطلوب بحلول
+Required specification	المواصفة المطلوبة
+Reset	إعادة تعيين
+Reset password	إعادة تعيين كلمة المرور
+Reset to default	استعادة الافتراضي
+Resolved	تم الحل
+Respond	الرد
+Response	الرد
+Restrict processing	تقييد المعالجة
+Result	النتيجة
+Revenue mix	توزيع الإيرادات
+Revenue streams by month (SAR, net)	مصادر الإيرادات شهرياً (ريال، صافي)
+Review	مراجعة
+Review Passport Request	مراجعة طلب الجواز
+Role	الدور
+Role *	الدور *
+Role inside company	الدور داخل المنشأة
+Run expiry check now	تشغيل فحص الانتهاء الآن
+SAR {} + VAT {} =	{} ريال + ضريبة {} =
+SAR {} per MT · total {}	{} ريال للطن · الإجمالي {}
+SDS required	يتطلب صحيفة بيانات السلامة
+Sales UOM	وحدة البيع
+Sales item	صنف بيع
+Sample	العينة
+Sample ID	رقم العينة
+Sample scheduled	جُدولت العينة
+Saudi Arabia	المملكة العربية السعودية
+Saudi administrative regions.	المناطق الإدارية في المملكة.
+Saudi tariff code	رمز التعرفة السعودي
+Save & evaluate	حفظ وتقييم
+Save changes	حفظ التغييرات
+Save company	حفظ المنشأة
+Save schedule	حفظ الموعد
+Schedule sample collection	جدولة جمع العينة
+Scope	النطاق
+Scope requested	النطاق المطلوب
+Search mineral, grade or name	ابحث بالمعدن أو الدرجة أو الاسم
+Search priority	أولوية الظهور في البحث
+Search visibility: Elevated	الظهور في البحث: مرتفع
+Search visibility: Priority placement	الظهور في البحث: أولوية
+Search visibility: Standard	الظهور في البحث: قياسي
+Security	الأمان
+Security and breaches	الأمان والاختراقات
+Security checklist	قائمة فحص الأمان
+Security score	درجة الأمان
+Self-registration	التسجيل الذاتي
+Seller	البائع
+Seller #{}	البائع رقم {}
+Seller (mine operator)	البائع (مشغل منجم)
+Seller Dashboard	لوحة البائع
+Seller Portal	بوابة البائع
+Seller confirmed — you're now trading with	أكّد البائع — أنت الآن تتعامل مع
+Seller identities stay hidden until an order is confirmed. Spec match = share of your required parameters that the offered listing declares within range.	تبقى هويات البائعين مخفية حتى تأكيد الطلب. نسبة المطابقة = نسبة معاييرك المطلوبة التي يعلنها المنتج المعروض ضمن النطاق.
+Seller registration	تسجيل البائعين
+Sellers can request a renewal this many days before the current passport expires (BRD §{}).	يمكن للبائعين طلب التجديد قبل انتهاء الجواز الحالي بهذا العدد من الأيام (البند {}).
+Sellers:	البائعون:
+Selling price	سعر البيع
+Send code	إرسال الرمز
+Sequence digits	عدد خانات التسلسل
+Serve over HTTPS and set COOKIE_SECURE=true (APP_ENV=production forces it).	شغّل عبر HTTPS واضبط COOKIE_SECURE=true (يُفرض تلقائياً في بيئة الإنتاج).
+Served privately to admins only.	يُعرض بشكل خاص للمسؤولين فقط.
+Session signing key (SECRET_KEY)	مفتاح توقيع الجلسة (SECRET_KEY)
+Set	تعيين
+Set new password	تعيين كلمة مرور جديدة
+Set up two-factor authentication	إعداد المصادقة الثنائية
+Sets rfqs.closes_at on creation.	يحدد تاريخ إغلاق طلب التسعير عند إنشائه.
+Settings	الإعدادات
+Settlement fee status (SAR)	حالة رسوم التسوية (ريال)
+Settlement fee — buyer (SAR, excl. VAT)	رسوم التسوية — المشتري (ريال، غير شامل الضريبة)
+Settlement fee — seller (SAR, excl. VAT)	رسوم التسوية — البائع (ريال، غير شامل الضريبة)
+Settlement fees	رسوم التسوية
+Settlement fees (SAR)	رسوم التسوية (ريال)
+Settlement fees are published in advance and charged to both parties when an order is confirmed. Fees are subject to {}% VAT.	تُعلن رسوم التسوية مسبقاً وتُحصّل من الطرفين عند تأكيد الطلب. تخضع الرسوم لضريبة القيمة المضافة بنسبة {}٪.
+Share with the buyer	مشاركة مع المشتري
+Share with the seller	مشاركة مع البائع
+Short name	الاسم المختصر
+Short unique business key, e.g. LIM-95.	رمز عمل مختصر وفريد، مثل LIM-95.
+Show 'TEST ENVIRONMENT' banner	إظهار شريط "بيئة اختبار"
+Showing platform-wide totals across every buyer (admin view) — not a single company's data.	عرض إجماليات المنصة لكل المشترين (عرض المسؤول) — وليست بيانات منشأة واحدة.
+Showing platform-wide totals across every lab (admin view) — not a single company's data.	عرض إجماليات المنصة لكل المختبرات (عرض المسؤول) — وليست بيانات منشأة واحدة.
+Showing platform-wide totals across every seller (admin view) — not a single company's data.	عرض إجماليات المنصة لكل البائعين (عرض المسؤول) — وليست بيانات منشأة واحدة.
+Sidebar Layout	تخطيط القائمة الجانبية
+Sidebar fill color	لون خلفية القائمة الجانبية
+Sidebar layout	تخطيط القائمة الجانبية
+Slug (URL)	المعرف في الرابط
+Sort order	ترتيب العرض
+Source traceability (PDF §{}). Licence = MIM mining licence reference.	تتبع المصدر (الملف §{}). الترخيص = مرجع رخصة التعدين من وزارة الصناعة.
+Sources & Logistics	المصادر والخدمات اللوجستية
+Spec match	مطابقة المواصفة
+Spec max (auto)	الحد الأعلى للمواصفة (تلقائي)
+Spec min (auto)	الحد الأدنى للمواصفة (تلقائي)
+Spec version	إصدار المواصفة
+Specification	المواصفة
+Specifications	المواصفات
+Stage	المرحلة
+Standard	قياسي
+Standard cost	التكلفة القياسية
+Standard credit terms.	شروط ائتمان قياسية.
+Standard reference	المرجع القياسي
+Status	الحالة
+Status & handler	الحالة والمسؤول
+Steel producer	منتج حديد وصلب
+Storage locations (PDF §{} #{}). National address = Saudi short address code.	مواقع التخزين (الملف §{} #{}). العنوان الوطني = الرمز المختصر للعنوان السعودي.
+Submit a request	تقديم طلب
+Submit registration	إرسال التسجيل
+Submit request	إرسال الطلب
+Submitted	مُقدّم
+Subscription	الاشتراك
+Subscription Plans	باقات الاشتراك
+Subscription charge prefix	بادئة رسوم الاشتراك
+Subscription tier	باقة الاشتراك
+Subscription valid until	الاشتراك ساري حتى
+Subscriptions	الاشتراكات
+Subtotal	المجموع قبل الضريبة
+Super administrator	المسؤول الأعلى
+Support	الدعم
+Suspended	موقوف
+Suspending deactivates all the company's users; reactivating restores them.	الإيقاف يعطّل جميع مستخدمي المنشأة؛ وإعادة التفعيل تعيدهم.
+Switching language also switches text direction — Arabic reads right-to-left.	تغيير اللغة يغيّر اتجاه النص أيضاً — العربية من اليمين لليسار.
+Symbol	الرمز
+System Settings	إعدادات النظام
+Target	المستهدف
+Teal	أزرق مخضر
+Terms	الشروط
+Terms of Use	شروط الاستخدام
+Test Methods	طرق الاختبار
+Test method	طريقة الاختبار
+Tested on	تاريخ الاختبار
+Tested parameters	المعايير المختبرة
+Testing	الاختبار
+Testing Lab	مختبر فحص
+Testing since	قيد الاختبار منذ
+The catalog item: Mineral → Grade → Particle size → UOM → regulatory flags (PDF §{}, §{}). Leave Code blank to auto-generate (e.g. MIN-CACO3-95-25UM).	صنف الكتالوج: المعدن ← الدرجة ← حجم الحبيبات ← وحدة القياس ← المؤشرات التنظيمية (الملف §{}، §{}). اترك الرمز فارغاً للتوليد التلقائي.
+The seller stays anonymous until an order is confirmed. Post an RFQ pre-filled from this listing — this seller and others can quote.	يبقى البائع مجهولاً حتى تأكيد الطلب. انشر طلب تسعير معبأً مسبقاً من هذا المنتج — يمكن لهذا البائع وغيره تقديم عروض.
+The seller's identity stays hidden until they confirm this order.	تبقى هوية البائع مخفية حتى يؤكد هذا الطلب.
+The user's portal role always matches the company's role.	دور المستخدم في البوابة يطابق دائماً دور منشأته.
+The {}-day dispute window after completion has passed.	انتهت مهلة رفع النزاع البالغة {} يوماً بعد الاكتمال.
+Theme	السمة
+This RFQ is closed and no longer accepting quotations.	طلب التسعير هذا مغلق ولا يقبل عروضاً جديدة.
+This listing is verified and eligible for buyer visibility.	هذا المنتج موثّق ومؤهل للظهور للمشترين.
+This order is complete.	هذا الطلب مكتمل.
+Thread (both parties see non-internal messages)	المحادثة (يرى الطرفان الرسائل غير الداخلية)
+Tier	الباقة
+Timeline	الخط الزمني

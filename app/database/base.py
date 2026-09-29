@@ -3,7 +3,7 @@ app/database/base.py
 """
 
 from datetime import datetime, timezone
-from sqlalchemy import create_engine, DateTime
+from sqlalchemy import MetaData, create_engine, DateTime
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 from app.core.config import settings
 
@@ -20,9 +20,17 @@ SessionLocal = sessionmaker(
     expire_on_commit=False,
 )
 
+NAMING_CONVENTION = {
+    "ix": "ix_%(column_0_label)s",
+    "uq": "%(table_name)s_%(column_0_name)s_key",
+    "fk": "%(table_name)s_%(column_0_name)s_fkey",
+    "pk": "%(table_name)s_pkey",
+}
+
+
 class Base(DeclarativeBase):
     """Declarative base every model inherits from."""
-    pass
+    metadata = MetaData(naming_convention=NAMING_CONVENTION)
 
 class TimestampMixin:
 

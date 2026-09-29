@@ -9,9 +9,6 @@ def create(db: Session, entry: AuditLog) -> AuditLog:
     return entry
 
 
-# Task #7: admin-facing audit log viewer — paginated, newest first, with
-# the actor's user row eager-loaded (every row needs to show who did it).
-# actor_user_id / action are optional filters for the page's own filter form.
 def list_paginated(
     db: Session,
     page: int = 1,

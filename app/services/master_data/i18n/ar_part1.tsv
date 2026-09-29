@@ -1,0 +1,359 @@
+{} - Minerals Chain	{} - سلسلة المعادن
+Minerals Chain	سلسلة المعادن
+Chain	المعادن
+(LTR)	(من اليسار لليمين)
+(RTL)	(من اليمين لليسار)
+(admin), not logged in as a buyer.	(مسؤول)، ولست مسجلاً كمشترٍ.
+(admin), not logged in as a lab.	(مسؤول)، ولست مسجلاً كمختبر.
+(admin), not logged in as a seller.	(مسؤول)، ولست مسجلاً كبائع.
+(optional — leave blank for "contact for price")	(اختياري — اتركه فارغاً لعرض "تواصل لمعرفة السعر")
+(optional)	(اختياري)
+(recommended)	(موصى به)
+, and I consent to the processing of my data for registration, verification and trading on the platform.	، وأوافق على معالجة بياناتي لأغراض التسجيل والتحقق والتداول على المنصة.
+A complete copy of your account, company details, notifications and activity log (JSON).	نسخة كاملة من حسابك وبيانات منشأتك وإشعاراتك وسجل نشاطك (JSON).
+Accent	اللون المميز
+Acceptable min/max per parameter for a GRADE (default) or a specific PRODUCT (override). Set exactly one of the two.	الحد الأدنى والأعلى المقبول لكل معيار لدرجة (افتراضي) أو لمنتج محدد (استثناء). حدد أحدهما فقط.
+Accepted	مقبول
+Accepting requests	يستقبل الطلبات
+Access (formal copy)	الاطلاع (نسخة رسمية)
+Access, correction and deletion requests from users. Respond before the due date.	طلبات الاطلاع والتصحيح والحذف من المستخدمين. يجب الرد قبل تاريخ الاستحقاق.
+Account Setting	إعدادات الحساب
+Account active	الحساب نشط
+Account data: your name, business email, phone number, job title and password (stored only as a secure hash).	بيانات الحساب: الاسم والبريد الإلكتروني للعمل ورقم الجوال والمسمى الوظيفي وكلمة المرور (تُحفظ كقيمة مشفّرة فقط).
+Account type	نوع الحساب
+Accreditation body	جهة الاعتماد
+Accreditation no.	رقم الاعتماد
+Action	الإجراء
+Activate	تفعيل
+Active	نشط
+Active companies	المنشآت النشطة
+Active listings	المنتجات النشطة
+Active passport:	الجواز الساري:
+Active verification queue	قائمة التحقق النشطة
+Activity data: listings, RFQs, quotations, orders, disputes, notifications, and a security log of logins and administrative actions.	بيانات النشاط: المنتجات وطلبات التسعير وعروض الأسعار والطلبات والنزاعات والإشعارات وسجل أمني لعمليات الدخول والإجراءات الإدارية.
+Actual	الفعلي
+Add company	إضافة منشأة
+Add parameter	إضافة معيار
+Address	العنوان
+Admin	المسؤول
+Admin Control Center	مركز تحكم المسؤول
+Admin Portal	بوابة المسؤول
+Admin Portal · Previewing Buyer Portal	بوابة المسؤول · معاينة بوابة المشتري
+Admin Portal · Previewing Lab Portal	بوابة المسؤول · معاينة بوابة المختبر
+Admin Portal · Previewing Seller Portal	بوابة المسؤول · معاينة بوابة البائع
+Admin impersonation	الدخول كمستخدم (للمسؤول)
+Admin permission level	مستوى صلاحية المسؤول
+Admin permission level (admins only)	مستوى صلاحية المسؤول (للمسؤولين فقط)
+Admin preview — you're viewing the Buyer Portal as	معاينة المسؤول — أنت تشاهد بوابة المشتري بصفتك
+Admin preview — you're viewing the Lab Portal as	معاينة المسؤول — أنت تشاهد بوابة المختبر بصفتك
+Admin preview — you're viewing the Seller Portal as	معاينة المسؤول — أنت تشاهد بوابة البائع بصفتك
+Admin status override	تغيير الحالة من المسؤول
+Admin: view portals	المسؤول: عرض البوابات
+All	الكل
+All Companies	جميع المنشآت
+All actions	جميع الإجراءات
+All admins	جميع المسؤولين
+All catalog products	جميع منتجات الكتالوج
+All categories	جميع الفئات
+All company documents are in private storage.	جميع مستندات المنشآت محفوظة في تخزين خاص.
+All fees	جميع الرسوم
+All regions	جميع المناطق
+All results	جميع النتائج
+All roles	جميع الأدوار
+All statuses	جميع الحالات
+All tiers	جميع الباقات
+Allow admin 'View as user'	السماح للمسؤول بـ"العرض كمستخدم"
+Already have an account?	لديك حساب بالفعل؟
+Analytics	التحليلات
+Analytics: basic	التحليلات: أساسية
+Analytics: extended	التحليلات: موسعة
+Analytics: full	التحليلات: كاملة
+Annual price (SAR)	السعر السنوي (ريال)
+Anonymise account	إخفاء هوية الحساب
+Any admin level	أي مستوى صلاحية
+Any status	أي حالة
+Any tier	أي باقة
+Application	الاستخدام
+Applications	الاستخدامات
+Apply	تطبيق
+Apply status	تطبيق الحالة
+Apply to selected	تطبيق على المحدد
+Approve	اعتماد
+Approve immediately (credentials already reviewed)	اعتماد فوري (تمت مراجعة الوثائق مسبقاً)
+Approved	معتمد
+Arabic Translations	الترجمات العربية
+Arabic name	الاسم بالعربية
+Arabic text	النص العربي
+Assigned to me	المسندة إليّ
+Audit Log	سجل التدقيق
+Audit log	سجل التدقيق
+Audit log retention (days)	مدة الاحتفاظ بسجل التدقيق (أيام)
+Auto-release batches that pass QC	إفراج تلقائي عن الدفعات المجتازة لفحص الجودة
+Awaiting confirmation	بانتظار التأكيد
+Awaiting info	بانتظار معلومات
+Awaiting review (all labs)	بانتظار المراجعة (كل المختبرات)
+Awaiting seller confirmation	بانتظار تأكيد البائع
+Awaiting your review	بانتظار مراجعتك
+BRD §{} tiers. Code must be entry / mid / premium; names, prices and limits are yours to set. Blank limit = unlimited.	باقات البند {} من وثيقة المتطلبات. الرمز يجب أن يكون entry / mid / premium؛ الأسماء والأسعار والحدود تحددها أنت. الحد الفارغ = غير محدود.
+BRD §{} lifecycle delivered → invoiced → completed. Off = buyer may confirm receipt right after delivery.	دورة البند {}: تم التسليم ← صدرت الفاتورة ← مكتمل. عند الإيقاف يمكن للمشتري تأكيد الاستلام بعد التسليم مباشرة.
+BRD §{}. Off during testing so limits never block a test flow.	البند {} من وثيقة المتطلبات. موقوف أثناء الاختبار حتى لا تمنع الحدود أي سيناريو اختبار.
+BRD §{}: a listing must declare its mineral-specific parameters before a lab can test it.	البند {}: يجب أن يحدد المنتج معاييره الخاصة بالمعدن قبل أن يختبره المختبر.
+BULK, jumbo bags, PP bags, pallets (PDF §{}).	سائب، أكياس جامبو، أكياس بولي بروبيلين، منصات (الملف §{}).
+Background	الخلفية
+Backgrounds	الخلفيات
+Bahrain	البحرين
+Base UOM	وحدة القياس الأساسية
+Base unit of its type	الوحدة الأساسية لنوعها
+Based on COA	مبني على شهادة التحليل
+Batch	الدفعة
+Batch / Lot Traceability	تتبع الدفعات
+Batch / lot prefix	بادئة الدفعة
+Batch Quality Results	نتائج جودة الدفعة
+Batch managed	يُدار بالدفعات
+Batch number	رقم الدفعة
+Batch status	حالة الدفعة
+Batches / Lots	الدفعات
+Before consent tracking	قبل تتبع الموافقة
+Best match	الأفضل مطابقة
+Best total	أفضل إجمالي
+Bill of lading / waybill	بوليصة الشحن / بيان النقل
+Bin	الموقع
+Bin code	رمز الموقع
+Black	أسود
+Blank = auto	فارغ = تلقائي
+Blank = auto: MIN-<formula/type>-<grade>-<size>	فارغ = تلقائي: MIN-<الصيغة/النوع>-<الدرجة>-<الحجم>
+Blue	أزرق
+Body (Arabic)	المحتوى (عربي)
+Body (English)	المحتوى (إنجليزي)
+Boxed	مؤطر
+Brown	بني
+Browse Minerals	تصفح المعادن
+Browse lab companies	تصفح المختبرات
+Browse minerals	تصفح المعادن
+Browse seller companies	تصفح البائعين
+Bulk	سائب
+Bulk (truck)	سائب (شاحنة)
+Bulk (unpacked)	سائب (بدون تعبئة)
+Bulk action…	إجراء جماعي…
+Bulk density (t/m³)	الكثافة الظاهرية (طن/م³)
+Business Policies	سياسات العمل
+Buyer	المشتري
+Buyer Dashboard	لوحة المشتري
+Buyer Portal	بوابة المشتري
+Buyer and seller identities are hidden from each other until an order is confirmed. Administrators can see identities to run the platform and resolve disputes.	هويتا المشتري والبائع مخفيتان عن بعضهما حتى تأكيد الطلب. يستطيع المسؤولون رؤية الهويات لتشغيل المنصة وحل النزاعات.
+Buyer registration	تسجيل المشترين
+Buyer withdrew before confirmation (support ticket).	انسحب المشتري قبل التأكيد (تذكرة دعم).
+Buyers:	المشترون:
+By	بواسطة
+CFR — Cost and Freight	CFR — التكلفة والشحن
+CIF / {} days	CIF / {} يوماً
+CIF — Cost, Insurance and Freight	CIF — التكلفة والتأمين والشحن
+CIP — Carriage and Insurance Paid To	CIP — النقل والتأمين مدفوعان إلى
+COA required	شهادة التحليل مطلوبة
+CPT — Carriage Paid To	CPT — النقل مدفوع إلى
+CR document	وثيقة السجل التجاري
+CR number	رقم السجل التجاري
+CR number *	رقم السجل التجاري *
+CSRF protection	الحماية من CSRF
+Cancel RFQ	إلغاء طلب التسعير
+Cancel this RFQ	إلغاء طلب التسعير هذا
+Cancellation	الإلغاء
+Cancelled	ملغى
+Capacity	السعة
+Capacity (MT)	السعة (طن)
+Capacity unit	وحدة السعة
+Catalog product	منتج الكتالوج
+Category	الفئة
+Cement manufacturer	مصنع أسمنت
+Ceramics manufacturer	مصنع سيراميك
+Certificate	الشهادة
+Certificate #	رقم الشهادة
+Certificate number	رقم الشهادة
+Certificate of Analysis	شهادة التحليل
+Certificate of Analysis prefix	بادئة شهادة التحليل
+Certificate of Analysis — specification vs result	شهادة التحليل — المواصفة مقابل النتيجة
+Certificates	الشهادات
+Certificates issued	الشهادات الصادرة
+Certificates issued ({})	الشهادات الصادرة ({})
+Certificates, passports, invoices and dispute decisions are permanent records and cannot be edited after issue.	الشهادات والجوازات والفواتير وقرارات النزاعات سجلات دائمة ولا يمكن تعديلها بعد إصدارها.
+Change	تغيير
+Change color for background	تغيير لون الخلفية
+Change colors of templates	تغيير ألوان القوالب
+Change layout color mode	تغيير نمط الألوان
+Change layout text direction mode	تغيير اتجاه النص
+Change password	تغيير كلمة المرور
+Change sidebar layout style	تغيير نمط القائمة الجانبية
+Changes take effect immediately. Paid plans are invoiced for {} months; online payment arrives with the payments release. Downgrades are allowed once your usage fits the lower plan.	تسري التغييرات فوراً. تُفوتر الباقات المدفوعة لمدة {} شهراً؛ الدفع الإلكتروني يتوفر مع إصدار المدفوعات. يُسمح بالتخفيض عندما يتوافق استخدامك مع الباقة الأدنى.
+Charged to the buyer when an order is confirmed (BRD glossary: settlement fee).	تُحصّل من المشتري عند تأكيد الطلب (رسوم التسوية).
+Charged to the seller when an order is confirmed.	تُحصّل من البائع عند تأكيد الطلب.
+Charges	الرسوم
+Chemical formula	الصيغة الكيميائية
+Chemical, physical and particle-size parameters (PDF §{}, §{}).	المعايير الكيميائية والفيزيائية وحجم الحبيبات (الملف §{}، §{}).
+Choco	شوكولاتي
+Choose your desired and loved theme color	اختر لون السمة المفضل لديك
+City	المدينة
+Close	إغلاق
+Closed	مغلق
+Closed by a dispute decision.	أُغلق بقرار نزاع.
+Closed — {} ({}%)	مغلق — {} ({}٪)
+Closes	يُغلق في
+Code	الرمز
+Collection	الجمع
+Collection date	تاريخ جمع العينة
+Color	اللون
+Colors	الألوان
+Commercial & Regulatory	التجاري والتنظيمي
+Commercial Registration	السجل التجاري
+Commercial Registration (CR) number	رقم السجل التجاري
+Commercial Registration number	رقم السجل التجاري
+Commercial invoice	فاتورة تجارية
+Commercial notes	ملاحظات تجارية
+Commercial specification per mineral type (PDF §{}). Limits live in Quality Specifications.	المواصفة التجارية لكل نوع معدن (الملف §{}). الحدود في مواصفات الجودة.
+Companies	المنشآت
+Companies · role × status	المنشآت · الدور × الحالة
+Company	المنشأة
+Company (for company users)	المنشأة (لمستخدمي المنشآت)
+Company data: legal name, Commercial Registration number, VAT number, licence or accreditation number, National Address and the documents you upload to prove them.	بيانات المنشأة: الاسم النظامي ورقم السجل التجاري والرقم الضريبي ورقم الترخيص أو الاعتماد والعنوان الوطني والمستندات التي ترفعها لإثباتها.
+Company details	بيانات المنشأة
+Company documents not publicly downloadable	مستندات المنشآت غير متاحة للتنزيل العام
+Company name	اسم المنشأة
+Company role	الدور في المنشأة
+Company user	مستخدم منشأة
+Compare quotations ({})	مقارنة عروض الأسعار ({})
+Completed	مكتمل
+Completed normally	مكتمل بشكل طبيعي
+Completed via dispute	مكتمل عبر نزاع
+Completed — {} ({}%)	مكتمل — {} ({}٪)
+Compliance	الامتثال
+Compliance / DPO	الامتثال / مسؤول حماية البيانات
+Compliant invoicing and audit trails built in from day one.	فوترة متوافقة وسجلات تدقيق مدمجة من اليوم الأول.
+Configuration	الإعدادات
+Confirm and enable	تأكيد وتفعيل
+Confirm new password	تأكيد كلمة المرور الجديدة
+Confirm password	تأكيد كلمة المرور
+Confirm rejection	تأكيد الرفض
+Confirm your password	أكّد كلمة المرور
+Confirmation code	رمز التأكيد
+Confirmed	مؤكد
+Consent given:	تاريخ الموافقة:
+Construction contractor	مقاول إنشاءات
+Contact	التواصل
+Contact email	البريد الإلكتروني للتواصل
+Contact for price	تواصل لمعرفة السعر
+Contact phone	هاتف التواصل
+Contacts	جهات الاتصال
+Content Pages	صفحات المحتوى
+Context	السياق
+Control Center	مركز التحكم
+Controls that apply platform-wide, effective immediately.	ضوابط تسري على المنصة بالكامل فوراً.
+Conversation	المحادثة
+Conversion = factor to the base unit of the same type (mass base KG: MT = {}).	التحويل = المعامل إلى الوحدة الأساسية من النوع نفسه (أساس الكتلة كجم: طن = {}).
+Cookies marked Secure (HTTPS only)	ملفات تعريف الارتباط آمنة (HTTPS فقط)
+Correct my data	تصحيح بياناتي
+Country (ISO-2)	الدولة (ISO-2)
+Country of origin	بلد المنشأ
+Country of origin (ISO-2)	بلد المنشأ (ISO-2)
+Create a password	أنشئ كلمة مرور
+Create company	إنشاء منشأة
+Create listing (as draft)	إنشاء منتج (كمسودة)
+Create user	إنشاء مستخدم
+Create your account	أنشئ حسابك
+Created	تاريخ الإنشاء
+Created when the seller confirms the order.	تُنشأ عند تأكيد البائع للطلب.
+Credentials	الوثائق
+Credit note	إشعار دائن
+Currency	العملة
+Current	الحالي
+Current password	كلمة المرور الحالية
+Current plan	الباقة الحالية
+Customer Segments	شرائح العملاء
+Customer segment	شريحة العميل
+Customs / regulatory attributes (PDF §{} #{}). Verify codes against the ZATCA integrated tariff before export use.	السمات الجمركية والتنظيمية (الملف §{} #{}). تحقق من الرموز مقابل التعرفة المتكاملة لهيئة الزكاة والضريبة والجمارك قبل استخدامها للتصدير.
+Cyan	سماوي
+D50 (µm)	D50 (ميكرومتر)
+D90 (µm)	D90 (ميكرومتر)
+DAP buyer plant	DAP مصنع المشتري
+DAP — Delivered at Place	DAP — التسليم في المكان
+DB OK	قاعدة البيانات سليمة
+DDP / {} days	DDP / {} يوماً
+DDP — Delivered Duty Paid	DDP — التسليم مع دفع الرسوم
+DEBUG mode	وضع التصحيح (DEBUG)
+DPU — Delivered at Place Unloaded	DPU — التسليم في المكان مفرّغاً
+Damaged or contaminated goods	بضاعة تالفة أو ملوثة
+Dammam Port · {} days	ميناء الدمام · {} يوماً
+Dark	داكن
+Dashboard	لوحة المعلومات
+Data Requests	طلبات البيانات
+Data is protected with access controls, encryption in transit, private document storage and audit logging. If a breach may harm you, we notify the Saudi Data & AI Authority (SDAIA) within {} hours and inform affected users.	تُحمى البيانات بضوابط الوصول والتشفير أثناء النقل والتخزين الخاص للمستندات وسجلات التدقيق. في حال وقوع اختراق قد يضرك، نُبلغ الهيئة السعودية للبيانات والذكاء الاصطناعي (سدايا) خلال {} ساعة ونُعلم المستخدمين المتأثرين.
+Data request (PDPL) prefix	بادئة طلبات البيانات (نظام حماية البيانات)
+Data requests	طلبات البيانات
+Date	التاريخ
+Days	أيام
+Deactivate	تعطيل
+Decided in favour of the	صدر القرار لصالح
+Decimals	المنازل العشرية
+Decision	القرار
+Decisions can't be edited. A correction is logged permanently with your name and reason.	لا يمكن تعديل القرارات. يُسجَّل التصحيح بشكل دائم مع اسمك والسبب.
+Declared specification	المواصفة المعلنة
+Dedicated account support	دعم مخصص للحساب
+Dedicated support	دعم مخصص
+Default	افتراضي
+Default development key in use — anyone who knows it can forge a login.	مفتاح التطوير الافتراضي مستخدم — يمكن لمن يعرفه تزوير تسجيل الدخول.
+Default fee (SAR)	الرسوم الافتراضية (ريال)
+Default mine / source	المنجم / المصدر الافتراضي
+Default packaging	التعبئة الافتراضية
+Default quotation validity (days)	مدة صلاحية عرض السعر الافتراضية (أيام)
+Default test method	طريقة الاختبار الافتراضية
+Default unit	الوحدة الافتراضية
+Default warehouse	المستودع الافتراضي
+Default: {}	الافتراضي: {}
+Default: True	الافتراضي: مفعّل
+Default: False	الافتراضي: غير مفعّل
+Delete my data	حذف بياناتي
+Delivered	تم التسليم
+Delivery	التسليم
+Delivery location	موقع التسليم
+Delivery timeframe	مدة التسليم
+Description	الوصف
+Detailed location inside a warehouse (PDF §{} #{}). Code is unique per warehouse.	موقع تفصيلي داخل المستودع (الملف §{} #{}). الرمز فريد لكل مستودع.
+Details	التفاصيل
+Development & Testing Tools	أدوات التطوير والاختبار
+Digits only, e.g. {}	أرقام فقط، مثال: {}
+Disabled	معطّل
+Display symbol	الرمز المعروض
+Dispute or order reference	مرجع النزاع أو الطلب
+Dispute outcomes	نتائج النزاعات
+Dispute prefix	بادئة النزاع
+Dispute window after completion (days)	مهلة رفع النزاع بعد الاكتمال (أيام)
+Disputes	النزاعات
+Disputes by category	النزاعات حسب الفئة
+Disputes can be raised once the seller has confirmed the order.	يمكن رفع النزاع بعد تأكيد البائع للطلب.
+Disputes on your orders. Raise a new one from the order page.	النزاعات على طلباتك. ارفع نزاعاً جديداً من صفحة الطلب.
+Do you love to see things around which you like the most?	هل تحب أن ترى ما تفضله من حولك؟
+Document	المستند
+Document Numbering	ترقيم المستندات
+Documents	المستندات
+Documents can be exchanged once the order is confirmed.	يمكن تبادل المستندات بعد تأكيد الطلب.
+Domestic	محلي
+Domestic —	محلي —
+Don't have an account?	ليس لديك حساب؟
+Double-submit token on every POST (Batch G).	رمز تحقق مزدوج في كل طلب إرسال.
+Download	تنزيل
+Download my data	تنزيل بياناتي
+Download your data or ask us to correct or delete it (PDPL).	نزّل بياناتك أو اطلب تصحيحها أو حذفها (نظام حماية البيانات الشخصية).
+Draft	مسودة
+Due	الاستحقاق
+Duty (%)	الرسوم الجمركية (٪)
+EMAIL_MODE=console.	EMAIL_MODE=console (وضع العرض).
+EN - English	EN - الإنجليزية
+ERP Master Data	البيانات الرئيسية (ERP)
+EXW — Ex Works	EXW — التسليم في المصنع
+Edit	تعديل
+Edit Listing	تعديل المنتج
+Edit batch	تعديل الدفعة
+Edit listing	تعديل المنتج
+Edition	الإصدار
+Effective date	تاريخ السريان
+Egypt	مصر
+Either party may raise a dispute on an order. The platform administrator records a formal decision. Financial settlement of a decision is handled outside the platform in the initial release.	يحق لأي طرف رفع نزاع على طلب. يسجّل مسؤول المنصة قراراً رسمياً. تتم التسوية المالية للقرار خارج المنصة في الإصدار الأول.
+Email	البريد الإلكتروني

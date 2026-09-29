@@ -1,0 +1,56 @@
+{% extends "layouts/base.html" %}
+{% block title %}Lab partners{% endblock %}
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-eyedropper"></i> Lab partners</h4>
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+
+<div class="row g-3">
+<div class="col-xl-8">
+{% for lab in labs %}{% set t = terms.get(lab.id) %}{% set s = stats.get(lab.id, {}) %}
+<div class="card adminuiux-card mb-3" id="lab-{{ lab.id }}"><div class="card-body">
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+    <div>
+      <h6 class="mb-0">{% if t and t.is_preferred %}<i class="bi bi-star-fill text-warning"></i> {% endif %}{{ lab.company_name }}
+        <span class="badge bg-{{ 'success' if lab.status.value=='approved' else 'secondary' }}-subtle text-{{ 'success' if lab.status.value=='approved' else 'secondary' }}">{{ lab.status.value }}</span>
+        {% if t and not t.is_accepting_requests %}<span class="badge bg-warning-subtle text-warning">Paused</span>{% endif %}
+        {% if t and not t.accreditation_current %}<span class="badge bg-danger-subtle text-danger">Accreditation expired</span>{% endif %}</h6>
+      <div class="small text-secondary">{{ lab.contact_email }}{% if lab.city %} · {{ lab.city }}{% endif %}</div>
+    </div>
+    <div class="d-flex gap-3 text-center small">
+      <div><div class="fw-semibold fs-5">{{ s.total or 0 }}</div><div class="text-secondary">requests</div></div>
+      <div><div class="fw-semibold fs-5 text-primary">{{ s.active or 0 }}</div><div class="text-secondary">active</div></div>
+      <div><div class="fw-semibold fs-5 text-success">{{ s.pass_rate if s.pass_rate is not none else '—' }}{% if s.pass_rate is not none %}%{% endif %}</div><div class="text-secondary">pass rate</div></div>
+      <div><div class="fw-semibold fs-5">{{ s.avg_days if s.avg_days is not none else '—' }}</div><div class="text-secondary">avg days</div></div>
+    </div>
+  </div>
+  <form method="post" action="{{ url_for('admin_lab_terms', company_id=lab.id) }}" class="row g-2">{{ csrf_field() }}
+    <div class="col-md-3"><label class="form-label small mb-0">Accreditation body</label><input name="accreditation_body" class="form-control form-control-sm" value="{{ t.accreditation_body if t else '' }}" placeholder="SAC / ISO 17025"></div>
+    <div class="col-md-3"><label class="form-label small mb-0">Accreditation no.</label><input name="accreditation_number" class="form-control form-control-sm" value="{{ t.accreditation_number if t else '' }}"></div>
+    <div class="col-md-2"><label class="form-label small mb-0">Valid until</label><input type="date" name="accreditation_valid_until" class="form-control form-control-sm" value="{{ t.accreditation_valid_until if t and t.accreditation_valid_until else '' }}"></div>
+    <div class="col-md-2"><label class="form-label small mb-0">Fee (SAR)</label><input name="fee_sar" class="form-control form-control-sm" value="{{ t.fee_sar if t and t.fee_sar is not none else '' }}" placeholder="{{ default_fee }}"></div>
+    <div class="col-md-2"><label class="form-label small mb-0">Turnaround (days)</label><input name="turnaround_days" class="form-control form-control-sm" value="{{ t.turnaround_days if t and t.turnaround_days is not none else '' }}"></div>
+    <div class="col-md-6"><label class="form-label small mb-0">Scope</label><input name="accreditation_scope" class="form-control form-control-sm" value="{{ t.accreditation_scope if t and t.accreditation_scope else '' }}" placeholder="e.g. XRF, LOI, particle size"></div>
+    <div class="col-md-6"><label class="form-label small mb-0">Notes</label><input name="notes" class="form-control form-control-sm" value="{{ t.notes if t and t.notes else '' }}"></div>
+    <div class="col-12 d-flex gap-3 align-items-center">
+      <div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="is_accepting_requests" value="1" id="acc{{ loop.index }}" {% if not t or t.is_accepting_requests %}checked{% endif %}><label class="form-check-label small" for="acc{{ loop.index }}">Accepting requests</label></div>
+      <div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="is_preferred" value="1" id="pref{{ loop.index }}" {% if t and t.is_preferred %}checked{% endif %}><label class="form-check-label small" for="pref{{ loop.index }}">Preferred</label></div>
+      <button class="btn btn-sm btn-theme ms-auto">Save</button>
+    </div>
+  </form>
+</div></div>
+{% else %}<div class="alert alert-secondary">No laboratories registered.</div>{% endfor %}
+</div>
+<div class="col-xl-4">
+  <div class="card adminuiux-card"><div class="card-body">
+    <h6><i class="bi bi-hourglass-split"></i> Active verification queue</h6>
+    {% for vr in queue %}
+    <div class="border-bottom py-2 small d-flex justify-content-between">
+      <div>{% if vr.is_priority %}<i class="bi bi-lightning-charge-fill text-warning"></i> {% endif %}<strong>{{ vr.request_reference }}</strong> · {{ vr.product.mineral_type }}<div class="text-secondary">{{ vr.lab_company.company_name }}</div></div>
+      <div class="text-end"><span class="badge bg-info-subtle text-info">{{ vr.status.value.replace('_',' ') }}</span><div class="text-secondary">{{ vr.created_at.strftime('%Y-%m-%d') }}</div></div>
+    </div>
+    {% else %}<div class="small text-secondary">Queue is empty.</div>{% endfor %}
+  </div></div>
+</div>
+</div>
+{% endblock %}

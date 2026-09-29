@@ -84,6 +84,67 @@
   </div>
 </div>
 
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+
+<div class="row g-3 mb-3">
+  <div class="col-lg-8">
+    <div class="card adminuiux-card h-100"><div class="card-body">
+      <h6 class="mb-3"><i class="bi bi-pencil-square"></i> Manage company (admin)</h6>
+      <form method="post" action="{{ url_for('admin_company_edit', company_id=company.id) }}">
+        {{ csrf_field() }}
+        <div class="row g-2">
+          <div class="col-md-6"><label class="form-label small">Legal name (English)</label><input class="form-control form-control-sm" name="company_name" value="{{ company.company_name }}" required></div>
+          <div class="col-md-6"><label class="form-label small">Legal name (Arabic)</label><input class="form-control form-control-sm" dir="rtl" name="company_name_ar" value="{{ company.company_name_ar or '' }}"></div>
+          <div class="col-md-4"><label class="form-label small">CR number</label><input class="form-control form-control-sm" name="cr_number" value="{{ company.cr_number }}" required></div>
+          <div class="col-md-4"><label class="form-label small">VAT registration no. (15 digits)</label><input class="form-control form-control-sm" name="vat_registration_number" value="{{ company.vat_registration_number or '' }}" maxlength="15"></div>
+          <div class="col-md-4"><label class="form-label small">Licence / accreditation no.</label><input class="form-control form-control-sm" name="license_or_accreditation_number" value="{{ company.license_or_accreditation_number }}" required></div>
+          <div class="col-md-4"><label class="form-label small">Licence valid until</label><input type="date" class="form-control form-control-sm" name="license_valid_until" value="{{ company.license_valid_until or '' }}"></div>
+          <div class="col-md-4"><label class="form-label small">Contact email</label><input class="form-control form-control-sm" name="contact_email" value="{{ company.contact_email }}" required></div>
+          <div class="col-md-4"><label class="form-label small">Contact phone</label><input class="form-control form-control-sm" name="contact_phone" value="{{ company.contact_phone or '' }}"></div>
+          <div class="col-md-4"><label class="form-label small">Region</label>
+            <select class="form-select form-select-sm" name="region_id"><option value="">—</option>
+              {% for r in regions %}<option value="{{ r.id }}" {% if company.region_id == r.id %}selected{% endif %}>{{ r.name_en }} / {{ r.name_ar }}</option>{% endfor %}</select></div>
+          <div class="col-md-4"><label class="form-label small">City</label><input class="form-control form-control-sm" name="city" value="{{ company.city or '' }}"></div>
+          <div class="col-md-4"><label class="form-label small">National address (short code)</label><input class="form-control form-control-sm" name="national_address" value="{{ company.national_address or '' }}" placeholder="RRRD2929"></div>
+          <div class="col-md-4"><label class="form-label small">Customer segment</label>
+            <select class="form-select form-select-sm" name="customer_segment_id"><option value="">—</option>
+              {% for sgm in segments %}<option value="{{ sgm.id }}" {% if company.customer_segment_id == sgm.id %}selected{% endif %}>{{ sgm.name_en }}</option>{% endfor %}</select></div>
+          <div class="col-md-4"><label class="form-label small">Subscription tier</label>
+            <select class="form-select form-select-sm" name="subscription_tier"><option value="">—</option>
+              {% for tr in tiers %}<option value="{{ tr.value }}" {% if company.subscription_tier == tr %}selected{% endif %}>{{ tr.value }}</option>{% endfor %}</select></div>
+          <div class="col-md-4"><label class="form-label small">Subscription valid until</label><input type="date" class="form-control form-control-sm" name="subscription_valid_until" value="{{ company.subscription_valid_until or '' }}"></div>
+          <div class="col-md-4 d-flex gap-3 align-items-end">
+            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="license_verified" value="1" id="lv" {% if company.license_verified %}checked{% endif %}><label class="form-check-label small" for="lv">Licence verified</label></div>
+            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="is_founding_member" value="1" id="fm" {% if company.is_founding_member %}checked{% endif %}><label class="form-check-label small" for="fm">Founding member</label></div>
+          </div>
+        </div>
+        <button class="btn btn-theme btn-sm mt-3"><i class="bi bi-save"></i> Save company</button>
+      </form>
+    </div></div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card adminuiux-card mb-3"><div class="card-body">
+      <h6 class="mb-2"><i class="bi bi-toggles"></i> Status</h6>
+      <form method="post" action="{{ url_for('admin_company_status', company_id=company.id) }}">
+        {{ csrf_field() }}
+        <select name="status" class="form-select form-select-sm mb-2">
+          {% for st in company_statuses %}<option value="{{ st.value }}" {% if company.status == st %}selected{% endif %}>{{ st.value }}</option>{% endfor %}
+        </select>
+        <input name="reason" class="form-control form-control-sm mb-2" placeholder="Reason (required to suspend/reject)">
+        <button class="btn btn-outline-theme btn-sm w-100">Apply status</button>
+        <div class="form-text">Suspending deactivates all the company's users; reactivating restores them.</div>
+      </form>
+    </div></div>
+    <div class="card adminuiux-card"><div class="card-body">
+      <h6 class="mb-2"><i class="bi bi-file-earmark-lock"></i> Registration documents</h6>
+      <a class="btn btn-sm btn-outline-theme mb-1" href="{{ url_for('admin_company_document', company_id=company.id, kind='cr') }}"><i class="bi bi-file-earmark-pdf"></i> CR document</a>
+      <a class="btn btn-sm btn-outline-theme mb-1" href="{{ url_for('admin_company_document', company_id=company.id, kind='license') }}"><i class="bi bi-file-earmark-pdf"></i> Licence document</a>
+      <div class="form-text">Served privately to admins only.</div>
+    </div></div>
+  </div>
+</div>
+
 <div class="card adminuiux-card mb-3">
   <div class="card-body">
     <h6 class="mb-3"><i class="bi bi-people"></i> Users ({{ company_users | length }})</h6>

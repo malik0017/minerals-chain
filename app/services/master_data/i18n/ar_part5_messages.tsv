@@ -1,0 +1,160 @@
+A batch cannot be its own parent.	لا يمكن أن تكون الدفعة أماً لنفسها.
+A company with this CR number already exists.	توجد منشأة بهذا السجل التجاري بالفعل.
+A company with this Commercial Registration number is already registered.	هناك منشأة مسجلة بهذا السجل التجاري بالفعل.
+A formal reason for the correction is required (at least 10 characters).	يلزم سبب رسمي للتصحيح (10 أحرف على الأقل).
+A paid fee can only be refunded, not set back to pending.	الرسوم المدفوعة يمكن استردادها فقط، ولا يمكن إعادتها إلى معلقة.
+A reason (e.g. the request reference) is required.	يلزم ذكر السبب (مثل مرجع الطلب).
+A reason is required for an admin status change.	يلزم ذكر سبب لتغيير الحالة من المسؤول.
+A reason is required to suspend or reject a company.	يلزم ذكر سبب لإيقاف المنشأة أو رفضها.
+A rejection reason is required.	يلزم ذكر سبب الرفض.
+A response to the user is required to complete or reject a request.	يلزم إرسال رد للمستخدم لإكمال الطلب أو رفضه.
+A user with this email already exists.	يوجد مستخدم بهذا البريد الإلكتروني بالفعل.
+Account anonymised and disabled. Mark the request completed with a response.	تم إخفاء هوية الحساب وتعطيله. أكمل الطلب مع إرسال رد.
+Accreditation expiry must be a date.	يجب أن يكون تاريخ انتهاء الاعتماد تاريخاً صحيحاً.
+Add the product specification (parameters and ranges) before requesting verification.	أضف مواصفة المنتج (المعايير والنطاقات) قبل طلب التحقق.
+An account with this email already exists.	يوجد حساب بهذا البريد الإلكتروني بالفعل.
+An invoice can be issued once the order is delivered.	يمكن إصدار الفاتورة بعد تسليم الطلب.
+Certification not found.	الشهادة غير موجودة.
+Choose a collection date.	اختر تاريخ جمع العينة.
+Choose a dispute category.	اختر فئة النزاع.
+Choose a document type.	اختر نوع المستند.
+Choose a file to upload.	اختر ملفاً لرفعه.
+Choose a request type.	اختر نوع الطلب.
+Choose a valid trade scope.	اختر نطاق تداول صحيحاً.
+Choose an action.	اختر إجراءً.
+Choose in whose favour the dispute is decided.	اختر الطرف الذي صدر القرار لصالحه.
+Choose one of your own listings.	اختر أحد منتجاتك.
+Choose seller, buyer or lab.	اختر بائع أو مشترٍ أو مختبر.
+Choose the corrected ruling.	اختر الحكم المصحح.
+Company name, CR number and the owner's email are required.	اسم المنشأة ورقم السجل التجاري وبريد المالك مطلوبة.
+Company not found.	المنشأة غير موجودة.
+Company saved.	تم حفظ المنشأة.
+Correction logged.	تم تسجيل التصحيح.
+Currency cannot be blank.	لا يمكن ترك العملة فارغة.
+Currency must be a 3-letter code (e.g. SAR).	يجب أن تكون العملة رمزاً من 3 أحرف (مثل SAR).
+Current password is incorrect.	كلمة المرور الحالية غير صحيحة.
+Decision recorded. It is now permanent and can only be changed by a logged correction.	تم تسجيل القرار. أصبح دائماً ولا يتغير إلا بتصحيح مسجّل.
+Describe the problem (at least 10 characters).	صف المشكلة (10 أحرف على الأقل).
+Dispute raised. The platform team and the other party were notified.	تم رفع النزاع. أُبلغ فريق المنصة والطرف الآخر.
+Dispute withdrawn. The order continues from where it was.	تم سحب النزاع. يستمر الطلب من حيث توقف.
+Document file not found.	ملف المستند غير موجود.
+Document not found.	المستند غير موجود.
+Document uploaded.	تم رفع المستند.
+Documents can be exchanged once the seller has confirmed the order.	يمكن تبادل المستندات بعد تأكيد البائع للطلب.
+Enter at least one tested parameter.	أدخل معياراً مختبراً واحداً على الأقل.
+Enter the 6-digit code from your authenticator app.	أدخل الرمز المكون من 6 أرقام من تطبيق المصادقة.
+Enter the analyst's name.	أدخل اسم المحلل.
+Enter the field officer who will collect the sample.	أدخل اسم مسؤول الميدان الذي سيجمع العينة.
+Fee updated.	تم تحديث الرسوم.
+File not found.	الملف غير موجود.
+Files must be 10 MB or smaller.	يجب ألا يتجاوز حجم الملف 10 ميجابايت.
+Full name and a valid email are required.	الاسم الكامل وبريد إلكتروني صحيح مطلوبان.
+Full name cannot be blank.	لا يمكن ترك الاسم الكامل فارغاً.
+Give a reason (shown to the seller).	اذكر السبب (يظهر للبائع).
+Give a short reason for cancelling.	اذكر سبباً مختصراً للإلغاء.
+Image must be 2MB or smaller.	يجب ألا يتجاوز حجم الصورة 2 ميجابايت.
+Incorrect email or password.	البريد الإلكتروني أو كلمة المرور غير صحيحة.
+Internal note saved.	تم حفظ الملاحظة الداخلية.
+Invalid company role.	دور غير صالح في المنشأة.
+Laboratories are not on a subscription plan.	المختبرات ليست ضمن باقات الاشتراك.
+Lead time must be at least 1 day.	يجب ألا تقل مدة التوريد عن يوم واحد.
+Listing not found.	المنتج غير موجود.
+Message sent.	تم إرسال الرسالة.
+Message sent to both parties.	تم إرسال الرسالة للطرفين.
+Min cannot be greater than Max.	لا يمكن أن يكون الحد الأدنى أكبر من الأعلى.
+Minimum order quantity must be greater than zero.	يجب أن تكون أقل كمية للطلب أكبر من صفر.
+New password must be at least 8 characters.	يجب ألا تقل كلمة المرور الجديدة عن 8 أحرف.
+New passwords do not match.	كلمتا المرور الجديدتان غير متطابقتين.
+No 2FA setup in progress — start setup again.	لا يوجد إعداد مصادقة ثنائية جارٍ — ابدأ الإعداد مجدداً.
+No 2FA setup in progress.	لا يوجد إعداد مصادقة ثنائية جارٍ.
+Nothing changed.	لم يتغير شيء.
+Only PDF, JPG and PNG files are accepted.	تُقبل ملفات PDF وJPG وPNG فقط.
+Only a batch whose QC status is PASSED can be released.	لا يُفرج إلا عن الدفعة التي اجتازت فحص الجودة.
+Only a decided dispute can be corrected.	لا يمكن تصحيح إلا نزاع صدر فيه قرار.
+Only a super administrator can create another super administrator.	لا ينشئ مسؤولاً أعلى إلا مسؤول أعلى.
+Only a suspended listing can be reactivated.	لا يُعاد تفعيل إلا المنتج الموقوف.
+Only a verified listing can be offered against an RFQ.	لا يُعرض على طلب التسعير إلا منتج موثّق.
+Only an open RFQ can be cancelled.	لا يمكن إلغاء إلا طلب تسعير مفتوح.
+Only the company owner or a manager can change the plan.	لا يغيّر الباقة إلا مالك المنشأة أو مدير.
+Only the company owner or a manager can renew.	لا يجدد إلا مالك المنشأة أو مدير.
+Only the party that raised the dispute can withdraw it.	لا يسحب النزاع إلا الطرف الذي رفعه.
+Order not found.	الطلب غير موجود.
+Owner password must be at least 8 characters.	يجب ألا تقل كلمة مرور المالك عن 8 أحرف.
+Password must be at least 8 characters.	يجب ألا تقل كلمة المرور عن 8 أحرف.
+Passwords do not match.	كلمتا المرور غير متطابقتين.
+Payment terms must be between 0 and 365 days.	يجب أن تكون شروط الدفع بين 0 و365 يوماً.
+Pick a catalog product (the platform requires listings to reference the product master).	اختر منتجاً من الكتالوج (تشترط المنصة ربط المنتجات بالكتالوج الرئيسي).
+Pick the company this user belongs to.	اختر المنشأة التي ينتمي إليها المستخدم.
+Plan changed — effective immediately.	تم تغيير الباقة — تسري فوراً.
+Please describe what you want corrected, deleted or objected to.	يرجى وصف ما تريد تصحيحه أو حذفه أو الاعتراض عليه.
+Please upload a JPG, PNG, or WEBP image.	يرجى رفع صورة JPG أو PNG أو WEBP.
+Price cannot be negative.	لا يمكن أن يكون السعر سالباً.
+Price must be greater than zero.	يجب أن يكون السعر أكبر من صفر.
+Quantity must be greater than zero.	يجب أن تكون الكمية أكبر من صفر.
+Quotation not found.	عرض السعر غير موجود.
+Quotation submitted.	تم تقديم عرض السعر.
+RFQ cancelled.	تم إلغاء طلب التسعير.
+RFQ cancelled. Sellers who quoted were notified.	تم إلغاء طلب التسعير. أُبلغ البائعون الذين قدموا عروضاً.
+RFQ not found.	طلب التسعير غير موجود.
+Renewed for 12 months.	تم التجديد لمدة 12 شهراً.
+Request a verification code first.	اطلب رمز التحقق أولاً.
+Required-by date can't be in the past.	لا يمكن أن يكون تاريخ "مطلوب بحلول" في الماضي.
+Sample collection can only be scheduled before testing starts.	لا تُجدول العينة إلا قبل بدء الاختبار.
+Schedule and collect the sample before starting testing.	جدول العينة واجمعها قبل بدء الاختبار.
+Selected lab not found.	المختبر المحدد غير موجود.
+Set exactly one of Grade or Product for a specification.	حدد الدرجة أو المنتج (واحداً فقط) للمواصفة.
+Start testing before entering results.	ابدأ الاختبار قبل إدخال النتائج.
+Tested parameters / results are required to issue a certificate.	المعايير والنتائج مطلوبة لإصدار الشهادة.
+That code didn't match.	الرمز غير مطابق.
+That code didn't match. Check your authenticator app and try again.	الرمز غير مطابق. تحقق من تطبيق المصادقة وحاول مجدداً.
+That code didn't match. Check your email and try again.	الرمز غير مطابق. تحقق من بريدك وحاول مجدداً.
+That company is not a laboratory.	هذه المنشأة ليست مختبراً.
+That file appears to be empty.	يبدو أن الملف فارغ.
+The entry plan does not expire.	الباقة الأساسية لا تنتهي.
+The file is empty or has no header row.	الملف فارغ أو لا يحتوي على صف عناوين.
+The file is empty.	الملف فارغ.
+The file is missing from storage.	الملف غير موجود في التخزين.
+The selected catalog product is not available.	منتج الكتالوج المحدد غير متاح.
+The selected lab isn't available for verification requests.	المختبر المحدد غير متاح لطلبات التحقق.
+The seller must issue the invoice before receipt can be confirmed.	يجب أن يصدر البائع الفاتورة قبل تأكيد الاستلام.
+This RFQ is already closed.	طلب التسعير هذا مغلق بالفعل.
+This account is disabled. Contact the platform administrator.	هذا الحساب معطّل. تواصل مع مسؤول المنصة.
+This dispute is already closed.	هذا النزاع مغلق بالفعل.
+This dispute is already decided. Use a formal correction to change it.	صدر قرار في هذا النزاع. استخدم التصحيح الرسمي لتغييره.
+This dispute is closed — messages can no longer be added.	هذا النزاع مغلق — لا يمكن إضافة رسائل.
+This dispute is closed.	هذا النزاع مغلق.
+This field cannot be blank.	لا يمكن ترك هذا الحقل فارغاً.
+This lab is not accepting new requests at the moment.	هذا المختبر لا يستقبل طلبات جديدة حالياً.
+This lab's accreditation has expired — choose another lab.	انتهى اعتماد هذا المختبر — اختر مختبراً آخر.
+This listing already has a pending passport request.	لهذا المنتج طلب جواز معلق بالفعل.
+This listing already has a verification request in progress.	لهذا المنتج طلب تحقق جارٍ بالفعل.
+This listing is already suspended.	هذا المنتج موقوف بالفعل.
+This order is cancelled.	هذا الطلب ملغى.
+This quotation has already been acted on and can't be revised.	تم اتخاذ إجراء على عرض السعر ولا يمكن تعديله.
+This quotation has already been acted on or has expired.	تم اتخاذ إجراء على عرض السعر أو انتهت صلاحيته.
+This quotation's validity has ended — ask the seller to revise it.	انتهت صلاحية عرض السعر — اطلب من البائع تعديله.
+Tick at least one user.	حدد مستخدماً واحداً على الأقل.
+Unknown fee status.	حالة رسوم غير معروفة.
+Unknown plan.	باقة غير معروفة.
+Unknown status.	حالة غير معروفة.
+Updated.	تم التحديث.
+Use the decision form to resolve a dispute.	استخدم نموذج القرار لحل النزاع.
+VAT registration number must be 15 digits.	يجب أن يتكون الرقم الضريبي من 15 رقماً.
+Validity must be between 1 and 180 days.	يجب أن تكون الصلاحية بين 1 و180 يوماً.
+Verification request not found.	طلب التحقق غير موجود.
+Write a message.	اكتب رسالة.
+Write the decision and its reasons (at least 20 characters).	اكتب القرار وأسبابه (20 حرفاً على الأقل).
+You are already on this plan.	أنت مشترك في هذه الباقة بالفعل.
+You can't anonymise your own account.	لا يمكنك إخفاء هوية حسابك.
+You have no quotation on this RFQ.	ليس لديك عرض سعر على طلب التسعير هذا.
+You've already submitted a quotation for this RFQ — revise it instead.	قدمت عرض سعر على هذا الطلب بالفعل — عدّله بدلاً من ذلك.
+Your verification code has expired. Request a new one.	انتهت صلاحية رمز التحقق. اطلب رمزاً جديداً.
+Saved	تم الحفظ
+Quotation revised (revision {}). The buyer was notified.	تم تعديل عرض السعر (المراجعة {}). أُبلغ المشتري.
+Invoice {} issued and shared with the buyer.	صدرت الفاتورة {} وتمت مشاركتها مع المشتري.
+{} suspended.	تم إيقاف {}.
+{} reactivated ({}).	أُعيد تفعيل {} ({}).
+{} terms saved.	تم حفظ شروط {}.
+Order is now {}.	أصبح الطلب الآن {}.
+Can't downgrade yet: you have {}. Archive listings or close RFQs first.	لا يمكن التخفيض بعد: لديك {}. أرشف المنتجات أو أغلق طلبات التسعير أولاً.
+Out of specification: {}	خارج المواصفة: {}

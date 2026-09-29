@@ -5,7 +5,7 @@ import uuid
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
-from app.core.permissions import require_portal
+from app.core.permissions import require_admin, require_portal
 from app.core.portal_nav import build_portal_context
 from app.database.base import get_db
 from app.models.user import User, UserRole
@@ -20,7 +20,7 @@ from app.core.templates import templates
 def approvals_list(
     request: Request,
     db: Session = Depends(get_db),
-    admin: User = Depends(require_portal(UserRole.ADMIN)),
+    admin: User = Depends(require_admin("approvals")),
 ):
     pending = company_repository.list_pending(db)
     context = build_portal_context(admin, UserRole.ADMIN, active_path=request.url.path)
@@ -33,7 +33,7 @@ def approvals_review(
     request: Request,
     company_id: uuid.UUID,
     db: Session = Depends(get_db),
-    admin: User = Depends(require_portal(UserRole.ADMIN)),
+    admin: User = Depends(require_admin("approvals")),
     error: str | None = None,
 ):
     company = company_repository.get_by_id(db, company_id)
@@ -52,7 +52,7 @@ def approvals_approve(
     request: Request,
     company_id: uuid.UUID,
     db: Session = Depends(get_db),
-    admin: User = Depends(require_portal(UserRole.ADMIN)),
+    admin: User = Depends(require_admin("approvals")),
 ):
     try:
         approve_company(db, company_id, admin)
@@ -70,7 +70,7 @@ def approvals_reject(
     request: Request,
     company_id: uuid.UUID,
     db: Session = Depends(get_db),
-    admin: User = Depends(require_portal(UserRole.ADMIN)),
+    admin: User = Depends(require_admin("approvals")),
     reason: str = Form(...),
 ):
     try:

@@ -14,12 +14,7 @@ class RegisterRequest(BaseModel):
     # --- Company fields ---
     company_name: str
     cr_number: str
-    # Batch B: mandatory for every role now, not just seller/lab — see
-    # models/company.py's docstring on this field for why.
     license_or_accreditation_number: str
-    # Batch B: combined "+966 501234567" — the route builds this from
-    # separate country-code + digits-only form fields before validation
-    # here reaches it; see modules/auth/routes.py.
     contact_phone: str
 
     # --- User (the person registering) fields ---

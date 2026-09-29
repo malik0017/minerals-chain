@@ -1,0 +1,50 @@
+{% extends "layouts/base.html" %}
+{% block title %}{{ t('ss.title') }}{% endblock %}
+{% block content %}
+<h4 class="mb-1"><i class="bi bi-sliders"></i> {{ t('ss.title') }}</h4>
+<p class="text-secondary mb-3">{{ t('ss.subtitle') }}</p>
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+
+<ul class="nav nav-pills mb-3 flex-wrap" role="tablist">
+  {% for cat, title, icon, items in groups %}
+  <li class="nav-item"><button class="nav-link {% if loop.first %}active{% endif %}" data-bs-toggle="pill" data-bs-target="#cat-{{ cat }}" type="button"><i class="bi {{ icon }}"></i> {{ title }}</button></li>
+  {% endfor %}
+</ul>
+<div class="tab-content">
+{% for cat, title, icon, items in groups %}
+  <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="cat-{{ cat }}">
+    <div class="card adminuiux-card"><div class="card-body">
+      {% if cat == 'devtools' and is_production %}<div class="alert alert-warning py-2">APP_ENV=production — impersonation and reset tools are blocked regardless of these switches.</div>{% endif %}
+      <form method="post" action="{{ url_for('admin_system_settings_save') }}">
+        {{ csrf_field() }}<input type="hidden" name="_category" value="{{ cat }}">
+        {% for s in items %}{% set d = s.def %}
+        <div class="row g-2 align-items-center py-2 border-bottom">
+          <div class="col-md-6">
+            <label class="fw-semibold" for="s_{{ d.key }}">{{ d.label }}</label>
+            {% if s.overridden %}<span class="badge bg-info-subtle text-info">changed</span>{% endif %}
+            {% if s.invalid %}<span class="badge bg-danger-subtle text-danger">stored value invalid — using default</span>{% endif %}
+            <div class="small text-secondary">{{ d.help }}</div>
+          </div>
+          <div class="col-md-4">
+            {% if d.value_type == 'bool' %}
+              <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="s_{{ d.key }}" name="{{ d.key }}" value="1" {% if s.value %}checked{% endif %}></div>
+            {% else %}
+              <input class="form-control form-control-sm" id="s_{{ d.key }}" name="{{ d.key }}" value="{{ s.value }}"
+                     {% if d.value_type in ('int','decimal') %}type="number" step="{{ '1' if d.value_type == 'int' else '0.01' }}"{% if d.min_value is not none %} min="{{ d.min_value }}"{% endif %}{% if d.max_value is not none %} max="{{ d.max_value }}"{% endif %}{% endif %}>
+            {% endif %}
+          </div>
+          <div class="col-md-2 small text-secondary text-md-end">{{ t('ss.default') }}: {{ d.default }}
+            {% if s.overridden %}<button form="reset-{{ d.key }}" class="btn btn-link btn-sm p-0 d-block ms-md-auto">{{ t('ss.reset') }}</button>{% endif %}</div>
+        </div>
+        {% endfor %}
+        <button class="btn btn-theme mt-3"><i class="bi bi-save"></i> {{ t('settings.save') }}</button>
+      </form>
+      {% for s in items %}{% if s.overridden %}
+      <form id="reset-{{ s.def.key }}" method="post" action="{{ url_for('admin_system_setting_reset', key=s.def.key) }}">{{ csrf_field() }}</form>
+      {% endif %}{% endfor %}
+    </div></div>
+  </div>
+{% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="{{ lang | default('en') }}" dir="{{ 'rtl' if (lang | default('en')) == 'ar' else 'ltr' }}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{% block title %}Minerals Chain{% endblock %} - Minerals Chain</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', path='img/favicon.png') }}" />
+  <link href="{{ url_for('static', path='css/app.css') }}" rel="stylesheet" />
+  <link href="{{ url_for('static', path='css/theme-mineral.css') }}" rel="stylesheet" />
+  <script src="{{ url_for('static', path='js/lang_sync.js') }}"></script>
+</head>
+<body class="bg-light">
+  <nav class="navbar bg-body border-bottom px-3">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="/"><img src="{{ url_for('static', path='img/logo.svg') }}" alt="" height="32"> <span class="fw-semibold">Minerals Chain</span></a>
+    <div class="d-flex gap-2">
+      <a class="btn btn-sm {{ 'btn-outline-secondary' if lang == 'ar' else 'btn-secondary' }}" href="{{ url_for('language_set') }}?lang=en&next={{ request.url.path }}">EN</a>
+      <a class="btn btn-sm {{ 'btn-secondary' if lang == 'ar' else 'btn-outline-secondary' }}" href="{{ url_for('language_set') }}?lang=ar&next={{ request.url.path }}">ع</a>
+    </div>
+  </nav>
+  <main class="container py-4" style="max-width: 860px">{% block content %}{% endblock %}</main>
+  <footer class="text-center small text-secondary py-4">
+    <a href="/privacy">Privacy Notice</a> · <a href="/terms">Terms of Use</a> · <a href="/help">Help</a>
+  </footer>
+</body>
+</html>

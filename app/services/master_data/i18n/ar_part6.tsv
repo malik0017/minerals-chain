@@ -1,0 +1,236 @@
+Accept	قبول
+Accepting quotes until {}	يستقبل العروض حتى {}
+Accreditation expired	انتهى الاعتماد
+Analyst name	اسم المحلل
+Best	الأفضل
+Best price	أفضل سعر
+Cancel reason	سبب الإلغاء
+Choose a lab...	اختر مختبراً...
+Choose trade scope...	اختر نطاق التداول...
+Choose…	اختر…
+Commercial Invoice	فاتورة تجارية
+Confirm order	تأكيد الطلب
+Confirm receipt	تأكيد الاستلام
+Confirm this order	تأكيد هذا الطلب
+Confirming marks this order complete.	التأكيد يجعل هذا الطلب مكتملاً.
+Confirming reveals the buyer's identity to you (and yours to them) and locks in the order.	التأكيد يكشف هوية المشتري لك (وهويتك له) ويثبّت الطلب.
+Corrected decision text (leave empty to keep)	نص القرار المصحح (اتركه فارغاً للإبقاء)
+Decision and reasons	القرار وأسبابه
+Describe the problem, quantities, dates and what you observed.	صف المشكلة والكميات والتواريخ وما لاحظته.
+Dispute	النزاع
+Each measured value is checked against its range. All pass → certificate issued; any fail → verification failed with the out-of-spec parameters listed.	تُقارن كل قيمة مقاسة بنطاقها. نجاح الكل ← إصدار الشهادة؛ رسوب أي معيار ← فشل التحقق مع ذكر المعايير الخارجة عن المواصفة.
+Earlier disputes on this order	نزاعات سابقة على هذا الطلب
+Enter results	إدخال النتائج
+Evidence (optional)	الأدلة (اختياري)
+Expired	منتهي
+Fail	راسب
+Identity protected until order confirmation	الهوية محمية حتى تأكيد الطلب
+Issue invoice	إصدار الفاتورة
+Lead time (days)	مدة التوريد (أيام)
+Linking a verified listing attaches its current COA and passport and shows the buyer how well it matches their spec.	ربط منتج موثّق يرفق شهادة التحليل والجواز الحاليين ويُظهر للمشتري مدى مطابقته لمواصفته.
+Mark as delivered	تعليم كمُسلَّم
+Mark as shipped	تعليم كمشحون
+Mark delivered	تم التسليم
+Mark in transit	قيد الشحن
+Message to both parties, or an internal note…	رسالة للطرفين أو ملاحظة داخلية…
+Needs your confirmation	بحاجة إلى تأكيدك
+No RFQs match.	لا توجد طلبات تسعير مطابقة.
+No approved testing labs are registered on the platform yet.	لا توجد مختبرات معتمدة مسجلة على المنصة بعد.
+No certificates yet.	لا توجد شهادات بعد.
+No charges yet.	لا توجد رسوم بعد.
+No current certificate.	لا توجد شهادة سارية.
+No disputes match.	لا توجد نزاعات مطابقة.
+No disputes.	لا توجد نزاعات.
+No lab activity in range.	لا يوجد نشاط مخبري في الفترة.
+No laboratories registered.	لا توجد مختبرات مسجلة.
+No messages yet.	لا توجد رسائل بعد.
+No orders in range.	لا توجد طلبات في الفترة.
+No users match.	لا يوجد مستخدمون مطابقون.
+Not a ZATCA e-invoice.	ليست فاتورة إلكترونية لزاتكا.
+Offered listing	المنتج المعروض
+On hold — see the dispute below.	معلّق — راجع النزاع أدناه.
+Open for quotes	مفتوح للعروض
+PDF, JPG or PNG up to 10 MB. A SHA-256 fingerprint is recorded.	PDF أو JPG أو PNG حتى 10 ميجابايت. تُسجل بصمة SHA-256.
+Priority	أولوية
+Queue is empty.	القائمة فارغة.
+RFQ	طلب التسعير
+Reactivate	إعادة تفعيل
+Reason for correction	سبب التصحيح
+Remarks (optional)	ملاحظات (اختياري)
+Renew 12 months	تجديد 12 شهراً
+Renewal request awaiting admin review	طلب التجديد بانتظار مراجعة المسؤول
+Replaces the user's name, email, phone and photo, removes 2FA and disables the account. Orders, certificates and invoices stay (legal retention) but no longer identify the person.	يستبدل اسم المستخدم وبريده وجواله وصورته، ويزيل المصادقة الثنائية ويعطّل الحساب. تبقى الطلبات والشهادات والفواتير (حفظ نظامي) لكنها لا تعرّف الشخص.
+Request passport	طلب جواز
+Request renewal	طلب التجديد
+Request verification	طلب التحقق
+Response shown to the user	الرد الظاهر للمستخدم
+Revise quotation	تعديل عرض السعر
+Sample received — start testing	استُلمت العينة — بدء الاختبار
+Save	حفظ
+Send	إرسال
+Sign off results	اعتماد النتائج
+Submit dispute	تقديم النزاع
+Submit quotation	تقديم عرض السعر
+Submit revision	تقديم التعديل
+Test results	نتائج الاختبار
+The buyer sees your quote but not your company until an order is confirmed.	يرى المشتري عرضك دون معرفة منشأتك حتى تأكيد الطلب.
+The buyer's identity stays hidden until you confirm this order.	تبقى هوية المشتري مخفية حتى تؤكد هذا الطلب.
+This order is on hold while a dispute is reviewed.	هذا الطلب معلّق أثناء مراجعة النزاع.
+This order was cancelled.	تم إلغاء هذا الطلب.
+Valid for (days)	صالح لمدة (أيام)
+VAT number (15 digits)	الرقم الضريبي (15 رقماً)
+What outcome are you asking for?	ما النتيجة التي تطلبها؟
+What should we change or delete?	ما الذي نغيّره أو نحذفه؟
+What went wrong?	ما المشكلة؟
+While the dispute is open the order is on hold (status “disputed”). If you withdraw, it continues from where it was.	أثناء فتح النزاع يكون الطلب معلّقاً (حالة "متنازع عليه"). إذا سحبته يستمر من حيث توقف.
+Withdraw dispute	سحب النزاع
+Write a reply or add information…	اكتب رداً أو أضف معلومات…
+e.g. Bulk, 25kg bags	مثال: سائب، أكياس 25 كجم
+e.g. partial refund, replacement shipment, price adjustment	مثال: استرداد جزئي، شحنة بديلة، تعديل السعر
+e.g. particle size, packaging, sampling	مثال: حجم الحبيبات، التعبئة، أخذ العينات
+— not linked to a listing —	— غير مرتبط بمنتج —
+← Back to order	→ العودة للطلب
+← Back to order	→ العودة للطلب
+Security checklist	قائمة فحص الأمان
+Quick actions	إجراءات سريعة
+Revenue streams	مصادر الإيرادات
+Raise a dispute	رفع نزاع
+Declared specification	المواصفة المعلنة
+Lab results	نتائج المختبر
+Credentials	الوثائق
+Documents	المستندات
+Upload	رفع
+Type	النوع
+Title	العنوان
+File (PDF/JPG/PNG, {} MB)	الملف (PDF/JPG/PNG، {} ميجابايت)
+Placed	تم الطلب
+In transit	قيد الشحن
+Reference	المرجع
+Invoice	الفاتورة
+Unit price	سعر الوحدة
+Offer	العرض
+Credentials	الوثائق
+Spec match	مطابقة المواصفة
+Valid until	صالح حتى
+Lowest price	أقل سعر
+Fastest	الأسرع
+Best match	الأفضل مطابقة
+Required specification	المواصفة المطلوبة
+Status & handler	الحالة والمسؤول
+Record decision	تسجيل القرار
+Formal correction	تصحيح رسمي
+Log correction	تسجيل التصحيح
+Internal note	ملاحظة داخلية
+Post	نشر
+— assign to me —	— أسند إليّ —
+Printable	قابل للطباعة
+Print / Save as PDF	طباعة / حفظ PDF
+Sample	العينة
+Seller	البائع
+Product	المنتج
+Scope	النطاق
+Issuing laboratory	المختبر المُصدر
+Issue date / valid until	تاريخ الإصدار / صالح حتى
+Integrity verified — results unchanged since sign-off	تم التحقق من السلامة — النتائج لم تتغير منذ الاعتماد
+WARNING: recorded results differ from the signed-off fingerprint	تحذير: النتائج المسجلة تختلف عن البصمة المعتمدة
+Required	المطلوب
+Measured	المقاس
+Result	النتيجة
+Analyst:	المحلل:
+Signed off:	تاريخ الاعتماد:
+Remarks:	ملاحظات:
+PASS	ناجح
+FAIL	راسب
+VALID	ساري
+EXPIRED	منتهي
+REJECTED	مرفوض
+PENDING	معلق
+Test results	نتائج الاختبار
+Tested parameters	المعايير المختبرة
+Reports	التقارير
+Platform revenue (SAR)	إيرادات المنصة (ريال)
+GMV incl. VAT (SAR)	إجمالي قيمة التداول شامل الضريبة (ريال)
+Revenue streams by month (SAR, net)	مصادر الإيرادات شهرياً (ريال، صافي)
+Revenue mix	توزيع الإيرادات
+Orders & GMV	الطلبات وقيمة التداول
+Order outcomes	نتائج الطلبات
+Dispute outcomes	نتائج النزاعات
+Disputes by category	النزاعات حسب الفئة
+Settlement fee status (SAR)	حالة رسوم التسوية (ريال)
+Lab performance	أداء المختبرات
+Top minerals by GMV	أعلى المعادن من حيث قيمة التداول
+Passed	ناجح
+Failed	راسب
+Active	نشط
+Pass rate	نسبة النجاح
+Mineral	المعدن
+Orders	الطلبات
+GMV (SAR)	إجمالي قيمة التداول (ريال)
+Lab queue	قائمة المختبر
+Passports to review	جوازات للمراجعة
+Open disputes	النزاعات المفتوحة
+Pending approvals	اعتمادات معلقة
+Active companies	المنشآت النشطة
+Platform revenue	إيرادات المنصة
+Orders by status	الطلبات حسب الحالة
+Companies · role × status	المنشآت · الدور × الحالة
+Listings by status	المنتجات حسب الحالة
+Settlement fees (SAR)	رسوم التسوية (ريال)
+New registrations per month	التسجيلات الجديدة شهرياً
+Security score	درجة الأمان
+New company	منشأة جديدة
+New user	مستخدم جديد
+Master data	البيانات الرئيسية
+Settings	الإعدادات
+Plans	الباقات
+Fees	الرسوم
+Listings	المنتجات
+RFQs	طلبات التسعير
+PDPL	حماية البيانات
+Audit log	سجل التدقيق
+Labs	المختبرات
+of 100	من 100
+Pending confirmation	بانتظار التأكيد
+Under verification	قيد التحقق
+Failed verification	لم يجتز التحقق
+Settlement fees	رسوم التسوية
+Subscriptions	الاشتراكات
+Lab verification fees	رسوم التحقق المخبري
+Passport fees	رسوم الجوازات
+Via dispute	عبر نزاع
+In progress	قيد التنفيذ
+Withdrawn	مسحوب
+Open	مفتوح
+Delivery delay	تأخر التسليم
+Quality	الجودة
+Quantity	الكمية
+Damaged	تالف
+Documentation	المستندات
+Pricing	التسعير
+Paid	مدفوع
+Waived	معفى
+Refunded	مسترد
+Resolved	تم الحل
+Disputed	متنازع عليه
+Invoiced	صدرت الفاتورة
+Suspended	موقوف
+Rejected	مرفوض
+Pending	معلق
+Approved	معتمد
+Seller	البائع
+Buyer	المشتري
+Lab	المختبر
+Orders	الطلبات
+GMV (SAR)	قيمة التداول (ريال)
+of 100	من 100
+Minerals	سلسلة
+2FA enforced for administrators	فرض المصادقة الثنائية على المسؤولين
+{} active admin(s) without 2FA.	{} مسؤول نشط دون مصادقة ثنائية.
+Set a long random SECRET_KEY in .env (python -c "import secrets;print(secrets.token_urlsafe({}))").	اضبط مفتاح SECRET_KEY طويلاً وعشوائياً في ملف ‎.env‎.
+System Settings → Security → Require 2FA for administrators (set up your own 2FA first).	إعدادات النظام ← الأمان ← اشتراط المصادقة الثنائية للمسؤولين (فعّل مصادقتك أولاً).
+Settings → Email verification.	الإعدادات ← التحقق من البريد الإلكتروني.
+Click “Secure legacy uploads” below.	اضغط "تأمين الملفات القديمة" أدناه.
+Disabled.	معطّل.
+Custom key configured.	تم ضبط مفتاح مخصص.
+Argon2 (passlib).	Argon2 (passlib).
+Off — anyone can register with an unverified email.	موقوف — يمكن لأي شخص التسجيل ببريد غير موثّق.

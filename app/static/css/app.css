@@ -28448,6 +28448,8 @@ body.bg-white .search-wrap .border-0 {
 .adminuiux-mobile-footer .nav .nav-item .nav-link:active {
   background-color: transparent;
   color: var(--adminuiux-theme-1);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-lg);
 }
 .adminuiux-mobile-footer .nav .nav-item .nav-link.active i,
 .adminuiux-mobile-footer .nav .nav-item .nav-link.active svg,
@@ -30553,6 +30555,8 @@ textarea:focus {
   .nav-item
   .nav-link:active:not(.dropdown-toggle) {
   color: var(--adminuiux-theme-1);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-lg);
 }
 .adminuiux-sidebar .adminuiux-sidebar-inner .nav .nav-item .nav-link.active i,
 .adminuiux-sidebar .adminuiux-sidebar-inner .nav .nav-item .nav-link.active svg,
@@ -30610,6 +30614,8 @@ textarea:focus {
   .nav-link:hover {
   background-color: rgba(var(--adminuiux-theme-1-rgb), 0.1);
   color: var(--adminuiux-theme-1);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-lg);
 }
 .adminuiux-sidebar
   .adminuiux-sidebar-inner

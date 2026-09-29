@@ -22,16 +22,20 @@
           <th>Quantity</th>
           <th>Delivery</th>
           <th>Posted</th>
+          <th>Closes</th>
+          <th>Your quote</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
         {% for r in rfqs %}
         <tr>
-          <td>{{ r.mineral_type }}</td>
+          <td>{{ r.mineral_type }}<div class="small text-secondary">{{ r.rfq_reference }}{% if r.specs %} · {{ r.specs|length }} spec parameter(s){% endif %}</div></td>
           <td>{{ r.quantity_value }} {{ r.quantity_unit }}</td>
           <td>{{ r.delivery_location }}</td>
           <td class="text-secondary small">{{ r.created_at.strftime("%Y-%m-%d") }}</td>
+          <td class="small">{{ r.closes_at.strftime("%Y-%m-%d") if r.closes_at else '—' }}</td>
+          <td>{% set mq = quoted.get(r.id) %}{% if mq %}<span class="badge bg-success-subtle text-success">{{ mq.status.value }}{% if mq.revision_no and mq.revision_no > 1 %} · rev {{ mq.revision_no }}{% endif %}</span>{% else %}<span class="small text-secondary">—</span>{% endif %}</td>
           <td class="text-end">
             <a href="{{ url_for('seller_rfq_inbox_detail', rfq_id=r.id) }}" class="btn btn-sm btn-outline-theme">View</a>
           </td>

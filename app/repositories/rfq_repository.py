@@ -2,7 +2,6 @@
 import uuid
 
 from sqlalchemy.orm import Session
-
 from app.models.rfq import RFQ, RFQStatus
 
 
@@ -26,9 +25,6 @@ def list_for_company(db: Session, buyer_company_id: uuid.UUID) -> list[RFQ]:
 
 
 def list_open(db: Session) -> list[RFQ]:
-    """Batch 2 — the seller RFQ inbox. Broadcast model: every open RFQ,
-    visible to every approved seller (see rfq.py's docstring for why
-    there's no matching filter yet)."""
     return (
         db.query(RFQ)
         .filter(RFQ.status == RFQStatus.OPEN)
@@ -42,7 +38,4 @@ def count_open(db: Session) -> int:
 
 
 def count_all(db: Session) -> int:
-    """Admin platform-wide aggregate when previewing the Buyer Portal
-    (no single company to scope to) — same pattern as
-    product_repository.count_all()."""
     return db.query(RFQ).count()

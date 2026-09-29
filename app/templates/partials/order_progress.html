@@ -1,0 +1,28 @@
+{# Batch P1: order lifecycle stepper + frozen financials (include with `order` in context) #}
+{% set steps = [('pending_confirmation','Placed','bi-cart-check', order.created_at),('confirmed','Confirmed','bi-person-check', order.confirmed_at),('in_transit','In transit','bi-truck', order.shipped_at),('delivered','Delivered','bi-box-seam', order.delivered_at),('invoiced','Invoiced','bi-receipt', order.invoiced_at),('completed','Completed','bi-check2-circle', order.completed_at)] %}
+{% set rank = {'pending_confirmation':0,'confirmed':1,'in_transit':2,'delivered':3,'invoiced':4,'completed':5,'resolved':5,'disputed':-1,'cancelled':-2} %}
+<div class="card adminuiux-card mb-3"><div class="card-body">
+  {% if order.status.value in ('disputed','cancelled','resolved') %}
+  <div class="alert {{ 'alert-danger' if order.status.value != 'resolved' else 'alert-info' }} py-2 small mb-3">
+    {% if order.status.value == 'disputed' %}<i class="bi bi-exclamation-octagon"></i> This order is on hold while a dispute is reviewed.
+    {% elif order.status.value == 'resolved' %}<i class="bi bi-hammer"></i> Closed by a dispute decision.
+    {% else %}<i class="bi bi-x-octagon"></i> Cancelled{% if order.cancellation_reason %}: {{ order.cancellation_reason }}{% endif %}{% endif %}
+  </div>{% endif %}
+  <div class="d-flex justify-content-between">
+  {% for key, label, icon, at in steps %}{% set done = at is not none %}
+    <div class="text-center flex-fill small">
+      <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center {{ 'bg-success text-white' if done else 'bg-body-secondary text-secondary' }}" style="width:34px;height:34px"><i class="bi {{ icon }}"></i></div>
+      <div class="{{ '' if done else 'text-secondary' }}">{{ label }}</div>
+      <div class="text-secondary" style="font-size:.7rem">{{ at.strftime('%Y-%m-%d') if at else '' }}</div>
+    </div>
+  {% endfor %}
+  </div>
+  <hr>
+  <div class="row small text-center">
+    <div class="col"><div class="text-secondary">Reference</div><div class="fw-semibold">{{ order.order_reference or '—' }}</div></div>
+    <div class="col"><div class="text-secondary">Subtotal</div><div class="fw-semibold">{{ order.currency }} {{ '{:,.2f}'.format(order.subtotal_sar or 0) }}</div></div>
+    <div class="col"><div class="text-secondary">VAT {{ order.vat_rate_pct or 0 }}%</div><div class="fw-semibold">{{ '{:,.2f}'.format(order.vat_amount_sar or 0) }}</div></div>
+    <div class="col"><div class="text-secondary">Total</div><div class="fw-semibold">{{ '{:,.2f}'.format(order.total_value_sar or 0) }}</div></div>
+    <div class="col"><div class="text-secondary">Invoice</div><div class="fw-semibold">{{ order.invoice_number or '—' }}</div></div>
+  </div>
+</div></div>

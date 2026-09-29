@@ -27,3 +27,7 @@ app/static/uploads/*
 !app/static/uploads/avatars/
 app/static/uploads/avatars/*
 !app/static/uploads/avatars/.gitkeep
+
+# --- Batch K: private uploads (company documents etc.) live outside app/static ---
+storage/*
+!storage/.gitkeep

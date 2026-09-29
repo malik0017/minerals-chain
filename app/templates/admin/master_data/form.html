@@ -1,0 +1,62 @@
+{% extends "layouts/base.html" %}
+{% block title %}{{ entity.title }}{% endblock %}
+{% block content %}
+
+<a href="{{ url_for('admin_master_data_list', entity_key=entity.key) }}" class="text-secondary text-decoration-none small">&larr; {{ entity.title }}</a>
+<h4 class="mt-2 mb-1"><i class="bi {{ entity.icon }}"></i> {% if mode == 'edit' %}{{ t('md.edit') }}{% else %}{{ t('md.add') }}{% endif %} — {{ entity.title }}</h4>
+<p class="text-secondary small mb-3">{{ entity.description }}</p>
+
+{% if errors %}
+<div class="alert alert-danger py-2"><ul class="mb-0 ps-3">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>
+{% endif %}
+
+<div class="card adminuiux-card"><div class="card-body">
+<form method="post" action="{% if mode == 'edit' %}{{ url_for('admin_master_data_update', entity_key=entity.key, row_id=obj.id) }}{% else %}{{ url_for('admin_master_data_create', entity_key=entity.key) }}{% endif %}">
+  {{ csrf_field() }}
+  <div class="row g-3">
+  {% for f in entity.fields %}
+    <div class="col-12 col-md-{{ f.col }}">
+      {% if f.type == 'bool' %}
+        <div class="form-check form-switch mt-md-4">
+          <input class="form-check-input" type="checkbox" role="switch" id="f_{{ f.name }}" name="{{ f.name }}" value="1"
+                 {% if values[f.name] %}checked{% endif %} {% if f.readonly %}disabled{% endif %} />
+          <label class="form-check-label" for="f_{{ f.name }}">{{ f.label }}</label>
+        </div>
+      {% else %}
+        <label class="form-label" for="f_{{ f.name }}">{{ f.label }}{% if f.required %} <span class="text-danger">*</span>{% endif %}</label>
+        {% if f.readonly %}
+          <input class="form-control" id="f_{{ f.name }}" value="{{ values[f.name] }}" disabled />
+        {% elif f.type == 'textarea' %}
+          <textarea class="form-control" id="f_{{ f.name }}" name="{{ f.name }}" rows="{{ 10 if f.name.startswith('body') else 3 }}" {% if f.name.endswith('_ar') %}dir="rtl"{% endif %}>{{ values[f.name] }}</textarea>
+        {% elif f.type == 'fk' %}
+          <select class="form-select" id="f_{{ f.name }}" name="{{ f.name }}" {% if f.required %}required{% endif %}>
+            <option value="">—</option>
+            {% for oid, olabel in fk_options[f.name] %}
+            <option value="{{ oid }}" {% if values[f.name] == oid %}selected{% endif %}>{{ olabel }}</option>
+            {% endfor %}
+          </select>
+        {% elif f.type == 'choice' %}
+          <select class="form-select" id="f_{{ f.name }}" name="{{ f.name }}" {% if f.required %}required{% endif %}>
+            {% if not f.required %}<option value="">—</option>{% endif %}
+            {% for c in f.choices %}<option value="{{ c }}" {% if values[f.name] == c %}selected{% endif %}>{{ c.replace('_', ' ') }}</option>{% endfor %}
+          </select>
+        {% else %}
+          <input class="form-control" id="f_{{ f.name }}" name="{{ f.name }}" value="{{ values[f.name] }}"
+                 {% if f.type == 'int' %}type="number" step="1"{% elif f.type == 'decimal' %}type="number" step="any"{% elif f.type == 'date' %}type="date"{% else %}type="text"{% endif %}
+                 {% if f.name.endswith('_ar') %}dir="rtl"{% endif %}
+                 {% if f.required and f.name not in ('code', 'batch_number') %}required{% endif %} />
+        {% endif %}
+      {% endif %}
+      {% if f.help %}<div class="form-text">{{ f.help }}</div>{% endif %}
+    </div>
+  {% endfor %}
+  </div>
+  <div class="d-flex gap-2 mt-4">
+    <button type="submit" class="btn btn-theme"><i class="bi bi-save"></i> {{ t('md.save') }}</button>
+    {% if mode != 'edit' %}<button type="submit" name="_after" value="new" class="btn btn-outline-theme">{{ t('md.save_add_another') }}</button>{% endif %}
+    <a href="{{ url_for('admin_master_data_list', entity_key=entity.key) }}" class="btn btn-link">{{ t('md.cancel') }}</a>
+  </div>
+</form>
+</div></div>
+
+{% endblock %}

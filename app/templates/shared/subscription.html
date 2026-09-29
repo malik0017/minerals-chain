@@ -1,0 +1,61 @@
+{% extends "layouts/base.html" %}
+{% block title %}My Subscription{% endblock %}
+{% block content %}
+<h4 class="mb-1"><i class="bi bi-stars"></i> My Subscription</h4>
+<p class="text-secondary mb-3">{{ company.company_name }}</p>
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+
+{% set st = info.status %}
+{% if st == 'grace' %}<div class="alert alert-warning"><i class="bi bi-hourglass-split"></i> Your plan ended on {{ info.end_date }}. You keep your benefits until {{ info.grace_until }} — renew to avoid moving to the entry plan.</div>
+{% elif st == 'active' and info.days_left is not none and info.days_left <= 30 %}<div class="alert alert-info"><i class="bi bi-bell"></i> Your plan renews or ends in {{ info.days_left }} day(s), on {{ info.end_date }}.</div>{% endif %}
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4"><div class="card adminuiux-card h-100"><div class="card-body">
+    <div class="small text-secondary">Current plan</div>
+    <div class="h4 mb-1">{{ info.plan.name_en if info.plan else (info.tier or '—') }}</div>
+    {% set c = {'active':'success','grace':'warning','expired':'danger','none':'secondary'}.get(st, 'secondary') %}
+    <span class="badge bg-{{ c }}-subtle text-{{ c }}">{{ st }}</span>
+    <div class="small mt-2">{% if info.end_date %}Valid until <b>{{ info.end_date }}</b>{% else %}No expiry{% endif %}</div>
+    {% if info.end_date and can_change %}<form method="post" action="{{ url_for('my_subscription_renew') }}" class="mt-2">{{ csrf_field() }}<button class="btn btn-sm btn-outline-theme">Renew 12 months</button></form>{% endif %}
+  </div></div></div>
+  <div class="col-md-8"><div class="card adminuiux-card h-100"><div class="card-body">
+    <div class="small text-secondary mb-2">Usage</div>
+    {% set lim = info.plan.max_active_listings if info.plan else none %}
+    {% set rlim = info.plan.max_active_rfqs if info.plan else none %}
+    {% if is_seller %}
+    <div class="d-flex justify-content-between small"><span>Active listings</span><span>{{ info.usage.listings }} / {{ lim if lim is not none else '∞' }}</span></div>
+    <div class="progress mb-3" style="height:8px"><div class="progress-bar {{ 'bg-danger' if lim and info.usage.listings >= lim else '' }}" style="width: {{ ((info.usage.listings / lim * 100) if lim else 10) | round | int }}%"></div></div>
+    {% else %}
+    <div class="d-flex justify-content-between small"><span>Open RFQs</span><span>{{ info.usage.rfqs }} / {{ rlim if rlim is not none else '∞' }}</span></div>
+    <div class="progress mb-3" style="height:8px"><div class="progress-bar {{ 'bg-danger' if rlim and info.usage.rfqs >= rlim else '' }}" style="width: {{ ((info.usage.rfqs / rlim * 100) if rlim else 10) | round | int }}%"></div></div>
+    {% endif %}
+    <div class="small text-secondary">Limits are enforced when the platform setting "Enforce subscription limits" is on.</div>
+  </div></div></div>
+</div>
+
+<div class="row g-3">
+  {% for p in plans %}
+  {% set current = p.code == info.tier %}
+  <div class="col-md-4"><div class="card adminuiux-card h-100 {% if current %}border border-2 border-primary{% endif %}"><div class="card-body d-flex flex-column">
+    <div class="d-flex justify-content-between"><h5 class="mb-0">{{ p.name_en }}</h5>{% if current %}<span class="badge bg-primary">Current</span>{% endif %}</div>
+    <div class="h3 my-2">SAR {{ '{:,.0f}'.format(p.annual_price_sar) }}<span class="fs-6 text-secondary"> / year + VAT</span></div>
+    <ul class="small list-unstyled flex-grow-1">
+      <li><i class="bi bi-check2 text-success"></i> Listings: {{ p.max_active_listings if p.max_active_listings is not none else 'Unlimited' }}</li>
+      <li><i class="bi bi-check2 text-success"></i> Open RFQs: {{ p.max_active_rfqs if p.max_active_rfqs is not none else 'Unlimited' }}</li>
+      <li><i class="bi bi-check2 text-success"></i> Search visibility: {{ ['Standard','Elevated','Priority placement'][[p.search_priority, 2]|min] }}</li>
+      <li><i class="bi {{ 'bi-check2 text-success' if p.priority_lab_scheduling else 'bi-dash text-secondary' }}"></i> Priority lab scheduling</li>
+      <li><i class="bi {{ 'bi-check2 text-success' if p.expedited_passport_review else 'bi-dash text-secondary' }}"></i> Expedited passport review</li>
+      <li><i class="bi bi-check2 text-success"></i> Analytics: {{ p.analytics_level }}</li>
+      <li><i class="bi {{ 'bi-check2 text-success' if p.dedicated_support else 'bi-dash text-secondary' }}"></i> Dedicated account support</li>
+    </ul>
+    {% if not current and can_change %}
+    <form method="post" action="{{ url_for('my_subscription_change') }}">{{ csrf_field() }}<input type="hidden" name="tier" value="{{ p.code }}">
+      <button class="btn w-100 {{ 'btn-theme' if tier_order.get(p.code, 0) > tier_order.get(info.tier or 'entry', 0) else 'btn-outline-secondary' }}">
+        {{ 'Upgrade' if tier_order.get(p.code, 0) > tier_order.get(info.tier or 'entry', 0) else 'Downgrade' }} to {{ p.name_en }}</button></form>
+    {% endif %}
+  </div></div></div>
+  {% endfor %}
+</div>
+<p class="small text-secondary mt-3">Changes take effect immediately. Paid plans are invoiced for 12 months; online payment arrives with the payments release. Downgrades are allowed once your usage fits the lower plan.</p>
+{% endblock %}

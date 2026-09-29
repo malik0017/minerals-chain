@@ -122,8 +122,6 @@ def two_factor_setup(
     error: str | None = None,
 ):
     if not user.totp_enabled:
-        # Fresh secret every time this page loads — see
-        # two_factor_service.start_enrollment()'s docstring for why.
         start_enrollment(db, user)
     context = build_portal_context(user, user.role, active_path=None)
     context["error"] = error

@@ -19,7 +19,9 @@
         <tr>
           <td>{{ p.subject_company.company_name }}</td>
           <td>{{ p.scopes[0].product.mineral_type if p.scopes else "—" }}</td>
-          <td><span class="badge bg-secondary-subtle text-secondary">{{ p.category | replace("_", " ") | capitalize }}</span></td>
+          <td><span class="badge bg-secondary-subtle text-secondary">{{ p.category | replace("_", " ") | capitalize }}</span>
+            {% if p.renewal_of_id %}<span class="badge bg-info-subtle text-info">Renewal</span>{% endif %}
+            {% if p.is_expedited %}<span class="badge bg-warning text-dark"><i class="bi bi-lightning-charge"></i> Expedited</span>{% endif %}</td>
           <td class="text-secondary small">{{ p.created_at.strftime("%Y-%m-%d") }}</td>
           <td class="text-end">
             <a href="{{ url_for('admin_passport_review', passport_id=p.id) }}" class="btn btn-sm btn-theme">Review</a>

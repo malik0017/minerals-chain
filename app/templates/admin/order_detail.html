@@ -1,0 +1,69 @@
+{% extends "layouts/base.html" %}
+{% from "partials/dispute_macros.html" import dispute_badge with context %}
+{% from "partials/order_document_macros.html" import order_documents with context %}
+{% block title %}{{ order.order_reference or 'Order' }}{% endblock %}
+{% block content %}
+<a href="{{ url_for('admin_orders_list') }}" class="text-secondary text-decoration-none small">&larr; Orders console</a>
+<h4 class="mt-2 mb-3"><i class="bi bi-box-seam"></i> {{ order.order_reference or order.id }}
+  <span class="badge bg-secondary-subtle text-secondary align-middle">{{ order.status.value.replace('_',' ') }}</span></h4>
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card adminuiux-card mb-3"><div class="card-body">
+      <h6 class="mb-3">Financial snapshot (frozen at acceptance)</h6>
+      <table class="table table-sm small mb-0">
+        <tr><td>Buyer</td><td>{{ order.buyer_company.company_name }} · CR {{ order.buyer_company.cr_number }} · VAT {{ order.buyer_company.vat_registration_number or '—' }}</td></tr>
+        <tr><td>Seller</td><td>{{ order.seller_company.company_name }} · CR {{ order.seller_company.cr_number }} · VAT {{ order.seller_company.vat_registration_number or '—' }}</td></tr>
+        <tr><td>Mineral / RFQ</td><td>{{ order.rfq.mineral_type }} · {{ order.rfq.rfq_reference }} · quote {{ order.quotation.quotation_reference }}</td></tr>
+        <tr><td>Quantity</td><td>{{ order.quantity or order.rfq.quantity_value }} {{ order.quantity_unit or order.rfq.quantity_unit }}</td></tr>
+        <tr><td>Unit price</td><td>{{ order.currency }} {{ order.price_per_unit or order.quotation.price_value }}</td></tr>
+        <tr><td>Subtotal</td><td>SAR {{ '{:,.2f}'.format(order.subtotal_sar) if order.subtotal_sar is not none else '—' }}</td></tr>
+        <tr><td>VAT {{ order.vat_rate_pct or '' }}%</td><td>SAR {{ '{:,.2f}'.format(order.vat_amount_sar) if order.vat_amount_sar is not none else '—' }}</td></tr>
+        <tr class="fw-semibold"><td>Total</td><td>SAR {{ '{:,.2f}'.format(order.total_value_sar) if order.total_value_sar is not none else '—' }}</td></tr>
+        <tr><td>Delivery</td><td>{{ order.delivery_location or order.rfq.delivery_location }}{% if order.incoterm_code %} · {{ order.incoterm_code }}{% endif %}</td></tr>
+        <tr><td>Timeline</td><td>created {{ order.created_at.strftime('%Y-%m-%d %H:%M') }}{% for lbl, ts in [('confirmed', order.confirmed_at), ('shipped', order.shipped_at), ('delivered', order.delivered_at), ('completed', order.completed_at), ('cancelled', order.cancelled_at)] %}{% if ts %} · {{ lbl }} {{ ts.strftime('%Y-%m-%d %H:%M') }}{% endif %}{% endfor %}</td></tr>
+        {% if order.cancellation_reason %}<tr><td>Cancellation</td><td>{{ order.cancellation_reason }}</td></tr>{% endif %}
+      </table>
+    </div></div>
+    <div class="card adminuiux-card mb-3"><div class="card-body">
+      <h6 class="mb-3">Settlement fees</h6>
+      {% if not order.settlement_fees %}<p class="small text-secondary mb-0">Created when the seller confirms the order.</p>{% endif %}
+      {% for f in order.settlement_fees %}
+      <form method="post" action="{{ url_for('admin_fee_set_status', fee_id=f.id) }}" class="d-flex flex-wrap gap-2 align-items-center border-bottom py-2">
+        {{ csrf_field() }}<input type="hidden" name="back" value="order">
+        <span class="text-capitalize fw-semibold" style="min-width:60px">{{ f.party }}</span>
+        <span class="small">SAR {{ f.amount_sar }} + VAT {{ f.vat_amount_sar }} = <b>{{ f.total_sar }}</b></span>
+        <select name="status" class="form-select form-select-sm w-auto">{% for s in fee_statuses %}<option value="{{ s.value }}" {% if f.status == s %}selected{% endif %}>{{ s.value }}</option>{% endfor %}</select>
+        <input name="reference" class="form-control form-control-sm w-auto" placeholder="Payment ref" value="{{ f.gateway_payment_id or '' }}">
+        <button class="btn btn-sm btn-outline-theme">Update</button>
+      </form>
+      {% endfor %}
+    </div></div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card adminuiux-card mb-3"><div class="card-body">
+      <h6 class="mb-2"><i class="bi bi-arrow-left-right"></i> Admin status override</h6>
+      <form method="post" action="{{ url_for('admin_order_set_status', order_id=order.id) }}">
+        {{ csrf_field() }}
+        <select name="status" class="form-select form-select-sm mb-2">{% for s in statuses %}<option value="{{ s.value }}" {% if order.status == s %}selected{% endif %}>{{ s.value.replace('_',' ') }}</option>{% endfor %}</select>
+        <input name="reason" class="form-control form-control-sm mb-2" placeholder="Reason (required, goes to audit log)" required>
+        <button class="btn btn-sm btn-theme w-100">Apply</button>
+        <div class="form-text">Moving past pending confirmation reveals identities and is recorded in the reveal log as “admin”.</div>
+      </form>
+    </div></div>
+    <div class="card adminuiux-card"><div class="card-body">
+      <h6 class="mb-2"><i class="bi bi-eye"></i> Identity reveal log</h6>
+      {% for r in reveals %}<div class="small">{{ r.revealed_at.strftime('%Y-%m-%d %H:%M') }} — {{ r.triggered_by.replace('_',' ') }}</div>
+      {% else %}<div class="small text-secondary">Not revealed yet — parties are still anonymous to each other.</div>{% endfor %}
+    </div></div>
+  </div>
+</div>
+{% if disputes %}
+<div class="card adminuiux-card mt-3"><div class="card-body">
+  <h6><i class="bi bi-exclamation-octagon"></i> Disputes</h6>
+  {% for d in disputes %}<div class="d-flex justify-content-between border-bottom py-2"><a href="{{ url_for('admin_dispute_detail', dispute_id=d.id) }}">{{ d.reference }}</a><span>{{ dispute_badge(d.status) }}{% if d.ruling %} · for {{ d.ruling.value }}{% endif %}</span></div>{% endfor %}
+</div></div>
+{% endif %}
+{{ order_documents(order, 'admin', documents, credentials, doc_types, 'admin_order_document') }}
+{% endblock %}

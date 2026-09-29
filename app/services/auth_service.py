@@ -9,7 +9,9 @@ from app.models.company import ApprovalStatus, Company, CompanyRole, Subscriptio
 from app.models.user import User, UserRole
 from app.repositories import company_repository, user_repository
 from app.core.security import hash_password, verify_password
+from app.core.system_settings import get_setting
 from app.schemas.auth import RegisterRequest
+from app.services import notification_service
 from app.services.document_upload_service import save_company_document
 
 _ROLE_MAP = {
@@ -38,6 +40,7 @@ def register_new_company_user(
     cr_document_ext: str,
     license_document_contents: bytes,
     license_document_ext: str,
+    consent_version: str | None = None,
 ) -> User:
     # --- BRD §6.1: uniqueness / duplicate checks before anything is created ---
     if user_repository.get_by_email(db, payload.email):
@@ -46,13 +49,6 @@ def register_new_company_user(
         raise RegistrationError("A company with this Commercial Registration number is already registered.")
 
     company_role, user_role = _ROLE_MAP[payload.role]
-
-    # Batch B: the company's id is generated here, in Python, BEFORE the row
-    # is ever inserted — specifically so the two document files can be saved
-    # (their filenames embed the company id) before the Company object is
-    # constructed, rather than needing a save-then-update-filename dance
-    # after the fact. See document_upload_service.save_company_document()'s
-    # docstring.
     company_id = uuid.uuid4()
     cr_document_filename = save_company_document(company_id, "cr", cr_document_contents, cr_document_ext)
     license_document_filename = save_company_document(company_id, "license", license_document_contents, license_document_ext)
@@ -65,7 +61,7 @@ def register_new_company_user(
         license_or_accreditation_number=payload.license_or_accreditation_number,
         cr_document_filename=cr_document_filename,
         license_document_filename=license_document_filename,
-        status=ApprovalStatus.PENDING,  # BRD §6.1: every new registration starts pending
+        status=ApprovalStatus.PENDING, 
         subscription_tier=SubscriptionTier.ENTRY if company_role != CompanyRole.LAB else None,
         contact_email=payload.email,
         contact_phone=payload.contact_phone,
@@ -79,8 +75,17 @@ def register_new_company_user(
         hashed_password=hash_password(payload.password),
         role=user_role,
         is_active=True,
+        # Batch Q1 (PDPL): the registration form requires accepting the privacy notice.
+        privacy_consent_at=datetime.now(timezone.utc) if consent_version else None,
+        privacy_consent_version=consent_version,
     )
     user_repository.create(db, user)
+
+    notification_service.notify_admins(
+        db, "approvals", "registration_submitted", "New registration awaiting review",
+        f"{company.company_name} ({company_role.value}) registered and is waiting for approval.",
+        action_url=f"/admin/approvals/{company.id}", company=company.company_name, role=company_role.value,
+    )
 
     db.commit()
     db.refresh(user)
@@ -106,15 +111,16 @@ def authenticate_user(db: Session, email: str, password: str) -> User:
 
     if not verify_password(password, user.hashed_password):
         user.failed_login_attempts += 1
-        if user.failed_login_attempts >= LOCKOUT_THRESHOLD:
-            user.locked_until = now + LOCKOUT_DURATION
+        threshold = get_setting(db, "max_failed_logins")
+        lockout_minutes = get_setting(db, "lockout_minutes")
+        if user.failed_login_attempts >= threshold:
+            user.locked_until = now + timedelta(minutes=lockout_minutes)
             user.failed_login_attempts = 0
             db.commit()
-            raise AuthenticationError("Too many failed attempts. This account is now locked for 30 minutes.")
+            raise AuthenticationError(f"Too many failed attempts. This account is now locked for {lockout_minutes} minutes.")
         db.commit()
         raise AuthenticationError("Incorrect email or password.")
 
-    # Correct password — reset the counter regardless of what happens next.
     user.failed_login_attempts = 0
     user.locked_until = None
     db.commit()

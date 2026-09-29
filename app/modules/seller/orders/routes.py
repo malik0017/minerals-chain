@@ -1,10 +1,8 @@
 """
 app/modules/seller/orders/routes.py
-
-BRD §6.6. Gated by require_seller_company. confirm_order() here is
-THE route that triggers identity reveal — see order_service.py.
 """
 import uuid
+from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
@@ -16,6 +14,8 @@ from app.core.portal_nav import build_portal_context
 from app.database.base import get_db
 from app.models.user import User, UserRole
 from app.repositories import order_repository
+from app.services import dispute_service
+from app.services import order_document_service as ods
 from app.services.order_service import OrderActionError, confirm_order, get_owned_order, mark_delivered, mark_shipped
 
 router = APIRouter(prefix="/seller/orders", tags=["seller-orders"])
@@ -54,7 +54,14 @@ def order_detail(
         "revealed": revealed,
         "buyer_company": order.buyer_company if revealed else None,
         "error": error,
+        "disputes": dispute_service.for_order(db, order),
+        "documents": ods.visible_documents(order, "seller"),
+        "credentials": ods.linked_credentials(db, order),
+        "doc_types": {**ods.DOC_TYPES, **ods.GENERATED_TYPES},
+        "upload_types": ods.DOC_TYPES,
+        "msg": request.query_params.get("msg"),
     })
+    context["can_raise"], context["why"] = dispute_service.can_raise(db, order)
     return templates.TemplateResponse(request, "seller/order_detail.html", context)
 
 
@@ -67,11 +74,11 @@ def order_confirm(
 ):
     try:
         order = get_owned_order(db, order_id, user.company_id, "seller")
-        confirm_order(db, order)
+        confirm_order(db, order, confirmed_by=user)
     except OrderActionError as exc:
         db.rollback()
         return RedirectResponse(
-            url=f"{request.url_for('seller_order_detail', order_id=order_id)}?error={exc}",
+            url=f"{request.url_for('seller_order_detail', order_id=order_id)}?error={quote(str(exc))}",
             status_code=303,
         )
     return RedirectResponse(url=request.url_for("seller_order_detail", order_id=order_id), status_code=303)
@@ -90,7 +97,7 @@ def order_ship(
     except OrderActionError as exc:
         db.rollback()
         return RedirectResponse(
-            url=f"{request.url_for('seller_order_detail', order_id=order_id)}?error={exc}",
+            url=f"{request.url_for('seller_order_detail', order_id=order_id)}?error={quote(str(exc))}",
             status_code=303,
         )
     return RedirectResponse(url=request.url_for("seller_order_detail", order_id=order_id), status_code=303)
@@ -109,7 +116,7 @@ def order_mark_delivered(
     except OrderActionError as exc:
         db.rollback()
         return RedirectResponse(
-            url=f"{request.url_for('seller_order_detail', order_id=order_id)}?error={exc}",
+            url=f"{request.url_for('seller_order_detail', order_id=order_id)}?error={quote(str(exc))}",
             status_code=303,
         )
     return RedirectResponse(url=request.url_for("seller_order_detail", order_id=order_id), status_code=303)

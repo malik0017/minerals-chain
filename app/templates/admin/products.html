@@ -1,0 +1,42 @@
+{% extends "layouts/base.html" %}
+{% block title %}Listings{% endblock %}
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-box-seam"></i> Listings</h4>
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+<div class="row g-2 mb-3">
+{% for s in statuses %}{% set c = {'draft':'secondary','under_verification':'warning','verified':'success','failed_verification':'danger','suspended':'dark'}[s.value] %}
+  <div class="col-6 col-md"><a class="text-decoration-none" href="?status={{ s.value }}"><div class="card adminuiux-card"><div class="card-body py-2">
+    <div class="small text-secondary">{{ s.value.replace('_',' ') | capitalize }}</div><div class="fs-4 fw-semibold text-{{ c }}">{{ counts[s.value] }}</div></div></div></a></div>
+{% endfor %}
+</div>
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-6"><input name="q" value="{{ q }}" class="form-control" placeholder="Mineral, grade or seller"></div>
+  <div class="col-md-4"><select name="status" class="form-select"><option value="">All statuses</option>{% for s in statuses %}<option value="{{ s.value }}" {% if status==s.value %}selected{% endif %}>{{ s.value.replace('_',' ') | capitalize }}</option>{% endfor %}</select></div>
+  <div class="col-md-2"><button class="btn btn-theme w-100"><i class="bi bi-funnel"></i> Filter</button></div>
+</form>
+{% if not rows %}<div class="alert alert-secondary">No listings match.</div>{% else %}
+<div class="card adminuiux-card"><div class="table-responsive"><table class="table align-middle mb-0">
+<thead><tr><th>Listing</th><th>Seller</th><th>Quantity</th><th>Price</th><th>Status</th><th>Updated</th><th class="text-end">Action</th></tr></thead>
+<tbody>{% for p in rows %}<tr>
+  <td>{{ p.mineral_type }}{% if p.grade %} · {{ p.grade }}{% endif %}{% if not p.is_visible_to_buyers %} <span class="badge bg-secondary-subtle text-secondary">hidden</span>{% endif %}</td>
+  <td class="small">{{ p.seller_company.company_name }}<div class="text-secondary">{{ p.seller_company.subscription_tier.value if p.seller_company.subscription_tier else '' }}</div></td>
+  <td class="small">{{ p.quantity_value }} {{ p.quantity_unit }}</td>
+  <td class="small">{% if p.price_value is not none %}{{ p.price_currency }} {{ p.price_value }}{% else %}—{% endif %}</td>
+  <td>{% set c = {'draft':'secondary','under_verification':'warning','verified':'success','failed_verification':'danger','suspended':'dark'}[p.status.value] %}
+    <span class="badge bg-{{ c }}-subtle text-{{ c }}">{{ p.status.value.replace('_',' ') }}</span>
+    {% if p.suspended_reason %}<div class="small text-secondary" style="max-width:220px">{{ p.suspended_reason }}</div>{% endif %}</td>
+  <td class="small">{{ p.updated_at.strftime('%Y-%m-%d') }}</td>
+  <td class="text-end">
+    {% if p.status.value == 'suspended' %}
+      <form method="post" action="{{ url_for('admin_product_reactivate', product_id=p.id) }}">{{ csrf_field() }}<input type="hidden" name="back" value="{{ request.url.path }}?{{ request.url.query }}">
+        <button class="btn btn-sm btn-outline-success"><i class="bi bi-play-circle"></i> Reactivate</button></form>
+    {% else %}
+      <form method="post" action="{{ url_for('admin_product_suspend', product_id=p.id) }}" class="d-flex gap-1 justify-content-end">{{ csrf_field() }}<input type="hidden" name="back" value="{{ request.url.path }}?{{ request.url.query }}">
+        <input name="reason" class="form-control form-control-sm" style="max-width:160px" placeholder="Reason" required>
+        <button class="btn btn-sm btn-outline-danger"><i class="bi bi-pause-circle"></i></button></form>
+    {% endif %}
+  </td>
+</tr>{% endfor %}</tbody></table></div></div>
+{% include "partials/pager.html" %}{% endif %}
+{% endblock %}

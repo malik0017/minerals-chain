@@ -1,4 +1,6 @@
 {% extends "layouts/base.html" %}
+{% from "partials/dispute_macros.html" import order_disputes with context %}
+{% from "partials/order_document_macros.html" import order_documents with context %}
 {% block title %}Order — {{ order.rfq.mineral_type }}{% endblock %}
 {% block content %}
 
@@ -10,9 +12,12 @@
   {% elif order.status.value == "confirmed" %}<span class="badge bg-info-subtle text-info">Confirmed</span>
   {% elif order.status.value == "in_transit" %}<span class="badge bg-primary-subtle text-primary">In transit</span>
   {% elif order.status.value == "delivered" %}<span class="badge bg-primary-subtle text-primary">Delivered</span>
-  {% else %}<span class="badge bg-success-subtle text-success">Completed</span>{% endif %}
+  {% elif order.status.value == "completed" %}<span class="badge bg-success-subtle text-success">Completed</span>
+  {% elif order.status.value in ("cancelled", "disputed") %}<span class="badge bg-danger-subtle text-danger">{{ order.status.value | capitalize }}</span>
+  {% else %}<span class="badge bg-secondary-subtle text-secondary">{{ order.status.value | capitalize }}</span>{% endif %}
 </div>
 
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
 {% if error %}
 <div class="alert alert-danger py-2">{{ error }}</div>
 {% endif %}
@@ -28,6 +33,8 @@
   <div>Seller confirmed — you're now trading with <strong>{{ seller_company.company_name }}</strong> ({{ seller_company.contact_email }}{% if seller_company.contact_phone %} · {{ seller_company.contact_phone }}{% endif %}).</div>
 </div>
 {% endif %}
+
+{% include "partials/order_progress.html" %}
 
 <div class="card adminuiux-card mb-3">
   <div class="card-body">
@@ -53,11 +60,11 @@
   </div>
 </div>
 
-{% if order.status.value == "delivered" %}
+{% if order.status.value in ("delivered", "invoiced") %}
 <div class="card adminuiux-card">
   <div class="card-body">
     <h6 class="mb-2"><i class="bi bi-check-circle"></i> Confirm receipt</h6>
-    <p class="text-secondary small mb-3">Confirming marks this order complete.</p>
+    <p class="text-secondary small mb-3">Confirming marks this order complete.{% if order.invoice_number %} Invoice {{ order.invoice_number }} is in the documents below.{% endif %} If something is wrong, raise a dispute instead.</p>
     <form method="post" action="{{ url_for('buyer_order_confirm_receipt', order_id=order.id) }}">
   {{ csrf_field() }}
       <button type="submit" class="btn btn-theme">Confirm receipt</button>
@@ -65,5 +72,8 @@
   </div>
 </div>
 {% endif %}
+
+{{ order_documents(order, 'buyer', documents, credentials, doc_types, 'buyer_order_document') }}
+{{ order_disputes(disputes, 'buyer', can_raise, why, order) }}
 
 {% endblock %}

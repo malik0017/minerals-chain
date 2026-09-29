@@ -1,0 +1,29 @@
+{% extends "layouts/base.html" %}
+{% block title %}Create user{% endblock %}
+{% block content %}
+<a href="{{ url_for('admin_users_list') }}" class="text-secondary text-decoration-none small">&larr; {{ t('nav.users') }}</a>
+<h4 class="mt-2 mb-3"><i class="bi bi-person-plus"></i> Create user</h4>
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+<div class="card adminuiux-card"><div class="card-body">
+<form method="post" action="{{ url_for('admin_user_create') }}">
+  {{ csrf_field() }}
+  <div class="row g-3">
+    <div class="col-md-6"><label class="form-label">Full name</label><input class="form-control" name="full_name" required></div>
+    <div class="col-md-6"><label class="form-label">Email</label><input class="form-control" type="email" name="email" required></div>
+    <div class="col-md-6"><label class="form-label">Initial password (min 8)</label><input class="form-control" type="password" name="password" minlength="8" required autocomplete="new-password"></div>
+    <div class="col-md-6"><label class="form-label">Job title</label><input class="form-control" name="job_title"></div>
+    <div class="col-md-4"><label class="form-label">Account type</label>
+      <select class="form-select" name="role"><option value="company">Company user</option><option value="admin">Platform administrator</option></select></div>
+    <div class="col-md-5"><label class="form-label">Company (for company users)</label>
+      <select class="form-select" name="company_id"><option value="">—</option>
+        {% for c in companies %}<option value="{{ c.id }}">{{ c.company_name }} ({{ c.role.value }}, {{ c.status.value }})</option>{% endfor %}</select>
+      <div class="form-text">The user's portal role always matches the company's role.</div></div>
+    <div class="col-md-4"><label class="form-label">Admin permission level (admins only)</label>
+      <select class="form-select" name="admin_role">{% for k, v in admin_roles.items() %}<option value="{{ k }}" {% if k == 'support' %}selected{% endif %}>{{ v.label }}</option>{% endfor %}</select></div>
+    <div class="col-md-3"><label class="form-label">Role inside company</label>
+      <select class="form-select" name="company_role">{% for r in ['owner','manager','operator','viewer'] %}<option value="{{ r }}" {% if r == 'operator' %}selected{% endif %}>{{ r }}</option>{% endfor %}</select></div>
+  </div>
+  <button class="btn btn-theme mt-3"><i class="bi bi-save"></i> Create user</button>
+</form>
+</div></div>
+{% endblock %}

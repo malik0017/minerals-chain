@@ -5,11 +5,16 @@
 <h4 class="mb-1">Browse Minerals</h4>
 <p class="text-secondary mb-4">Every lab-verified listing on the platform, right now.</p>
 
-<form method="get" action="{{ url_for('buyer_browse_index') }}" class="d-flex gap-2 mb-4">
-  <input class="form-control" name="q" value="{{ q }}" placeholder="Search by mineral type (e.g. Silica, Barite...)" />
-  <button type="submit" class="btn btn-theme text-nowrap"><i class="bi bi-search"></i> Search</button>
-  {% if q %}<a href="{{ url_for('buyer_browse_index') }}" class="btn btn-outline-theme text-nowrap">Clear</a>{% endif %}
+<form method="get" action="{{ url_for('buyer_browse_index') }}" class="row g-2 mb-4">
+  <div class="col-md-4"><input class="form-control" name="q" value="{{ q }}" placeholder="Search mineral, grade or name" /></div>
+  <div class="col-md-3"><select name="product" class="form-select"><option value="">All catalog products</option>
+    {% for pm in catalog %}<option value="{{ pm.id }}" {% if product == pm.id|string %}selected{% endif %}>{{ pm.name_en }}</option>{% endfor %}</select></div>
+  <div class="col-md-3"><select name="region" class="form-select"><option value="">All regions</option>
+    {% for r in regions %}<option value="{{ r.id }}" {% if region == r.id|string %}selected{% endif %}>{{ r.name_en }}</option>{% endfor %}</select></div>
+  <div class="col-md-2 d-flex gap-2"><button type="submit" class="btn btn-theme w-100"><i class="bi bi-search"></i></button>
+  {% if q or region or product %}<a href="{{ url_for('buyer_browse_index') }}" class="btn btn-outline-theme"><i class="bi bi-x-lg"></i></a>{% endif %}</div>
 </form>
+<div class="small text-secondary mb-2">{{ total }} verified listing(s)</div>
 
 {% if not products %}
 <div class="card adminuiux-card">
@@ -40,6 +45,7 @@
           <td>
             {{ p.mineral_type }}
             <span class="badge bg-success-subtle text-success ms-1"><i class="bi bi-patch-check-fill"></i> Verified</span>
+            {% if badges[p.id].passport %}<span class="badge bg-primary-subtle text-primary"><i class="bi bi-shield-check"></i> Passport · {{ badges[p.id].passport.replace('_',' ') }}</span>{% endif %}
           </td>
           <td>{{ p.grade or "—" }}</td>
           <td>{{ p.quantity_value }} {{ p.quantity_unit }}</td>
@@ -60,6 +66,7 @@
     </table>
   </div>
 </div>
+{% include "partials/pager.html" %}
 {% endif %}
 
 {% endblock %}

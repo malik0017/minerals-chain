@@ -11,36 +11,51 @@ _NAV_ITEMS = {
         {"icon": "bi-inbox", "key": "nav.rfq_inbox", "url": "/seller/rfq-inbox"},
         {"icon": "bi-tags", "key": "nav.my_quotations", "url": "/seller/quotations"},
         {"icon": "bi-box-seam", "key": "nav.orders", "url": "/seller/orders"},
+        {"icon": "bi-flag", "key": "nav.disputes", "url": "/seller/disputes"},
+        {"icon": "bi-stars", "key": "nav.subscription", "url": "/account/subscription"},
     ],
     UserRole.BUYER: [
         {"icon": "bi-columns-gap", "key": "nav.dashboard", "url": "/buyer/dashboard"},
         {"icon": "bi-search", "key": "nav.browse_minerals", "url": "/buyer/browse"},
         {"icon": "bi-file-earmark-text", "key": "nav.my_rfqs", "url": "/buyer/rfqs"},
         {"icon": "bi-box-seam", "key": "nav.orders", "url": "/buyer/orders"},
+        {"icon": "bi-flag", "key": "nav.disputes", "url": "/buyer/disputes"},
+        {"icon": "bi-stars", "key": "nav.subscription", "url": "/account/subscription"},
     ],
     UserRole.LAB: [
         {"icon": "bi-columns-gap", "key": "nav.dashboard", "url": "/lab/dashboard"},
         {"icon": "bi-eyedropper", "key": "nav.verification_requests", "url": "/lab/verification-requests"},
+        {"icon": "bi-patch-check", "key": "nav.certificates", "url": "/lab/certificates"},
     ],
     UserRole.ADMIN: [
-        {"icon": "bi-inbox", "key": "nav.pending_approvals", "url": "/admin/approvals"},
-        {"icon": "bi-building", "key": "nav.all_companies", "url": "/admin/companies"},
-        {"icon": "bi-people", "key": "nav.users", "url": "/admin/users"},
-        {"icon": "bi-shield-check", "key": "nav.mineral_passports", "url": "/admin/passports"},
-        {"icon": "bi-journal-text", "key": "nav.audit_log", "url": "/admin/audit-log"},
-        {"icon": "bi-gear", "key": "nav.settings", "url": "/admin/settings"},
+        {"heading": "nav.h_overview"},
+        {"icon": "bi-speedometer", "key": "nav.control_center", "url": "/admin/control-center", "area": "dashboard"},
+        {"icon": "bi-graph-up-arrow", "key": "nav.reports", "url": "/admin/reports", "area": "reports"},
+        {"heading": "nav.h_onboarding"},
+        {"icon": "bi-inbox", "key": "nav.pending_approvals", "url": "/admin/approvals", "area": "approvals"},
+        {"icon": "bi-building", "key": "nav.all_companies", "url": "/admin/companies", "area": "companies"},
+        {"icon": "bi-people", "key": "nav.users", "url": "/admin/users", "area": "users_view"},
+        {"icon": "bi-eyedropper", "key": "nav.lab_partners", "url": "/admin/labs", "area": "labs"},
+        {"heading": "nav.h_marketplace"},
+        {"icon": "bi-diagram-3", "key": "nav.products", "url": "/admin/products", "area": "products"},
+        {"icon": "bi-file-earmark-text", "key": "nav.rfqs", "url": "/admin/rfqs", "area": "rfqs"},
+        {"icon": "bi-box-seam", "key": "nav.orders", "url": "/admin/orders", "area": "orders"},
+        {"icon": "bi-flag", "key": "nav.disputes", "url": "/admin/disputes", "area": "disputes"},
+        {"icon": "bi-shield-check", "key": "nav.mineral_passports", "url": "/admin/passports", "area": "passports"},
+        {"heading": "nav.h_finance"},
+        {"icon": "bi-cash-coin", "key": "nav.finance", "url": "/admin/finance", "area": "finance"},
+        {"icon": "bi-stars", "key": "nav.subscriptions", "url": "/admin/subscriptions", "area": "subscriptions"},
+        {"heading": "nav.h_compliance"},
+        {"icon": "bi-journal-text", "key": "nav.audit_log", "url": "/admin/audit-log", "area": "audit"},
+        {"icon": "bi-person-lock", "key": "nav.data_requests", "url": "/admin/data-requests", "area": "data_requests"},
+        {"heading": "nav.h_configuration"},
+        {"icon": "bi-database-gear", "key": "nav.master_data", "url": "/admin/master-data", "area": "master_data"},
+        {"icon": "bi-sliders", "key": "nav.system_settings", "url": "/admin/system-settings", "area": "system"},
+        {"icon": "bi-gear", "key": "nav.settings", "url": "/admin/settings", "area": "settings"},
     ],
 }
 
-_UPCOMING_ITEMS = {
-    UserRole.SELLER: [],
-    UserRole.BUYER: [],
-    UserRole.LAB: [],
-    UserRole.ADMIN: [
-        {"icon": "bi-flag", "key": "nav.disputes"},
-        {"icon": "bi-graph-up", "key": "nav.reports"},
-    ],
-}
+_UPCOMING_ITEMS = {UserRole.SELLER: [], UserRole.BUYER: [], UserRole.LAB: [], UserRole.ADMIN: []}
 
 _PORTAL_LABEL_KEY = {
     UserRole.SELLER: "portal.seller",
@@ -49,8 +64,6 @@ _PORTAL_LABEL_KEY = {
     UserRole.ADMIN: "portal.admin",
 }
 
-# Real, working links admin sees on every portal page — lets an admin
-# jump straight to any portal's dashboard without logging out/in again.
 _ADMIN_PREVIEW_LINKS = [
     {"icon": "bi-inbox", "key": "nav.pending_approvals", "url": "/admin/approvals"},
     {"icon": "bi-columns-gap", "key": "nav.seller_dashboard", "url": "/seller/dashboard"},
@@ -69,10 +82,19 @@ def build_portal_context(user: User, portal_role: UserRole, active_path: str | N
     else:
         portal_label = t(_PORTAL_LABEL_KEY[portal_role], lang)
 
-    nav_items = [
-        {**item, "label": t(item["key"], lang), "active": item["url"] == active_path}
-        for item in _NAV_ITEMS[portal_role]
-    ]
+    from app.core.permissions import admin_can
+    nav_items, pending_heading = [], None
+    for item in _NAV_ITEMS[portal_role]:
+        if "heading" in item:
+            pending_heading = {"heading": True, "label": t(item["heading"], lang)}
+            continue
+        if item.get("area") and not admin_can(user, item["area"]):
+            continue
+        if pending_heading:
+            nav_items.append(pending_heading)
+            pending_heading = None
+        active = item["url"] == active_path or (active_path or "").startswith(item["url"] + "/")
+        nav_items.append({**item, "label": t(item["key"], lang), "active": active})
     upcoming_items = [
         {**item, "label": t(item["key"], lang)} for item in _UPCOMING_ITEMS[portal_role]
     ]

@@ -1,0 +1,75 @@
+{% extends "layouts/base.html" %}
+{% from "partials/dispute_macros.html" import dispute_badge, thread, ruling_card with context %}
+{% block title %}Dispute {{ d.reference }}{% endblock %}
+{% block content %}
+<a href="{{ url_for('admin_disputes') }}" class="text-secondary text-decoration-none small">&larr; All disputes</a>
+<div class="d-flex justify-content-between align-items-center mt-2 mb-3">
+  <h4 class="mb-0">{{ d.reference }} {{ dispute_badge(d.status) }}</h4>
+  <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin_order_detail', order_id=d.order.id) }}"><i class="bi bi-box-seam"></i> Order {{ d.order.order_reference }}</a>
+</div>
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+<div class="row g-3">
+  <div class="col-lg-8">
+    {{ ruling_card(d) }}
+    <div class="card adminuiux-card mb-3"><div class="card-body">
+      <h6 class="mb-3"><i class="bi bi-chat-left-text"></i> Thread (both parties see non-internal messages)</h6>
+      {{ thread(messages, 'admin_dispute_file', d) }}
+      {% if d.is_active %}
+      <form method="post" enctype="multipart/form-data" action="{{ url_for('admin_dispute_message', dispute_id=d.id) }}" class="mt-3">
+        {{ csrf_field() }}
+        <textarea name="body" class="form-control mb-2" rows="3" required placeholder="Message to both parties, or an internal note…"></textarea>
+        <div class="d-flex gap-2 align-items-center">
+          <input type="file" name="evidence" class="form-control" accept=".pdf,.png,.jpg,.jpeg">
+          <div class="form-check text-nowrap"><input class="form-check-input" type="checkbox" name="internal" value="1" id="internal"><label class="form-check-label" for="internal">Internal note</label></div>
+          <button class="btn btn-theme text-nowrap" type="submit"><i class="bi bi-send"></i> Post</button></div>
+      </form>{% endif %}
+    </div></div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card adminuiux-card mb-3"><div class="card-body small">
+      <dl class="mb-0">
+        <dt>Buyer</dt><dd>{{ d.order.buyer_company.company_name }}</dd>
+        <dt>Seller</dt><dd>{{ d.order.seller_company.company_name }}</dd>
+        <dt>Raised by</dt><dd>{{ d.raised_by_party | capitalize }} · {{ d.raised_by_user.full_name if d.raised_by_user else '' }} · {{ d.created_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+        <dt>Category</dt><dd>{{ categories[d.category] }}</dd>
+        <dt>Requested outcome</dt><dd>{{ d.desired_outcome or '—' }}</dd>
+        <dt>Order value</dt><dd>SAR {{ '{:,.2f}'.format(d.order.total_value_sar or 0) }}</dd>
+        <dt>Order status before</dt><dd>{{ d.order_status_before.replace('_',' ') }}</dd>
+      </dl>
+      {% if history %}<hr><div class="fw-semibold">Earlier disputes on this order</div>
+      {% for h in history %}<div><a href="{{ url_for('admin_dispute_detail', dispute_id=h.id) }}">{{ h.reference }}</a> {{ dispute_badge(h.status) }}</div>{% endfor %}{% endif %}
+    </div></div>
+
+    {% if d.is_active %}
+    <div class="card adminuiux-card mb-3"><div class="card-body">
+      <h6><i class="bi bi-sliders"></i> Status & handler</h6>
+      <form method="post" action="{{ url_for('admin_dispute_status', dispute_id=d.id) }}">{{ csrf_field() }}
+        <select name="status" class="form-select mb-2">{% for s in ['open','under_review','awaiting_info'] %}<option value="{{ s }}" {% if d.status.value==s %}selected{% endif %}>{{ s.replace('_',' ') | capitalize }}</option>{% endfor %}</select>
+        <select name="assigned_admin_id" class="form-select mb-2"><option value="">— assign to me —</option>
+          {% for a in admins %}<option value="{{ a.id }}" {% if d.assigned_admin_id == a.id %}selected{% endif %}>{{ a.full_name }}</option>{% endfor %}</select>
+        <button class="btn btn-outline-theme w-100">Save</button></form>
+    </div></div>
+    <div class="card adminuiux-card mb-3 border-success"><div class="card-body">
+      <h6><i class="bi bi-hammer"></i> Record decision</h6>
+      <form method="post" action="{{ url_for('admin_dispute_decide', dispute_id=d.id) }}" onsubmit="return confirm('A decision is permanent. Continue?');">{{ csrf_field() }}
+        <div class="btn-group w-100 mb-2" role="group">
+          <input type="radio" class="btn-check" name="ruling" value="buyer" id="rb"><label class="btn btn-outline-primary" for="rb">For buyer</label>
+          <input type="radio" class="btn-check" name="ruling" value="seller" id="rs"><label class="btn btn-outline-warning" for="rs">For seller</label></div>
+        <textarea name="decision_text" class="form-control mb-2" rows="4" minlength="20" required placeholder="Decision and reasons"></textarea>
+        <button class="btn btn-success w-100">Record decision</button></form>
+    </div></div>
+    {% elif d.is_decided %}
+    <div class="card adminuiux-card mb-3 border-warning"><div class="card-body">
+      <h6><i class="bi bi-journal-check"></i> Formal correction</h6>
+      <p class="small text-secondary">Decisions can't be edited. A correction is logged permanently with your name and reason.</p>
+      <form method="post" action="{{ url_for('admin_dispute_correct', dispute_id=d.id) }}">{{ csrf_field() }}
+        <select name="ruling" class="form-select mb-2"><option value="buyer" {% if d.ruling.value=='buyer' %}selected{% endif %}>In favour of buyer</option><option value="seller" {% if d.ruling.value=='seller' %}selected{% endif %}>In favour of seller</option></select>
+        <textarea name="decision_text" class="form-control mb-2" rows="3" placeholder="Corrected decision text (leave empty to keep)"></textarea>
+        <textarea name="reason" class="form-control mb-2" rows="2" required placeholder="Reason for correction"></textarea>
+        <button class="btn btn-warning w-100">Log correction</button></form>
+    </div></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

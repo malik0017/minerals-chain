@@ -1,8 +1,6 @@
 """app/repositories/subscription_repository.py"""
 import uuid
-
 from sqlalchemy.orm import Session
-
 from app.models.subscription import Subscription, SubscriptionStatus
 
 

@@ -1,0 +1,30 @@
+{% extends "layouts/base.html" %}
+{% block title %}RFQs{% endblock %}
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-file-earmark-text"></i> RFQs</h4>
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+<div class="row g-2 mb-3">
+{% for s in statuses %}{% set c = {'open':'success','closed':'secondary','cancelled':'danger'}[s.value] %}
+  <div class="col-4"><a class="text-decoration-none" href="?status={{ s.value }}"><div class="card adminuiux-card"><div class="card-body py-2">
+    <div class="small text-secondary">{{ s.value | capitalize }}</div><div class="fs-4 fw-semibold text-{{ c }}">{{ counts[s.value] }}</div></div></div></a></div>
+{% endfor %}
+</div>
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-6"><input name="q" value="{{ q }}" class="form-control" placeholder="Reference, mineral or buyer"></div>
+  <div class="col-md-4"><select name="status" class="form-select"><option value="">All statuses</option>{% for s in statuses %}<option value="{{ s.value }}" {% if status==s.value %}selected{% endif %}>{{ s.value | capitalize }}</option>{% endfor %}</select></div>
+  <div class="col-md-2"><button class="btn btn-theme w-100"><i class="bi bi-funnel"></i> Filter</button></div>
+</form>
+{% if not rows %}<div class="alert alert-secondary">No RFQs match.</div>{% else %}
+<div class="card adminuiux-card"><div class="table-responsive"><table class="table align-middle mb-0">
+<thead><tr><th>Reference</th><th>Mineral</th><th>Buyer</th><th>Quantity</th><th>Quotes</th><th>Best total</th><th>Status</th><th>Posted</th><th></th></tr></thead>
+<tbody>{% for r in rows %}{% set st = stats.get(r.id, (0, None)) %}<tr>
+  <td class="fw-semibold small">{{ r.rfq_reference }}</td><td>{{ r.mineral_type }}</td>
+  <td class="small">{{ r.buyer_company.company_name }}</td><td class="small">{{ r.quantity_value }} {{ r.quantity_unit }}</td>
+  <td>{{ st[0] }}</td><td class="small">{{ '{:,.2f}'.format(st[1]) if st[1] is not none else '—' }}</td>
+  <td>{% set c = {'open':'success','closed':'secondary','cancelled':'danger'}[r.status.value] %}<span class="badge bg-{{ c }}-subtle text-{{ c }}">{{ r.status.value }}</span></td>
+  <td class="small">{{ r.created_at.strftime('%Y-%m-%d') }}</td>
+  <td class="text-end"><a class="btn btn-sm btn-outline-theme" href="{{ url_for('admin_rfq_detail', rfq_id=r.id) }}">Open</a></td>
+</tr>{% endfor %}</tbody></table></div></div>
+{% include "partials/pager.html" %}{% endif %}
+{% endblock %}

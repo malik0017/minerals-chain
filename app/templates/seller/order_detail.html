@@ -1,6 +1,9 @@
 {% extends "layouts/base.html" %}
+{% from "partials/dispute_macros.html" import order_disputes with context %}
+{% from "partials/order_document_macros.html" import order_documents with context %}
 {% block title %}Order — {{ order.rfq.mineral_type }}{% endblock %}
 {% block content %}
+
 
 <a href="{{ url_for('seller_orders_index') }}" class="text-secondary text-decoration-none small">&larr; Back to orders</a>
 
@@ -10,9 +13,12 @@
   {% elif order.status.value == "confirmed" %}<span class="badge bg-info-subtle text-info">Confirmed</span>
   {% elif order.status.value == "in_transit" %}<span class="badge bg-primary-subtle text-primary">In transit</span>
   {% elif order.status.value == "delivered" %}<span class="badge bg-primary-subtle text-primary">Delivered</span>
-  {% else %}<span class="badge bg-success-subtle text-success">Completed</span>{% endif %}
+  {% elif order.status.value == "completed" %}<span class="badge bg-success-subtle text-success">Completed</span>
+  {% elif order.status.value in ("cancelled", "disputed") %}<span class="badge bg-danger-subtle text-danger">{{ order.status.value | capitalize }}</span>
+  {% else %}<span class="badge bg-secondary-subtle text-secondary">{{ order.status.value | capitalize }}</span>{% endif %}
 </div>
 
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
 {% if error %}
 <div class="alert alert-danger py-2">{{ error }}</div>
 {% endif %}
@@ -28,6 +34,8 @@
   <div>You're trading with <strong>{{ buyer_company.company_name }}</strong> ({{ buyer_company.contact_email }}{% if buyer_company.contact_phone %} · {{ buyer_company.contact_phone }}{% endif %}).</div>
 </div>
 {% endif %}
+
+{% include "partials/order_progress.html" %}
 
 <div class="card adminuiux-card mb-3">
   <div class="card-body">
@@ -72,11 +80,23 @@
       <button type="submit" class="btn btn-theme">Mark delivered</button>
     </form>
     {% elif order.status.value == "delivered" %}
-    <p class="text-secondary mb-0">Waiting on the buyer to confirm receipt.</p>
+    <h6 class="mb-2"><i class="bi bi-receipt"></i> Issue invoice</h6>
+    <p class="text-secondary small">Generates a commercial invoice ({{ order.currency }} {{ '{:,.2f}'.format(order.total_value_sar or 0) }} incl. VAT) and shares it with the buyer. The buyer can also confirm receipt now.</p>
+    <form method="post" action="{{ url_for('seller_order_invoice', order_id=order.id) }}" onsubmit="return confirm('Issue the invoice now?');">
+      {{ csrf_field() }}<button type="submit" class="btn btn-theme"><i class="bi bi-receipt"></i> Issue invoice</button></form>
+    {% elif order.status.value == "invoiced" %}
+    <p class="text-secondary mb-0"><i class="bi bi-receipt"></i> Invoice {{ order.invoice_number }} issued — waiting on the buyer to confirm receipt.</p>
+    {% elif order.status.value == "disputed" %}
+    <p class="text-danger mb-0"><i class="bi bi-exclamation-octagon"></i> On hold — see the dispute below.</p>
+    {% elif order.status.value == "cancelled" %}
+    <p class="text-danger mb-0">This order was cancelled.</p>
     {% else %}
     <p class="text-success mb-0"><i class="bi bi-check-circle-fill"></i> This order is complete.</p>
     {% endif %}
   </div>
 </div>
+
+{{ order_documents(order, 'seller', documents, credentials, doc_types, 'seller_order_document') }}
+{{ order_disputes(disputes, 'seller', can_raise, why, order) }}
 
 {% endblock %}

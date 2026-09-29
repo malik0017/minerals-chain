@@ -1,92 +1,86 @@
 {% extends "layouts/base.html" %}
+{% from "partials/spec_table_macros.html" import spec_view with context %}
 {% block title %}{{ rfq.mineral_type }} RFQ{% endblock %}
 {% block content %}
-
 <a href="{{ url_for('buyer_rfqs_index') }}" class="text-secondary text-decoration-none small">&larr; Back to RFQs</a>
+{% if error %}<div class="alert alert-danger py-2 mt-2">{{ error }}</div>{% endif %}
+{% if msg %}<div class="alert alert-success py-2 mt-2">{{ msg }}</div>{% endif %}
 
-{% if error %}
-<div class="alert alert-danger py-2 mt-2">{{ error }}</div>
-{% endif %}
-
-<div class="d-flex align-items-center justify-content-between mt-2 mb-4">
-  <h4 class="mb-0">{{ rfq.mineral_type }}</h4>
-  {% if rfq.status.value == "open" %}<span class="badge bg-success-subtle text-success">Open</span>
+<div class="d-flex align-items-center justify-content-between mt-2 mb-3">
+  <div><h4 class="mb-0">{{ rfq.mineral_type }}</h4><div class="small text-secondary">{{ rfq.rfq_reference }}</div></div>
+  <div>
+  {% if rfq.status.value == "open" and accepting %}<span class="badge bg-success-subtle text-success">Open for quotes</span>
+  {% elif rfq.status.value == "open" %}<span class="badge bg-info-subtle text-info">Quoting closed — choose a quote</span>
+  {% elif rfq.status.value == "cancelled" %}<span class="badge bg-danger-subtle text-danger">Cancelled</span>
   {% else %}<span class="badge bg-secondary-subtle text-secondary">Closed</span>{% endif %}
+  </div>
 </div>
 
-<div class="card adminuiux-card mb-3">
-  <div class="card-body">
-    <dl class="row mb-0">
-      <dt class="col-sm-3">Quantity</dt>
-      <dd class="col-sm-9">{{ rfq.quantity_value }} {{ rfq.quantity_unit }}</dd>
-
-      <dt class="col-sm-3">Delivery location</dt>
-      <dd class="col-sm-9">{{ rfq.delivery_location }}</dd>
-
-      <dt class="col-sm-3">Delivery timeframe</dt>
-      <dd class="col-sm-9">{{ rfq.delivery_timeframe }}</dd>
-
-      <dt class="col-sm-3">Specifications</dt>
-      <dd class="col-sm-9" style="white-space: pre-line;">{{ rfq.specifications_notes or "—" }}</dd>
-
-      <dt class="col-sm-3">Commercial terms</dt>
-      <dd class="col-sm-9" style="white-space: pre-line;">{{ rfq.commercial_terms_notes or "—" }}</dd>
-
-      <dt class="col-sm-3">Posted</dt>
-      <dd class="col-sm-9">{{ rfq.created_at.strftime("%Y-%m-%d %H:%M UTC") }}</dd>
+<div class="row g-3 mb-3">
+  <div class="col-lg-7"><div class="card adminuiux-card h-100"><div class="card-body">
+    <dl class="row mb-0 small">
+      <dt class="col-sm-4">Quantity</dt><dd class="col-sm-8">{{ rfq.quantity_value }} {{ rfq.quantity_unit }}</dd>
+      <dt class="col-sm-4">Delivery</dt><dd class="col-sm-8">{{ rfq.delivery_location }} · {{ rfq.delivery_timeframe }}{% if rfq.required_by %} · by {{ rfq.required_by }}{% endif %}</dd>
+      <dt class="col-sm-4">Incoterm / payment</dt><dd class="col-sm-8">{{ rfq.incoterm.code if rfq.incoterm else '—' }} / {{ (rfq.payment_terms_days ~ ' days') if rfq.payment_terms_days is not none else '—' }}</dd>
+      <dt class="col-sm-4">Other requirements</dt><dd class="col-sm-8" style="white-space: pre-line;">{{ rfq.specifications_notes or "—" }}</dd>
+      <dt class="col-sm-4">Posted / closes</dt><dd class="col-sm-8">{{ rfq.created_at.strftime("%Y-%m-%d") }} / {{ rfq.closes_at.strftime("%Y-%m-%d") if rfq.closes_at else '—' }}</dd>
+      {% if rfq.cancel_reason %}<dt class="col-sm-4">Cancel reason</dt><dd class="col-sm-8 text-danger">{{ rfq.cancel_reason }}</dd>{% endif %}
     </dl>
+  </div></div></div>
+  <div class="col-lg-5"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6><i class="bi bi-rulers"></i> Required specification</h6>{{ spec_view(spec_rows, 'No structured specification.') }}
+  </div></div></div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h6 class="mb-0"><i class="bi bi-layout-three-columns"></i> Compare quotations ({{ rows | length }})</h6>
+  <div class="btn-group btn-group-sm">
+    {% for k, l in [('price','Lowest price'),('lead','Fastest'),('match','Best match')] %}
+    <a class="btn {{ 'btn-theme' if sort == k else 'btn-outline-theme' }}" href="?sort={{ k }}">{{ l }}</a>{% endfor %}
   </div>
 </div>
 
-<h6 class="mb-3"><i class="bi bi-tags"></i> Quotations ({{ quotations | length }})</h6>
-
-{% if not quotations %}
-<div class="card adminuiux-card">
-  <div class="card-body text-center py-4">
-    <i class="bi bi-hourglass-split fs-1 text-secondary opacity-50"></i>
-    <p class="text-secondary mt-3 mb-0">No quotations yet — sellers will respond here as they come in.</p>
-  </div>
-</div>
+{% if not rows %}
+<div class="card adminuiux-card"><div class="card-body text-center py-4">
+  <i class="bi bi-hourglass-split fs-1 text-secondary opacity-50"></i>
+  <p class="text-secondary mt-3 mb-0">No quotations yet — sellers will respond here as they come in.</p></div></div>
 {% else %}
-<div class="card adminuiux-card mb-3">
-  <div class="table-responsive">
-    <table class="table align-middle mb-0">
-      <thead>
-        <tr>
-          <th>Price</th>
-          <th>Lead time</th>
-          <th>Terms</th>
-          <th>Received</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for q in quotations %}
-        <tr>
-          <td class="fw-semibold">{{ q.price_currency }} {{ q.price_value }}{% if q.price_unit %} <span class="text-secondary small fw-normal">{{ q.price_unit }}</span>{% endif %}</td>
-          <td>{{ q.lead_time_days }} day(s)</td>
-          <td class="text-secondary small" style="max-width: 260px; white-space: pre-line;">{{ q.terms_notes or "—" }}</td>
-          <td class="text-secondary small">{{ q.created_at.strftime("%Y-%m-%d") }}</td>
-          <td class="text-end">
-            {% if rfq.status.value == "open" %}
-            <form method="post" action="{{ url_for('buyer_rfq_accept_quotation', rfq_id=rfq.id, quotation_id=q.id) }}"
-                  onsubmit="return confirm('Accept this quotation? This closes the RFQ to further quotes and creates an order.');">
-  {{ csrf_field() }}
-              <button type="submit" class="btn btn-sm btn-theme">Accept</button>
-            </form>
-            {% elif q.status.value == "accepted" %}
-            <span class="badge bg-success-subtle text-success">Accepted</span>
-            {% else %}
-            <span class="text-secondary small">Closed</span>
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
-<p class="text-secondary small">Sorted by price, lowest first. Seller identity stays hidden until you accept a quotation — accepting creates an order and reveals both sides to each other once the seller confirms it.</p>
+<div class="card adminuiux-card mb-2"><div class="table-responsive"><table class="table align-middle mb-0">
+<thead><tr><th>Offer</th><th>Unit price</th><th>Total</th><th>Lead time</th><th>Terms</th><th>Valid until</th><th>Credentials</th><th>Spec match</th><th></th></tr></thead>
+<tbody>{% for r in rows %}{% set q = r.q %}
+<tr class="{% if r.expired or q.status.value != 'submitted' %}opacity-50{% endif %}">
+  <td class="small"><span class="fw-semibold">{{ q.quotation_reference }}</span>{% if q.revision_no and q.revision_no > 1 %} <span class="badge bg-info-subtle text-info">rev {{ q.revision_no }}</span>{% endif %}
+    <div class="text-secondary">Seller #{{ loop.index }}</div></td>
+  <td>{{ q.price_currency }} {{ '{:,.2f}'.format(q.price_value) }}{% if q.price_unit %}<div class="small text-secondary">{{ q.price_unit }}</div>{% endif %}</td>
+  <td class="fw-semibold">{{ '{:,.2f}'.format(r.total) }} {% if r.best_price %}<span class="badge bg-success">Best price</span>{% endif %}</td>
+  <td>{{ q.lead_time_days }} d {% if r.fastest %}<span class="badge bg-primary">Fastest</span>{% endif %}</td>
+  <td class="small">{{ q.incoterm.code if q.incoterm else '—' }}{% if q.payment_terms_days is not none %} · {{ q.payment_terms_days }}d{% endif %}
+    {% if q.terms_notes %}<div class="text-secondary" style="max-width:200px">{{ q.terms_notes | truncate(60) }}</div>{% endif %}</td>
+  <td class="small {% if r.expired %}text-danger{% endif %}">{{ q.valid_until or '—' }}{% if r.expired %}<div>expired</div>{% endif %}</td>
+  <td class="small">
+    {% if r.coa %}<a target="_blank" href="{{ url_for('certificate_document', cert_id=r.coa.id) }}" class="badge bg-success-subtle text-success text-decoration-none">COA</a>{% endif %}
+    {% if r.passport %}<a target="_blank" href="{{ url_for('certificate_document', cert_id=r.passport.id) }}" class="badge bg-primary-subtle text-primary text-decoration-none">Passport</a>{% endif %}
+    {% if not r.coa and not r.passport %}—{% endif %}</td>
+  <td>{% if q.match_score is not none %}
+      <div class="progress" style="height:6px;width:70px"><div class="progress-bar {{ 'bg-success' if q.match_score >= 80 else 'bg-warning' if q.match_score >= 50 else 'bg-danger' }}" style="width: {{ q.match_score }}%"></div></div>
+      <span class="small">{{ q.match_score }}%</span> {% if r.best_match %}<span class="badge bg-success-subtle text-success">Best</span>{% endif %}
+    {% else %}<span class="small text-secondary">—</span>{% endif %}</td>
+  <td class="text-end">
+    {% if rfq.status.value == "open" and q.status.value == "submitted" and not r.expired %}
+    <form method="post" action="{{ url_for('buyer_rfq_accept_quotation', rfq_id=rfq.id, quotation_id=q.id) }}"
+          onsubmit="return confirm('Accept this quotation? This closes the RFQ and creates an order.');">
+      {{ csrf_field() }}<button type="submit" class="btn btn-sm btn-theme">Accept</button></form>
+    {% elif q.status.value == "accepted" %}<span class="badge bg-success-subtle text-success">Accepted</span>
+    {% else %}<span class="text-secondary small">{{ q.status.value | capitalize }}</span>{% endif %}
+  </td>
+</tr>{% endfor %}</tbody></table></div></div>
+<p class="text-secondary small">Seller identities stay hidden until an order is confirmed. Spec match = share of your required parameters that the offered listing declares within range.</p>
 {% endif %}
 
+{% if rfq.status.value == "open" %}
+<details class="card adminuiux-card mt-3"><summary class="card-body py-2 text-danger small"><i class="bi bi-x-circle"></i> Cancel this RFQ</summary>
+  <div class="card-body pt-0"><form method="post" action="{{ url_for('buyer_rfq_cancel', rfq_id=rfq.id) }}" class="d-flex gap-2">{{ csrf_field() }}
+    <input name="reason" class="form-control" placeholder="Reason (shared with sellers who quoted)" required>
+    <button class="btn btn-outline-danger text-nowrap">Cancel RFQ</button></form></div></details>
+{% endif %}
 {% endblock %}

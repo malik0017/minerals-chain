@@ -1,18 +1,5 @@
 """
 app/services/certification_service.py
-
-Batch A: the single place that creates/approves/rejects a
-Certification, for both credential types:
-  - lab_certificate: created by verification_service.issue_certificate()
-    once a VerificationRequest passes — see create_lab_certificate().
-  - mineral_passport: requested directly by a seller on a VERIFIED
-    product, reviewed by admin — request_passport() / approve_passport()
-    / reject_passport(), same shape as the old passport_service.py.
-
-VALIDITY_PERIOD_DAYS is carried over unchanged from the old
-passport_service.py — still a hardcoded constant, still no
-admin-configurable policy UI; see the original module's reasoning,
-which still applies.
 """
 import secrets
 import uuid
@@ -27,7 +14,9 @@ from app.models.notification import Notification
 from app.models.product import Product, ProductStatus
 from app.models.user import User
 from app.models.verification import VerificationRequest
+from app.services import notification_service
 from app.repositories import audit_log_repository, certification_repository, notification_repository
+from app.core.system_settings import get_setting
 
 VALIDITY_PERIOD_DAYS = 365
 
@@ -38,14 +27,11 @@ class CertificationActionError(ValueError):
     pass
 
 
-def _notify_company_users(db: Session, company: Company, *, type_: str, title: str, body: str) -> None:
-    for user in company.users:
-        notification_repository.create(
-            db, Notification(user_id=user.id, type=type_, title=title, body=body)
-        )
+def _notify_company_users(db: Session, target_company: Company, *, type_: str, title: str, body: str,
+                           action_url: str | None = None, **params) -> None:
+    # Batch M6: bilingual, deep-linked — see services/notification_service.py
+    notification_service.notify_company(db, target_company, type_, title, body, action_url=action_url, **params)
 
-
-# --- Lab certificates (called from verification_service.issue_certificate) ---
 
 def create_lab_certificate(
     db: Session, verification_request: VerificationRequest, lab_user: User, notes: str
@@ -66,7 +52,14 @@ def create_lab_certificate(
         issue_date=date.today(),
         status=CertificationStatus.APPROVED,
         reviewed_at=datetime.now(timezone.utc),
+        signed_off_at=datetime.now(timezone.utc),
+        signed_off_by_user_id=lab_user.id,
+        test_completed_at=date.today(),
     )
+    coa_days = get_setting(db, "coa_validity_days")
+    if coa_days:
+        certification.expiry_date = date.today() + timedelta(days=coa_days)
+    verification_request.completed_at = datetime.now(timezone.utc)
     certification_repository.create(db, certification)
     certification_repository.create_scope(db, CertificationScope(certification_id=certification.id, product_id=product.id))
     return certification
@@ -77,8 +70,19 @@ def create_lab_certificate(
 def request_passport(db: Session, product: Product, category: str) -> Certification:
     if product.status != ProductStatus.VERIFIED:
         raise CertificationActionError("Only a verified listing can request a Mineral Passport.")
-    if certification_repository.has_pending_or_active(db, product.id, CertificationType.MINERAL_PASSPORT):
-        raise CertificationActionError("This listing already has a pending or currently valid passport.")
+    existing = certification_repository.list_for_product(db, product.id, cert_type=CertificationType.MINERAL_PASSPORT)
+    if any(c.status == CertificationStatus.PENDING for c in existing):
+        raise CertificationActionError("This listing already has a pending passport request.")
+    active = next((c for c in existing if c.is_currently_valid), None)
+    renewal_of = None
+    if active is not None:
+        window = get_setting(db, "passport_renewal_window_days")
+        if active.expiry_date is None or (active.expiry_date - date.today()).days > window:
+            raise CertificationActionError(
+                f"This listing already has a valid passport. Renewal opens {window} days before it expires.")
+        renewal_of = active
+    tier = getattr(product.seller_company, "subscription_tier", None)
+    expedited = bool(tier) and getattr(tier, "value", str(tier)) == "premium"
 
     certification = Certification(
         cert_type=CertificationType.MINERAL_PASSPORT,
@@ -86,6 +90,12 @@ def request_passport(db: Session, product: Product, category: str) -> Certificat
         category=category,
         subject_company_id=product.seller_company_id,
         status=CertificationStatus.PENDING,
+        fee_sar=get_setting(db, "passport_fee_standard_sar" if category == "domestic" else "passport_fee_export_sar"),
+        source_certification_id=next(
+            (c.id for c in certification_repository.list_for_product(db, product.id, cert_type=CertificationType.LAB_CERTIFICATE)
+             if c.status == CertificationStatus.APPROVED), None),
+        renewal_of_id=renewal_of.id if renewal_of else None,
+        is_expedited=expedited,
     )
     certification_repository.create(db, certification)
     certification_repository.create_scope(db, CertificationScope(certification_id=certification.id, product_id=product.id))
@@ -108,7 +118,12 @@ def approve_passport(db: Session, certification: Certification, admin: User) -> 
     certification.status = CertificationStatus.APPROVED
     certification.certificate_number = f"MP-{secrets.token_hex(4).upper()}"
     certification.issue_date = date.today()
-    certification.expiry_date = date.today() + timedelta(days=VALIDITY_PERIOD_DAYS)
+    start = date.today()
+    if certification.renewal_of_id:
+        prev = db.get(Certification, certification.renewal_of_id)
+        if prev is not None and prev.expiry_date and prev.expiry_date > start:
+            start = prev.expiry_date
+    certification.expiry_date = start + timedelta(days=get_setting(db, "passport_validity_days"))
     certification.reviewed_by_user_id = admin.id
     certification.reviewed_at = datetime.now(timezone.utc)
 
@@ -119,11 +134,9 @@ def approve_passport(db: Session, certification: Certification, admin: User) -> 
         title="Mineral Passport issued",
         body=f"Your {certification.category.replace('_', ' ')} passport for {product_name} "
              f"has been issued: {certification.certificate_number} (valid until {certification.expiry_date}).",
+        mineral=product_name, certificate=certification.certificate_number, until=certification.expiry_date,
     )
 
-    # Batch G: BRD §6.8 asks for full admin-action visibility — passport
-    # approve/reject was the gap called out in PROJECT_STATUS.md (only
-    # company approve/reject was logged before this batch).
     audit_log_repository.create(
         db,
         AuditLog(
@@ -155,6 +168,7 @@ def reject_passport(db: Session, certification: Certification, admin: User, reje
         type_="passport_rejected",
         title="Mineral Passport request not approved",
         body=f"Your passport request for {product_name} was not approved. Reason: {rejection_reason}",
+        mineral=product_name, reason=rejection_reason,
     )
 
     audit_log_repository.create(

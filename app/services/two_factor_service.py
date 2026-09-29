@@ -3,15 +3,12 @@ app/services/two_factor_service.py
 """
 import pyotp
 from sqlalchemy.orm import Session
-
 from app.models.user import User
 
 ISSUER_NAME = "Minerals Chain"
 
 
 class TwoFactorActionError(ValueError):
-    """Raised for any invalid 2FA setup/confirm/disable action. Routes
-    catch this and show the message."""
     pass
 
 

@@ -1,34 +1,12 @@
 """
 app/models/rfq.py
-
-BRD §6.5 (Request for Quotation and Negotiation):
-  - "A buyer shall be able to create an RFQ specifying mineral type,
-    required specifications, quantity, delivery location, delivery
-    timeframe, and commercial terms"
-  - "Verified sellers whose products match an open RFQ shall be able
-    to view and respond with a formal quotation"
-  - "Acceptance of a quotation by the buyer shall formally create an
-    order and close the RFQ to further quotations"
-
-Matching model: BRD says "whose products match" — this batch
-implements a broadcast model instead of an automated matching engine:
-every RFQ is visible to every approved seller in the inbox (Batch 2),
-and it's the seller's own judgement whether they can fulfill it. A
-real matching algorithm (by mineral type, quantity range, etc.) is a
-genuine feature in its own right and would need real usage data to
-tune sensibly — not something to guess at now. Easy to add a filter
-on top of the broadcast list later without changing this model.
-
-Status: OPEN while accepting quotations, CLOSED once the buyer
-accepts one (Batch 3 — quotations don't exist yet, so nothing sets
-CLOSED yet in this batch; the enum value exists now so the column
-doesn't need another migration when quotations land).
 """
 import enum
 import uuid
+from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import Enum as SAEnum, ForeignKey, Numeric, String, Text
+from sqlalchemy import Date, DateTime, Enum as SAEnum, ForeignKey, Integer, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -38,6 +16,7 @@ from app.database.base import Base, TimestampMixin
 class RFQStatus(str, enum.Enum):
     OPEN = "open"
     CLOSED = "closed"
+    CANCELLED = "cancelled"   
 
 
 class RFQ(Base, TimestampMixin):
@@ -65,7 +44,46 @@ class RFQ(Base, TimestampMixin):
         default=RFQStatus.OPEN,
     )
 
+    # --- Batch J (Schema V1 rfqs alignment) ---
+    rfq_reference: Mapped[str | None] = mapped_column(String(30), nullable=True, unique=True)
+    product_master_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("product_masters.id"), nullable=True
+    )
+    grade_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("grades.id"), nullable=True)
+    required_by: Mapped[date | None] = mapped_column(Date, nullable=True)
+    incoterm_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("incoterms.id"), nullable=True)
+    payment_terms_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    closes_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
+    )
+    # --- Batch M3: cancellation
+    cancelled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    cancel_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+
     buyer_company: Mapped["Company"] = relationship("Company", foreign_keys=[buyer_company_id])
+    incoterm: Mapped["Incoterm"] = relationship("Incoterm")
+    product_master: Mapped["ProductMaster"] = relationship("ProductMaster")
+    grade: Mapped["Grade"] = relationship("Grade")
+    specs: Mapped[list["RFQSpec"]] = relationship("RFQSpec", back_populates="rfq", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"<RFQ {self.mineral_type} ({self.status.value}) — buyer {self.buyer_company_id}>"
+
+
+class RFQSpec(Base, TimestampMixin):
+    """Batch J — Schema V1 `rfq_specs`: the buyer's required range for one
+    parameter. Used by quotation matching (match_score) in Batch M."""
+    __tablename__ = "rfq_specs"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    rfq_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("rfqs.id"), nullable=False, index=True)
+    parameter_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("quality_parameters.id"), nullable=True
+    )
+    parameter: Mapped[str] = mapped_column(String(80), nullable=False)
+    min_value: Mapped[Decimal | None] = mapped_column(Numeric(14, 4), nullable=True)
+    max_value: Mapped[Decimal | None] = mapped_column(Numeric(14, 4), nullable=True)
+    unit: Mapped[str | None] = mapped_column(String(20), nullable=True)
+
+    rfq: Mapped["RFQ"] = relationship("RFQ", back_populates="specs")

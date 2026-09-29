@@ -1,86 +1,100 @@
 {% extends "layouts/base.html" %}
+{% from "partials/spec_table_macros.html" import spec_editor, spec_view, results_table with context %}
 {% block title %}Verification Request{% endblock %}
 {% block content %}
-
 <a href="{{ url_for('lab_verification_index') }}" class="text-secondary text-decoration-none small">&larr; Back to requests</a>
+<div class="d-flex justify-content-between align-items-center mt-2 mb-3">
+  <h4 class="mb-0">{{ vr.product.mineral_type }}{% if vr.product.grade %} · {{ vr.product.grade }}{% endif %}
+    {% if vr.is_priority %}<span class="badge bg-warning text-dark ms-1"><i class="bi bi-lightning-charge"></i> Priority</span>{% endif %}</h4>
+  <span class="text-secondary small">{{ vr.request_reference }}</span>
+</div>
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
 
-<h4 class="mt-2 mb-4">{{ vr.product.mineral_type }}{% if vr.product.grade %} · {{ vr.product.grade }}{% endif %}</h4>
-
-{% if error %}
-<div class="alert alert-danger py-2">{{ error }}</div>
-{% endif %}
-
-<div class="card adminuiux-card mb-3">
-  <div class="card-body">
-    <h6 class="mb-3">Product details</h6>
-    <dl class="row mb-0">
-      <dt class="col-sm-3">Seller</dt>
-      <dd class="col-sm-9">{{ vr.product.seller_company.company_name }}</dd>
-
-      <dt class="col-sm-3">Quantity</dt>
-      <dd class="col-sm-9">{{ vr.product.quantity_value }} {{ vr.product.quantity_unit }}</dd>
-
-      <dt class="col-sm-3">Specifications</dt>
-      <dd class="col-sm-9" style="white-space: pre-line;">{{ vr.product.specifications_notes or "—" }}</dd>
-
-      <dt class="col-sm-3">Requested</dt>
-      <dd class="col-sm-9">{{ vr.created_at.strftime("%Y-%m-%d %H:%M UTC") }}</dd>
-    </dl>
+{% set steps = [('requested','Requested','bi-inbox'),('sample_scheduled','Sample scheduled','bi-calendar-check'),('testing_in_progress','Testing','bi-eyedropper'),('done','Result','bi-patch-check')] %}
+{% set order = {'requested':0,'sample_scheduled':1,'testing_in_progress':2,'completed':3,'failed':3} %}
+<div class="d-flex justify-content-between mb-4 position-relative">
+{% for key, label, icon in steps %}
+  {% set reached = order[vr.status.value] >= loop.index0 %}
+  <div class="text-center flex-fill">
+    <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center {% if reached %}{% if loop.last and vr.status.value=='failed' %}bg-danger{% else %}bg-success{% endif %} text-white{% else %}bg-body-secondary text-secondary{% endif %}" style="width:40px;height:40px"><i class="bi {{ icon }}"></i></div>
+    <div class="small mt-1 {% if not reached %}text-secondary{% endif %}">{% if loop.last and vr.status.value=='failed' %}Failed{% elif loop.last and vr.status.value=='completed' %}Passed{% else %}{{ label }}{% endif %}</div>
   </div>
+{% endfor %}
 </div>
 
-{% if vr.status.value in ("requested", "sample_scheduled", "testing_in_progress") %}
 <div class="row g-3">
-  <div class="col-md-6">
-    <div class="card adminuiux-card h-100">
-      <div class="card-body">
-        <h6 class="mb-3 text-success"><i class="bi bi-patch-check"></i> Issue certificate (pass)</h6>
-        <form method="post" action="{{ url_for('lab_verification_issue', request_id=vr.id) }}">
-  {{ csrf_field() }}
-          <textarea class="form-control mb-2" name="tested_parameters_notes" rows="4"
-                    placeholder="Tested parameters and results, e.g. Purity 99.6% (measured), iron oxide 0.015% (pass)" required></textarea>
-          <button type="submit" class="btn btn-success">Issue Certificate</button>
-        </form>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-6">
-    <div class="card adminuiux-card h-100">
-      <div class="card-body">
-        <h6 class="mb-3 text-danger"><i class="bi bi-x-circle"></i> Reject (fail)</h6>
-        <form method="post" action="{{ url_for('lab_verification_reject', request_id=vr.id) }}">
-  {{ csrf_field() }}
-          <textarea class="form-control mb-2" name="rejection_reason" rows="4"
-                    placeholder="Reason for rejection, shown to the seller" required></textarea>
-          <button type="submit" class="btn btn-danger">Reject</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-{% elif vr.status.value == "completed" and certificate %}
-<div class="card adminuiux-card border-success-subtle">
-  <div class="card-body">
-    <h6 class="mb-3 text-success"><i class="bi bi-patch-check-fill"></i> Certificate issued</h6>
-    <dl class="row mb-0">
-      <dt class="col-sm-3">Certificate number</dt>
-      <dd class="col-sm-9">{{ certificate.certificate_number }}</dd>
-      <dt class="col-sm-3">Issued</dt>
-      <dd class="col-sm-9">{{ certificate.issue_date.strftime("%Y-%m-%d") }}</dd>
-      <dt class="col-sm-3">Tested parameters</dt>
-      <dd class="col-sm-9" style="white-space: pre-line;">{{ certificate.notes }}</dd>
+<div class="col-lg-5">
+  <div class="card adminuiux-card mb-3"><div class="card-body">
+    <h6 class="mb-3">Product</h6>
+    <dl class="row mb-0 small">
+      <dt class="col-5">Seller</dt><dd class="col-7">{{ vr.product.seller_company.company_name }}</dd>
+      <dt class="col-5">Quantity</dt><dd class="col-7">{{ vr.product.quantity_value }} {{ vr.product.quantity_unit }}</dd>
+      <dt class="col-5">Requested</dt><dd class="col-7">{{ vr.created_at.strftime("%Y-%m-%d") }}</dd>
+      <dt class="col-5">Fee</dt><dd class="col-7">SAR {{ vr.fee_sar or 0 }}</dd>
+      {% if vr.collection_date %}<dt class="col-5">Collection</dt><dd class="col-7">{{ vr.collection_date }} · {{ vr.field_officer }}</dd>
+      <dt class="col-5">Sample ID</dt><dd class="col-7">{{ vr.sample_id }}</dd>{% endif %}
+      {% if vr.testing_started_at %}<dt class="col-5">Testing since</dt><dd class="col-7">{{ vr.testing_started_at.strftime("%Y-%m-%d") }}</dd>{% endif %}
     </dl>
-  </div>
+    {% if vr.product.specifications_notes %}<div class="small text-secondary mt-2" style="white-space: pre-line;">{{ vr.product.specifications_notes }}</div>{% endif %}
+  </div></div>
+  <div class="card adminuiux-card"><div class="card-body">
+    <h6 class="mb-2">Declared specification</h6>
+    {{ spec_view(spec_rows) }}
+  </div></div>
 </div>
 
-{% elif vr.status.value == "failed" %}
-<div class="card adminuiux-card border-danger-subtle">
-  <div class="card-body">
-    <h6 class="mb-2 text-danger"><i class="bi bi-x-circle-fill"></i> Rejected</h6>
-    <p class="mb-0">{{ vr.rejection_reason }}</p>
-  </div>
-</div>
+<div class="col-lg-7">
+{% if vr.status.value in ('requested','sample_scheduled') %}
+  <div class="card adminuiux-card mb-3"><div class="card-body">
+    <h6><i class="bi bi-calendar-check"></i> {{ 'Reschedule' if vr.status.value == 'sample_scheduled' else 'Schedule' }} sample collection</h6>
+    <form method="post" action="{{ url_for('lab_verification_schedule', request_id=vr.id) }}" class="row g-2">{{ csrf_field() }}
+      <div class="col-md-4"><label class="form-label small">Collection date</label><input type="date" name="collection_date" class="form-control" value="{{ vr.collection_date or '' }}" required></div>
+      <div class="col-md-4"><label class="form-label small">Field officer</label><input name="field_officer" class="form-control" value="{{ vr.field_officer or '' }}" required></div>
+      <div class="col-md-4"><label class="form-label small">Sample ID</label><input name="sample_id" class="form-control" value="{{ vr.sample_id or '' }}" placeholder="auto"></div>
+      <div class="col-12"><button class="btn btn-theme">Save schedule</button></div>
+    </form>
+    {% if vr.status.value == 'sample_scheduled' %}
+    <hr><form method="post" action="{{ url_for('lab_verification_start', request_id=vr.id) }}">{{ csrf_field() }}
+      <button class="btn btn-primary"><i class="bi bi-play-fill"></i> Sample received — start testing</button></form>
+    {% endif %}
+  </div></div>
 {% endif %}
 
+{% if vr.status.value == 'testing_in_progress' %}
+  <div class="card adminuiux-card mb-3 border-primary"><div class="card-body">
+    <h6><i class="bi bi-clipboard-data"></i> Enter results</h6>
+    <p class="small text-secondary">Each measured value is checked against its range. All pass → certificate issued; any fail → verification failed with the out-of-spec parameters listed.</p>
+    <form method="post" action="{{ url_for('lab_verification_results', request_id=vr.id) }}">{{ csrf_field() }}
+      {{ spec_editor(spec_rows, 'spec', measured=True, id='labResults') }}
+      <div class="row g-2 mt-2">
+        <div class="col-md-5"><input name="analyst_name" class="form-control" placeholder="Analyst name" value="{{ current_user.full_name }}" required></div>
+        <div class="col-md-7"><input name="notes" class="form-control" placeholder="Remarks (optional)"></div>
+      </div>
+      <button class="btn btn-success mt-3" onclick="return confirm('Sign off these results? This issues the certificate or fails the verification.');"><i class="bi bi-pen"></i> Sign off results</button>
+    </form>
+  </div></div>
+{% endif %}
+
+{% if vr.status.value in ('requested','sample_scheduled','testing_in_progress') %}
+  <details class="card adminuiux-card mb-3"><summary class="card-body py-2 small text-secondary">Other actions</summary><div class="card-body pt-0">
+    <form method="post" action="{{ url_for('lab_verification_reject', request_id=vr.id) }}">{{ csrf_field() }}
+      <label class="form-label small">Reject without testing (e.g. sample unavailable)</label>
+      <textarea class="form-control mb-2" name="rejection_reason" rows="2" required></textarea>
+      <button class="btn btn-sm btn-outline-danger">Reject request</button></form>
+  </div></details>
+{% endif %}
+
+{% if certificate %}
+  <div class="card adminuiux-card {% if certificate.all_parameters_pass == false %}border-danger{% else %}border-success{% endif %}"><div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h6 class="mb-0">{% if certificate.all_parameters_pass == false %}<i class="bi bi-x-circle-fill text-danger"></i> Failed — {{ certificate.certificate_number }}{% else %}<i class="bi bi-patch-check-fill text-success"></i> Certificate {{ certificate.certificate_number }}{% endif %}</h6>
+      <a class="btn btn-sm btn-outline-theme" target="_blank" href="{{ url_for('certificate_document', cert_id=certificate.id) }}"><i class="bi bi-printer"></i> View / print</a>
+    </div>
+    {% if certificate.results %}{{ results_table(certificate) }}{% else %}<div style="white-space: pre-line;">{{ certificate.notes }}</div>{% endif %}
+  </div></div>
+{% elif vr.status.value == 'failed' %}
+  <div class="alert alert-danger"><i class="bi bi-x-circle-fill"></i> {{ vr.rejection_reason }}</div>
+{% endif %}
+</div>
+</div>
 {% endblock %}

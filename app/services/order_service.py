@@ -1,11 +1,5 @@
 """
 app/services/order_service.py
-
-BRD §6.5's "acceptance creates an order and closes the RFQ" and
-§6.6's full order lifecycle, including the identity reveal on seller
-confirmation (see core/identity_guard.py for the concealment logic
-itself — this module only triggers the transition, by setting
-confirmed_at).
 """
 import uuid
 from datetime import datetime, timezone
@@ -14,23 +8,23 @@ from sqlalchemy.orm import Session
 
 from app.models.company import Company
 from app.models.notification import Notification
-from app.models.order import Order, OrderStatus
+from app.models.order import Order, OrderStatus, RevealLog
 from app.models.quotation import Quotation, QuotationStatus
 from app.models.rfq import RFQ, RFQStatus
+from app.services import notification_service
 from app.repositories import notification_repository, order_repository
+from app.services import settlement_service
+from app.services.reference_service import next_reference
 
 
 class OrderActionError(ValueError):
-    """Raised for any invalid order action. Routes catch this and show
-    the message."""
     pass
 
 
-def _notify_company_users(db: Session, company: Company, *, type_: str, title: str, body: str) -> None:
-    for user in company.users:
-        notification_repository.create(
-            db, Notification(user_id=user.id, type=type_, title=title, body=body)
-        )
+def _notify_company_users(db: Session, target_company: Company, *, type_: str, title: str, body: str,
+                           action_url: str | None = None, **params) -> None:
+    # Batch M6: bilingual, deep-linked — see services/notification_service.py
+    notification_service.notify_company(db, target_company, type_, title, body, action_url=action_url, **params)
 
 
 def accept_quotation(db: Session, rfq: RFQ, quotation: Quotation, buyer_company: Company) -> Order:
@@ -41,7 +35,10 @@ def accept_quotation(db: Session, rfq: RFQ, quotation: Quotation, buyer_company:
     if rfq.status != RFQStatus.OPEN:
         raise OrderActionError("This RFQ is already closed.")
     if quotation.status != QuotationStatus.SUBMITTED:
-        raise OrderActionError("This quotation has already been acted on.")
+        raise OrderActionError("This quotation has already been acted on or has expired.")
+    from datetime import date as _date
+    if quotation.valid_until is not None and quotation.valid_until < _date.today():
+        raise OrderActionError("This quotation's validity has ended — ask the seller to revise it.")
 
     order = Order(
         rfq_id=rfq.id,
@@ -49,20 +46,28 @@ def accept_quotation(db: Session, rfq: RFQ, quotation: Quotation, buyer_company:
         buyer_company_id=buyer_company.id,
         seller_company_id=quotation.seller_company_id,
         status=OrderStatus.PENDING_CONFIRMATION,
+        order_reference=next_reference(db, "order"),  
     )
     order_repository.create(db, order)
+    order.rfq, order.quotation = rfq, quotation
+    settlement_service.snapshot_order_financials(db, order)  
 
     quotation.status = QuotationStatus.ACCEPTED
     rfq.status = RFQStatus.CLOSED
+    for other in db.query(Quotation).filter(Quotation.rfq_id == rfq.id, Quotation.id != quotation.id,
+                                            Quotation.status == QuotationStatus.SUBMITTED):
+        other.status = QuotationStatus.REJECTED
+        _notify_company_users(db, other.seller_company, type_="quotation_not_selected", title="Quotation not selected",
+                              body=f"RFQ {rfq.rfq_reference} was closed with another quotation.",
+                              action_url=f"/seller/rfq-inbox/{rfq.id}", rfq=rfq.rfq_reference or "")
 
-    # Identity is NOT revealed here — the seller only learns their
-    # quote was accepted and an order is waiting on their confirmation.
     _notify_company_users(
         db, quotation.seller_company,
         type_="quotation_accepted",
         title="Your quotation was accepted",
         body=f"A buyer accepted your quotation on the {rfq.mineral_type} RFQ. "
              f"Confirm the order to proceed — this is also when you'll see who the buyer is.",
+        action_url=f"/seller/orders/{order.id}", mineral=rfq.mineral_type,
     )
 
     db.commit()
@@ -80,18 +85,27 @@ def get_owned_order(db: Session, order_id: uuid.UUID, company_id: uuid.UUID, rol
     return order
 
 
-def confirm_order(db: Session, order: Order) -> Order:
+def confirm_order(db: Session, order: Order, confirmed_by=None) -> Order:
     if order.status != OrderStatus.PENDING_CONFIRMATION:
         raise OrderActionError(f"This order is already {order.status.value.replace('_', ' ')}.")
 
+    now = datetime.now(timezone.utc)
     order.status = OrderStatus.CONFIRMED
-    order.confirmed_at = datetime.now(timezone.utc)  # THE identity-reveal trigger
+    order.confirmed_at = now  
+    order.identity_revealed_at = now
+    db.add(RevealLog(
+        order_id=order.id, buyer_company_id=order.buyer_company_id, seller_company_id=order.seller_company_id,
+        triggered_by="seller_confirmation", triggered_by_user_id=confirmed_by.id if confirmed_by else None,
+        revealed_at=now,
+    ))
+    settlement_service.create_settlement_fees(db, order)
 
     _notify_company_users(
         db, order.buyer_company,
         type_="order_confirmed",
         title="Order confirmed — seller identity revealed",
         body=f"The seller confirmed your {order.rfq.mineral_type} order. You can now see who you're trading with.",
+        action_url=f"/buyer/orders/{order.id}", mineral=order.rfq.mineral_type,
     )
 
     db.commit()
@@ -109,6 +123,7 @@ def mark_shipped(db: Session, order: Order) -> Order:
         type_="order_shipped",
         title="Order in transit",
         body=f"Your {order.rfq.mineral_type} order is now in transit.",
+        action_url=f"/buyer/orders/{order.id}", mineral=order.rfq.mineral_type,
     )
     db.commit()
     db.refresh(order)
@@ -125,6 +140,7 @@ def mark_delivered(db: Session, order: Order) -> Order:
         type_="order_delivered",
         title="Order delivered",
         body=f"Your {order.rfq.mineral_type} order has been marked delivered. Confirm receipt to complete it.",
+        action_url=f"/buyer/orders/{order.id}", mineral=order.rfq.mineral_type,
     )
     db.commit()
     db.refresh(order)
@@ -132,8 +148,11 @@ def mark_delivered(db: Session, order: Order) -> Order:
 
 
 def confirm_receipt(db: Session, order: Order) -> Order:
-    if order.status != OrderStatus.DELIVERED:
+    from app.core.system_settings import get_setting
+    if order.status not in (OrderStatus.DELIVERED, OrderStatus.INVOICED):
         raise OrderActionError(f"This order is {order.status.value.replace('_', ' ')} — it must be delivered first.")
+    if order.status == OrderStatus.DELIVERED and get_setting(db, "require_invoice_before_completion"):
+        raise OrderActionError("The seller must issue the invoice before receipt can be confirmed.")
     order.status = OrderStatus.COMPLETED
     order.completed_at = datetime.now(timezone.utc)
     _notify_company_users(
@@ -141,6 +160,7 @@ def confirm_receipt(db: Session, order: Order) -> Order:
         type_="order_completed",
         title="Order completed",
         body=f"The buyer confirmed receipt of the {order.rfq.mineral_type} order. It's now complete.",
+        action_url=f"/seller/orders/{order.id}", mineral=order.rfq.mineral_type,
     )
     db.commit()
     db.refresh(order)

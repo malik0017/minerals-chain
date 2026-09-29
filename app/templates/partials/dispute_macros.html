@@ -1,0 +1,68 @@
+{% macro dispute_badge(s) -%}
+{%- set c = {'open':'warning','under_review':'info','awaiting_info':'primary','resolved':'success','withdrawn':'secondary'}[s.value] -%}
+<span class="badge bg-{{ c }}-subtle text-{{ c }}">{{ s.value.replace('_',' ') | capitalize }}</span>
+{%- endmacro %}
+
+{% macro thread(messages, file_endpoint, d) %}
+<div class="d-flex flex-column gap-2">
+{% for m in messages %}
+  {% set colour = {'buyer':'primary','seller':'warning','admin':'success'}[m.author_party] %}
+  <div class="p-3 rounded border {% if m.is_internal %}border-danger border-opacity-50 bg-danger-subtle{% else %}bg-body-tertiary{% endif %}">
+    <div class="d-flex justify-content-between small mb-1">
+      <span><span class="badge bg-{{ colour }}-subtle text-{{ colour }}">{{ {'buyer':'Buyer','seller':'Seller','admin':'Platform'}[m.author_party] }}</span>
+        {% if m.is_internal %}<span class="badge bg-danger">Internal note</span>{% endif %}
+        <span class="text-secondary ms-1">{{ m.author.full_name if m.author else '' }}</span></span>
+      <span class="text-secondary">{{ m.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+    </div>
+    <div style="white-space: pre-line;">{{ m.body }}</div>
+    {% if m.attachment_path %}
+    <a class="small d-inline-flex align-items-center gap-1 mt-2" target="_blank"
+       href="{{ url_for(file_endpoint, dispute_id=d.id, message_id=m.id) }}"><i class="bi bi-paperclip"></i> {{ m.attachment_name }}</a>
+    <span class="small text-secondary ms-2" title="SHA-256 {{ m.attachment_hash }}"><i class="bi bi-shield-check"></i> {{ m.attachment_hash[:12] }}…</span>
+    {% endif %}
+  </div>
+{% else %}
+  <div class="text-secondary">No messages yet.</div>
+{% endfor %}
+</div>
+{% endmacro %}
+
+{% macro ruling_card(d) %}
+{% if d.is_decided %}
+<div class="card adminuiux-card mb-3 border-success">
+  <div class="card-body">
+    <h6 class="mb-2"><i class="bi bi-hammer"></i> Decision</h6>
+    <div class="mb-2">Decided in favour of the <strong>{{ d.ruling.value }}</strong>
+      <span class="text-secondary small">· {{ d.decided_at.strftime('%Y-%m-%d %H:%M') }}{% if d.decided_by %} · {{ d.decided_by.full_name }}{% endif %}</span></div>
+    <div style="white-space: pre-line;">{{ d.decision_text }}</div>
+    {% if d.corrections %}
+    <hr><div class="small fw-semibold mb-1"><i class="bi bi-journal-check"></i> Formal corrections ({{ d.corrections|length }})</div>
+    <ul class="small mb-0">{% for c in d.corrections %}
+      <li>{{ c.corrected_at.strftime('%Y-%m-%d') }} — {{ c.previous_ruling }} → <strong>{{ c.new_ruling }}</strong>. Reason: {{ c.reason }}{% if c.corrected_by %} ({{ c.corrected_by.full_name }}){% endif %}</li>
+    {% endfor %}</ul>
+    {% endif %}
+    <div class="small text-secondary mt-2">Financial settlement of a ruling happens outside the platform; this record documents the decision.</div>
+  </div>
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro order_disputes(disputes, party, can_raise, why, order) %}
+<div class="card adminuiux-card mt-3">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h6 class="mb-0"><i class="bi bi-exclamation-octagon"></i> Disputes</h6>
+      {% if party in ('buyer','seller') and can_raise %}
+      <a class="btn btn-sm btn-outline-danger" href="{{ url_for(party ~ '_dispute_new') }}?order_id={{ order.id }}"><i class="bi bi-flag"></i> Raise a dispute</a>
+      {% endif %}
+    </div>
+    {% if disputes %}
+    <ul class="list-unstyled mb-0">{% for d in disputes %}
+      <li class="d-flex justify-content-between border-bottom py-2">
+        <a href="{{ url_for(party ~ '_dispute_detail', dispute_id=d.id) }}">{{ d.reference }}</a>
+        <span>{{ dispute_badge(d.status) }}</span>
+      </li>{% endfor %}</ul>
+    {% else %}<div class="small text-secondary">{{ why or 'No disputes on this order.' }}</div>{% endif %}
+  </div>
+</div>
+{% endmacro %}

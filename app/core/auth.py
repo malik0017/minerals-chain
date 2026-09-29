@@ -10,6 +10,7 @@ from app.database.base import get_db
 from app.models.user import User
 
 SESSION_COOKIE_NAME = "mc_session"
+IMPERSONATOR_COOKIE_NAME = "mc_impersonator"  # Batch K — see core/security.py
 
 def _load_user_from_request(request: Request, db: Session) -> User | None:
     token = request.cookies.get(SESSION_COOKIE_NAME)

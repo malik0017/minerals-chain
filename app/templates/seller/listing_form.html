@@ -1,4 +1,5 @@
 {% extends "layouts/base.html" %}
+{% from "partials/spec_table_macros.html" import spec_editor with context %}
 {% block title %}{% if mode == "edit" %}Edit Listing{% else %}New Listing{% endif %}{% endblock %}
 {% block content %}
 
@@ -19,6 +20,25 @@
     <form method="post" action="{% if mode == 'edit' %}{{ url_for('seller_listing_edit_submit', product_id=product.id) }}{% else %}{{ url_for('seller_listings_create') }}{% endif %}">
   {{ csrf_field() }}
 
+      {# Batch J: optional link to the platform catalog (ERP Product Master) #}
+      <div class="row g-3 mb-3">
+        <div class="col-md-8">
+          <label class="form-label" for="product_master_id">Catalog product <span class="text-secondary">(recommended)</span></label>
+          <select class="form-select" id="product_master_id" name="product_master_id" data-spec-prefill="listingSpecs">
+            <option value="">— free-text listing —</option>
+            {% for pm in catalog_products %}
+            <option value="{{ pm.id }}" data-mineral="{{ pm.mineral_type.name_en }}" data-grade="{{ pm.grade.name_en if pm.grade else '' }}"
+                    {% if form.product_master_id == pm.id|string %}selected{% endif %}>{{ pm.code }} — {{ pm.name_en }}</option>
+            {% endfor %}
+          </select>
+          <div class="form-text">Picking a catalog product fills mineral type and grade and links your listing to the platform's quality specification.</div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="name_ar">Arabic name <span class="text-secondary">(optional)</span></label>
+          <input class="form-control" dir="rtl" id="name_ar" name="name_ar" value="{{ form.name_ar or '' }}" />
+        </div>
+      </div>
+
       <div class="row g-3 mb-3">
         <div class="col-md-6">
           <label class="form-label" for="mineral_type">Mineral type</label>
@@ -36,6 +56,10 @@
         <textarea class="form-control" id="specifications_notes" name="specifications_notes" rows="3"
                   placeholder="e.g. Purity 99.5%, iron oxide &lt;0.02%, particle size 100-200 mesh">{{ form.specifications_notes or '' }}</textarea>
       </div>
+
+      <div class="section-eyebrow text-secondary text-uppercase small fw-semibold mb-2 mt-3">Declared specification</div>
+      <p class="small text-secondary mb-2">One row per parameter. The lab tests against these ranges and buyers' RFQs are matched against them. Picking a catalog product fills the platform's standard ranges.</p>
+      {{ spec_editor(spec_rows or [], 'spec', id='listingSpecs') }}
 
       <hr class="my-4" />
       <div class="section-eyebrow text-secondary text-uppercase small fw-semibold mb-3">Quantity</div>
@@ -80,6 +104,41 @@
         </div>
       </div>
 
+      <div class="row g-3 mb-4">
+        <div class="col-md-3">
+          <label class="form-label" for="packaging_type_id">Packaging (standard)</label>
+          <select class="form-select" id="packaging_type_id" name="packaging_type_id"><option value="">—</option>
+            {% for pk in packaging_types %}<option value="{{ pk.id }}" {% if form.packaging_type_id == pk.id|string %}selected{% endif %}>{{ pk.code }} — {{ pk.name_en }}</option>{% endfor %}</select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="incoterm_id">Incoterm</label>
+          <select class="form-select" id="incoterm_id" name="incoterm_id"><option value="">—</option>
+            {% for inc in incoterms %}<option value="{{ inc.id }}" {% if form.incoterm_id == inc.id|string %}selected{% endif %}>{{ inc.code }} — {{ inc.name_en }}</option>{% endfor %}</select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="region_id">Region</label>
+          <select class="form-select" id="region_id" name="region_id"><option value="">—</option>
+            {% for r in regions %}<option value="{{ r.id }}" {% if form.region_id == r.id|string %}selected{% endif %}>{{ r.name_en }}</option>{% endfor %}</select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="min_order_qty">Minimum order qty</label>
+          <input class="form-control" type="number" step="0.01" min="0.01" id="min_order_qty" name="min_order_qty" value="{{ form.min_order_qty or '' }}" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="mine_source_id">Mine / source</label>
+          <select class="form-select" id="mine_source_id" name="mine_source_id"><option value="">—</option>
+            {% for m in mine_sources %}<option value="{{ m.id }}" {% if form.mine_source_id == m.id|string %}selected{% endif %}>{{ m.code }} — {{ m.name_en }}</option>{% endfor %}</select>
+        </div>
+      </div>
+      <script>
+        document.getElementById('product_master_id').addEventListener('change', function () {
+          var o = this.options[this.selectedIndex];
+          if (o.dataset.mineral) { document.getElementById('mineral_type').value = o.dataset.mineral; }
+          if (o.dataset.grade) { document.getElementById('grade').value = o.dataset.grade; }
+        });
+      </script>
+
+      <script src="{{ url_for('static', path='js/spec_prefill.js') }}"></script>
       <button type="submit" class="btn btn-theme">
         {% if mode == "edit" %}Save changes{% else %}Create listing (as draft){% endif %}
       </button>

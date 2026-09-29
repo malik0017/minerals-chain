@@ -1,4 +1,5 @@
 """app/schemas/product.py"""
+import uuid
 from decimal import Decimal
 
 from pydantic import BaseModel, field_validator
@@ -8,16 +9,27 @@ class ProductRequest(BaseModel):
     mineral_type: str
     grade: str | None = None
     specifications_notes: str | None = None
-
     quantity_value: Decimal
     quantity_unit: str = "MT"
-
     price_value: Decimal | None = None
     price_currency: str = "SAR"
     price_unit: str | None = None
-
     packaging: str | None = None
     trade_terms: str | None = None
+    product_master_id: uuid.UUID | None = None
+    name_ar: str | None = None
+    region_id: uuid.UUID | None = None
+    min_order_qty: Decimal | None = None
+    incoterm_id: uuid.UUID | None = None
+    packaging_type_id: uuid.UUID | None = None
+    mine_source_id: uuid.UUID | None = None
+
+    @field_validator("min_order_qty")
+    @classmethod
+    def _moq_positive(cls, v: Decimal | None) -> Decimal | None:
+        if v is not None and v <= 0:
+            raise ValueError("Minimum order quantity must be greater than zero.")
+        return v
 
     @field_validator("mineral_type", "quantity_unit")
     @classmethod

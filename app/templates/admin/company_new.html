@@ -1,0 +1,55 @@
+{% extends "layouts/base.html" %}
+{% block title %}Add company{% endblock %}
+{% block content %}
+<a href="{{ url_for('admin_companies_list') }}" class="text-secondary text-decoration-none small">&larr; All
+  Companies</a>
+<h4 class="mt-2 mb-1"><i class="bi bi-building-add"></i> Add company</h4>
+<p class="text-secondary">Onboard a company and its owner account on their behalf. Documents can be attached later from
+  the company page.</p>
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+<div class="card adminuiux-card">
+  <div class="card-body">
+    <form method="post" action="{{ url_for('admin_company_create') }}">{{ csrf_field() }}
+      <div class="row g-3">
+        <div class="col-md-3"><label class="form-label">Role *</label><select name="role" class="form-select" required>
+            <option value="seller">Seller (mine operator)</option>
+            <option value="buyer">Buyer</option>
+            <option value="lab">Laboratory</option>
+          </select></div>
+        <div class="col-md-5"><label class="form-label">Legal name (English) *</label><input name="company_name"
+            class="form-control" required></div>
+        <div class="col-md-4"><label class="form-label">Legal name (Arabic)</label><input name="company_name_ar"
+            class="form-control" dir="rtl"></div>
+        <div class="col-md-3"><label class="form-label">CR number *</label><input name="cr_number" class="form-control"
+            required></div>
+        <div class="col-md-3"><label class="form-label">VAT number (15 digits)</label><input
+            name="vat_registration_number" class="form-control" maxlength="15"></div>
+        <div class="col-md-3"><label class="form-label">Licence / accreditation no.</label><input name="license_number"
+            class="form-control"></div>
+        <div class="col-md-3"><label class="form-label">Region</label><select name="region_id" class="form-select">
+            <option value="">—</option>
+            {% for r in regions %}<option value="{{ r.id }}">{{ r.name_en }}</option>{% endfor %}
+          </select></div>
+        <div class="col-md-3"><label class="form-label">City</label><input name="city" class="form-control"></div>
+        <div class="col-md-3"><label class="form-label">Phone</label><input name="contact_phone" class="form-control"
+            placeholder="+966 5…"></div>
+        <div class="col-12">
+          <hr>
+          <h6>Owner account</h6>
+        </div>
+        <div class="col-md-4"><label class="form-label">Full name</label><input name="owner_name" class="form-control">
+        </div>
+        <div class="col-md-4"><label class="form-label">Email (login) *</label><input name="owner_email" type="email"
+            class="form-control" required></div>
+        <div class="col-md-4"><label class="form-label">Initial password *</label><input name="owner_password"
+            class="form-control" value="admin123" minlength="8" required></div>
+        <div class="col-12 form-check form-switch ms-2"><input class="form-check-input" type="checkbox" name="approve"
+            value="1" id="approve" checked>
+          <label class="form-check-label" for="approve">Approve immediately (credentials already reviewed)</label>
+        </div>
+      </div>
+      <button class="btn btn-theme mt-3"><i class="bi bi-save"></i> Create company</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

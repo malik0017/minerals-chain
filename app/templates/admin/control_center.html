@@ -1,0 +1,121 @@
+{% extends "layouts/base.html" %}
+{% import "partials/charts.html" as ch with context %}
+{% block title %}{{ t('cc.title') }}{% endblock %}
+{% block content %}
+{% set k = dash.kpis %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0"><i class="bi bi-speedometer"></i> {{ t('cc.title') }}</h4>
+  <div class="d-flex gap-2">
+    <a class="btn btn-sm btn-outline-theme" href="{{ url_for('admin_reports') }}"><i class="bi bi-graph-up"></i> Reports</a>
+    <span class="badge bg-{{ 'success' if health.migrations_ok else 'danger' }}-subtle text-{{ 'success' if health.migrations_ok else 'danger' }} align-self-center" title="Database migration {{ health.db_revision }}"><i class="bi bi-database-check"></i> DB {{ 'OK' if health.migrations_ok else 'update needed' }}</span>
+  </div>
+</div>
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+
+{# ---- KPI cards ---- #}
+<div class="row g-3 mb-3">
+{% set cards = [
+  ('bi-cash-stack', 'GMV (SAR)', '{:,.0f}'.format(k.gmv), 'admin_orders_list', 'success', dash.monthly_gmv),
+  ('bi-box-seam', 'Orders', k.orders, 'admin_orders_list', 'primary', dash.monthly_orders),
+  ('bi-wallet2', 'Platform revenue', '{:,.0f}'.format(k.revenue), 'admin_reports', 'info', None),
+  ('bi-building-check', 'Active companies', k.companies, 'admin_companies_list', 'secondary', None),
+  ('bi-hourglass-split', 'Pending approvals', k.pending, 'admin_approvals_list', 'warning', None),
+  ('bi-exclamation-octagon', 'Open disputes', k.open_disputes, 'admin_disputes', 'danger', None),
+  ('bi-eyedropper', 'Lab queue', k.lab_queue, 'admin_labs', 'primary', None),
+  ('bi-shield-check', 'Passports to review', k.passports_pending, 'admin_passports_list', 'warning', None),
+] %}
+{% for icon, label, value, route, color, spark in cards %}
+  <div class="col-6 col-md-3">
+    <a href="{{ url_for(route) }}" class="text-decoration-none"><div class="card adminuiux-card h-100"><div class="card-body py-3">
+      <div class="d-flex justify-content-between align-items-start">
+        <div><div class="small text-secondary">{{ label }}</div><div class="fs-4 fw-bold text-body">{{ value }}</div></div>
+        <span class="rounded-3 d-inline-flex align-items-center justify-content-center bg-{{ color }}-subtle text-{{ color }}" style="width:40px;height:40px"><i class="bi {{ icon }} fs-5"></i></span>
+      </div>
+      {% if spark %}{{ ch.sparkline('spark' ~ loop.index, spark, 40) }}{% endif %}
+    </div></div></a>
+  </div>
+{% endfor %}
+</div>
+
+{# ---- charts ---- #}
+<div class="row g-3 mb-3">
+  <div class="col-xl-8"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6 class="mb-2"><i class="bi bi-bar-chart-line"></i> Orders & GMV · 12 months</h6>
+    {{ ch.combo('ccCombo', dash.months, dash.monthly_orders, dash.monthly_gmv) }}
+  </div></div></div>
+  <div class="col-xl-4"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6 class="mb-2"><i class="bi bi-pie-chart"></i> Orders by status</h6>
+    {{ ch.donut('ccOrderStatus', dash.order_status, 300, None, k.orders ~ '') }}
+  </div></div></div>
+</div>
+<div class="row g-3 mb-3">
+  <div class="col-lg-4"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6 class="mb-2"><i class="bi bi-buildings"></i> Companies · role × status</h6>
+    {{ ch.stacked_bar('ccCompanies', dash.companies.roles, dash.companies.series, 260) }}
+  </div></div></div>
+  <div class="col-lg-4"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6 class="mb-2"><i class="bi bi-grid-3x3-gap"></i> Listings by status</h6>
+    {{ ch.bars('ccListings', dash.listings, 260) }}
+  </div></div></div>
+  <div class="col-lg-4"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6 class="mb-2"><i class="bi bi-cash-coin"></i> Settlement fees (SAR)</h6>
+    {{ ch.donut('ccFees', dash.fee_status, 260) }}
+  </div></div></div>
+</div>
+<div class="row g-3 mb-3">
+  <div class="col-lg-8"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6 class="mb-2"><i class="bi bi-person-plus"></i> New registrations per month</h6>
+    {{ ch.lines('ccReg', dash.months, dash.registrations, 260, area=True) }}
+  </div></div></div>
+  <div class="col-lg-4"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6 class="mb-1"><i class="bi bi-shield-lock"></i> Security score</h6>
+    {{ ch.gauge('ccScore', security_score, 190, 'of 100') }}
+    <div class="d-flex justify-content-center gap-3 small">
+      {% for lvl, c, ic in [('fail','danger','bi-x-octagon-fill'),('warn','warning','bi-exclamation-triangle-fill'),('info','info','bi-info-circle-fill'),('ok','success','bi-check-circle-fill')] %}
+      <span class="text-{{ c }}"><i class="bi {{ ic }}"></i> {{ checklist | selectattr('level','equalto',lvl) | list | length }}</span>{% endfor %}
+    </div>
+  </div></div></div>
+</div>
+
+{# ---- security checklist (compact) + quick actions ---- #}
+<div class="row g-3">
+  <div class="col-lg-7"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6 class="mb-2"><i class="bi bi-list-check"></i> Security checklist</h6>
+    <div class="table-responsive"><table class="table table-sm align-middle mb-0 small">
+    {% for item in checklist %}
+      {% set c = {'ok':'success','warn':'warning','fail':'danger','info':'info'}[item.level] %}
+      {% set ic = {'ok':'bi-check-circle-fill','warn':'bi-exclamation-triangle-fill','fail':'bi-x-octagon-fill','info':'bi-info-circle-fill'}[item.level] %}
+      <tr>
+        <td style="width:24px"><i class="bi {{ ic }} text-{{ c }}"></i></td>
+        <td class="fw-semibold">{{ item.title }}</td>
+        <td class="text-secondary">{{ item.detail }}</td>
+        <td class="text-end">{% if item.level != 'ok' and item.fix %}<i class="bi bi-lightbulb text-warning" data-bs-toggle="tooltip" title="{{ item.fix }}"></i>{% endif %}
+          {% if item.action == 'secure_uploads' %}<form method="post" action="{{ url_for('admin_secure_uploads') }}" class="d-inline">{{ csrf_field() }}<button class="btn btn-sm btn-danger py-0"><i class="bi bi-lock"></i></button></form>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </table></div>
+  </div></div></div>
+  <div class="col-lg-5"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6 class="mb-2"><i class="bi bi-lightning"></i> Quick actions</h6>
+    <div class="row g-2 text-center">
+    {% set actions = [
+      ('admin_company_new', 'bi-building-add', 'New company'), ('admin_user_new', 'bi-person-plus', 'New user'),
+      ('admin_master_data_index', 'bi-database-gear', 'Master data'), ('admin_system_settings', 'bi-sliders', 'Settings'),
+      ('admin_subscriptions', 'bi-stars', 'Plans'), ('admin_finance', 'bi-cash-coin', 'Fees'),
+      ('admin_products', 'bi-grid', 'Listings'), ('admin_rfqs', 'bi-file-earmark-text', 'RFQs'),
+      ('admin_data_requests', 'bi-person-lock', 'PDPL'), ('admin_audit_log', 'bi-journal-text', 'Audit log'),
+      ('admin_labs', 'bi-eyedropper', 'Labs'), ('admin_reports', 'bi-graph-up-arrow', 'Reports'),
+    ] %}
+    {% for route, icon, label in actions %}
+      <div class="col-3"><a href="{{ url_for(route) }}" class="text-decoration-none d-block p-2 rounded-3 border h-100">
+        <i class="bi {{ icon }} fs-4 text-theme"></i><div class="small text-body mt-1">{{ label }}</div></a></div>
+    {% endfor %}
+    </div>
+    <div class="small text-secondary mt-3"><i class="bi bi-hdd-network"></i> {{ health.app_env }} · PostgreSQL {{ health.postgres }} · email {{ health.email_mode }} · {{ k.users }} active users</div>
+  </div></div></div>
+</div>
+{% endblock %}
+{% block extra_js %}{{ ch.scripts() }}
+<script>document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function(e){ if (window.bootstrap) new bootstrap.Tooltip(e); });</script>
+{% endblock %}

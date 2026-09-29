@@ -1,0 +1,26 @@
+{% extends "layouts/base.html" %}
+{% block title %}Raise a dispute{% endblock %}
+{% block content %}
+<a href="{{ url_for(party ~ '_order_detail', order_id=order.id) }}" class="text-secondary text-decoration-none small">&larr; Back to order</a>
+<h4 class="mt-2 mb-1"><i class="bi bi-flag"></i> Raise a dispute</h4>
+<p class="text-secondary">Order {{ order.order_reference }} · {{ order.rfq.mineral_type }}. The platform team reviews every dispute and records a formal decision.</p>
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+{% if not can_raise %}<div class="alert alert-warning">{{ why }}</div>{% else %}
+<div class="card adminuiux-card"><div class="card-body">
+<form method="post" enctype="multipart/form-data" action="{{ url_for(party ~ '_dispute_create') }}">
+  {{ csrf_field() }}
+  <input type="hidden" name="order_id" value="{{ order.id }}">
+  <div class="mb-3"><label class="form-label">Category</label>
+    <select name="category" class="form-select" required><option value="">Choose…</option>
+      {% for k, v in categories.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></div>
+  <div class="mb-3"><label class="form-label">What went wrong?</label>
+    <textarea name="reason" class="form-control" rows="5" minlength="10" required placeholder="Describe the problem, quantities, dates and what you observed."></textarea></div>
+  <div class="mb-3"><label class="form-label">What outcome are you asking for?</label>
+    <textarea name="desired_outcome" class="form-control" rows="2" placeholder="e.g. partial refund, replacement shipment, price adjustment"></textarea></div>
+  <div class="mb-3"><label class="form-label">Evidence (optional)</label>
+    <input type="file" name="evidence" class="form-control" accept=".pdf,.png,.jpg,.jpeg">
+    <div class="form-text">PDF, JPG or PNG up to 10 MB. A SHA-256 fingerprint is recorded.</div></div>
+  <div class="alert alert-light small"><i class="bi bi-info-circle"></i> While the dispute is open the order is on hold (status “disputed”). If you withdraw, it continues from where it was.</div>
+  <button class="btn btn-danger" type="submit">Submit dispute</button>
+</form></div></div>{% endif %}
+{% endblock %}

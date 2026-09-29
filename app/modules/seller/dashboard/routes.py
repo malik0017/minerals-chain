@@ -1,17 +1,5 @@
 """
 app/modules/seller/dashboard/routes.py
-
-Batch E: redesigned in the InvestmentUX visual pattern (hero card,
-stat tiles, status-breakdown donut, quick actions) — every number on
-this page is real data from this seller's own company, computed here
-by iterating what's already fetched rather than adding new
-repository functions for counts that are cheap to derive in Python at
-this data scale.
-
-The donut only renders for a real company — admin previewing this
-portal has no single company's listings to break down (see the
-existing stats_are_platform_wide pattern below), so it shows a plain
-note instead of a misleading or empty chart.
 """
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
@@ -51,9 +39,6 @@ def seller_dashboard(
 ):
     context = build_portal_context(user, UserRole.SELLER, active_path=request.url.path)
     context["company"] = user.company
-    # RFQ inbox is a broadcast/platform-wide feed (no per-seller scoping
-    # exists — see rfq.py's docstring), so this count is the same for
-    # every seller and for admin preview alike.
     context["open_rfq_count"] = rfq_repository.count_open(db)
 
     if user.company is not None:
@@ -65,7 +50,7 @@ def seller_dashboard(
 
         orders = order_repository.list_for_seller_company(db, user.company_id)
         context["order_count"] = len(orders)
-        context["orders_in_progress"] = sum(1 for o in orders if o.status.value != "completed")
+        context["orders_in_progress"] = sum(1 for o in orders if o.status.value not in ("completed", "cancelled", "resolved"))
 
         context["quotation_count"] = len(quotation_repository.list_for_seller_company(db, user.company_id))
 
@@ -74,10 +59,6 @@ def seller_dashboard(
             for status in ProductStatus
         ])
     else:
-        # Batch 8: admin previewing the Seller Portal has no company of
-        # their own to show stats for — rather than hiding the summary
-        # cards entirely (which read as "broken"/"nothing to see"),
-        # show real platform-wide totals across every seller instead.
         context["listing_count"] = product_repository.count_all(db)
         context["draft_count"] = product_repository.count_by_status(db, ProductStatus.DRAFT)
         context["verified_count"] = product_repository.count_by_status(db, ProductStatus.VERIFIED)

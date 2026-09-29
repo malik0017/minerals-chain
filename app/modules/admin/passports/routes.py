@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
-from app.core.permissions import require_portal
+from app.core.permissions import require_admin, require_portal
 from app.core.portal_nav import build_portal_context
 from app.database.base import get_db
 from app.models.certification import CertificationType
@@ -28,7 +28,7 @@ from app.core.templates import templates
 def passports_list(
     request: Request,
     db: Session = Depends(get_db),
-    admin: User = Depends(require_portal(UserRole.ADMIN)),
+    admin: User = Depends(require_admin("passports")),
 ):
     pending = certification_repository.list_pending(db, cert_type=CertificationType.MINERAL_PASSPORT)
     context = build_portal_context(admin, UserRole.ADMIN, active_path=request.url.path)
@@ -41,7 +41,7 @@ def passport_review(
     request: Request,
     passport_id: uuid.UUID,
     db: Session = Depends(get_db),
-    admin: User = Depends(require_portal(UserRole.ADMIN)),
+    admin: User = Depends(require_admin("passports")),
     error: str | None = None,
 ):
     try:
@@ -59,7 +59,7 @@ def passport_approve(
     request: Request,
     passport_id: uuid.UUID,
     db: Session = Depends(get_db),
-    admin: User = Depends(require_portal(UserRole.ADMIN)),
+    admin: User = Depends(require_admin("passports")),
 ):
     try:
         passport = get_pending_certification(db, passport_id)
@@ -78,7 +78,7 @@ def passport_reject(
     request: Request,
     passport_id: uuid.UUID,
     db: Session = Depends(get_db),
-    admin: User = Depends(require_portal(UserRole.ADMIN)),
+    admin: User = Depends(require_admin("passports")),
     reason: str = Form(...),
 ):
     try:

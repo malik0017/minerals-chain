@@ -1,0 +1,47 @@
+{% extends "layouts/base.html" %}
+{% block title %}Subscriptions{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div><h4 class="mb-1"><i class="bi bi-stars"></i> Subscriptions</h4>
+    <p class="text-secondary mb-0">Plans, expiry and subscription revenue. Plan names, prices and limits: Master Data → Subscription Plans.</p></div>
+  <form method="post" action="{{ url_for('admin_subscriptions_run') }}">{{ csrf_field() }}<button class="btn btn-outline-theme"><i class="bi bi-arrow-repeat"></i> Run expiry check now</button></form>
+</div>
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+<div class="row g-2 mb-3">{% for t_ in tiers %}<div class="col-4 col-md-2"><div class="card adminuiux-card"><div class="card-body py-2"><div class="small text-secondary text-capitalize">{{ t_.value }}</div><div class="h5 mb-0">{{ counts[t_.value] }}</div></div></div></div>{% endfor %}</div>
+<ul class="nav nav-pills mb-3">
+  <li class="nav-item"><a class="nav-link {% if tab != 'charges' %}active{% endif %}" href="?tab=companies">Companies</a></li>
+  <li class="nav-item"><a class="nav-link {% if tab == 'charges' %}active{% endif %}" href="?tab=charges">Charges</a></li>
+</ul>
+{% if tab == 'charges' %}
+<div class="card adminuiux-card"><div class="table-responsive"><table class="table align-middle mb-0">
+  <thead><tr><th>Reference</th><th>Company</th><th>Plan</th><th>Period</th><th class="text-end">Total (SAR)</th><th>Status</th><th></th></tr></thead>
+  <tbody>{% for ch in charges %}<tr>
+    <td class="fw-semibold">{{ ch.reference }}</td><td>{{ ch.company.company_name }}</td><td>{{ ch.tier }}</td>
+    <td class="small">{{ ch.period_start }} → {{ ch.period_end or '—' }}</td><td class="text-end">{{ '{:,.2f}'.format(ch.total_sar) }}</td>
+    <td>{% set c = {'pending':'warning','paid':'success','waived':'info','cancelled':'secondary'}[ch.status] %}<span class="badge bg-{{ c }}-subtle text-{{ c }}">{{ ch.status }}</span></td>
+    <td><form method="post" action="{{ url_for('admin_subscription_charge', charge_id=ch.id) }}" class="d-flex gap-1">{{ csrf_field() }}
+      <select name="status" class="form-select form-select-sm w-auto">{% for s in ['pending','paid','waived','cancelled'] %}<option {% if ch.status == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+      <input name="reference" class="form-control form-control-sm" style="max-width:110px" placeholder="Ref" value="{{ ch.payment_reference or '' }}"><button class="btn btn-sm btn-outline-theme">Save</button></form></td>
+  </tr>{% else %}<tr><td colspan="7" class="text-secondary">No charges yet.</td></tr>{% endfor %}</tbody></table></div></div>
+{% else %}
+<form method="get" class="row g-2 mb-3"><input type="hidden" name="tab" value="companies">
+  <div class="col-md-4"><input name="q" value="{{ q }}" class="form-control" placeholder="Company name"></div>
+  <div class="col-auto"><select name="tier" class="form-select"><option value="">All tiers</option>{% for t_ in tiers %}<option value="{{ t_.value }}" {% if tier == t_.value %}selected{% endif %}>{{ t_.value }}</option>{% endfor %}</select></div>
+  <div class="col-auto"><button class="btn btn-outline-theme">Filter</button></div></form>
+<div class="card adminuiux-card"><div class="table-responsive"><table class="table align-middle mb-0">
+  <thead><tr><th>Company</th><th>Role</th><th>Plan</th><th>Status</th><th>Valid until</th><th>Usage</th><th>Change</th></tr></thead>
+  <tbody>{% for c, info in companies %}<tr>
+    <td><a href="{{ url_for('admin_company_detail', company_id=c.id) }}">{{ c.company_name }}</a></td>
+    <td class="small">{{ c.role.value }}</td><td>{{ info.plan.name_en if info.plan else info.tier }}</td>
+    <td>{% set cl = {'active':'success','grace':'warning','expired':'danger','none':'secondary'}.get(info.status,'secondary') %}<span class="badge bg-{{ cl }}-subtle text-{{ cl }}">{{ info.status }}</span></td>
+    <td class="small">{{ info.end_date or 'No expiry' }}</td>
+    <td class="small">{{ info.usage.listings if c.role.value == 'seller' else info.usage.rfqs }} {{ 'listings' if c.role.value == 'seller' else 'open RFQs' }}</td>
+    <td><form method="post" action="{{ url_for('admin_subscription_change', company_id=c.id) }}" class="d-flex gap-1">{{ csrf_field() }}
+      <select name="tier" class="form-select form-select-sm w-auto">{% for t_ in tiers %}<option value="{{ t_.value }}" {% if info.tier == t_.value %}selected{% endif %}>{{ t_.value }}</option>{% endfor %}</select>
+      <button name="action" value="change" class="btn btn-sm btn-outline-theme">Set</button>
+      {% if info.end_date %}<button name="action" value="renew" class="btn btn-sm btn-outline-secondary">Renew</button>{% endif %}</form></td>
+  </tr>{% endfor %}</tbody></table></div></div>
+{% endif %}
+{% include "partials/pager.html" %}
+{% endblock %}

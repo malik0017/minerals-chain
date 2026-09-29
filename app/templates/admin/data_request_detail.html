@@ -1,0 +1,38 @@
+{% extends "layouts/base.html" %}
+{% block title %}{{ r.reference }}{% endblock %}
+{% block content %}
+<a href="{{ url_for('admin_data_requests') }}" class="text-secondary text-decoration-none small">&larr; Data requests</a>
+<h4 class="mt-2 mb-3">{{ r.reference }} · {{ r.request_type.value }}</h4>
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+<div class="row g-3">
+  <div class="col-lg-6"><div class="card adminuiux-card h-100"><div class="card-body">
+    <dl class="row small mb-0">
+      <dt class="col-4">User</dt><dd class="col-8"><a href="{{ url_for('admin_user_detail', user_id=r.user_id) }}">{{ r.user.full_name }}</a> · {{ r.user.email }}</dd>
+      <dt class="col-4">Company</dt><dd class="col-8">{{ r.company.company_name if r.company else '—' }}</dd>
+      <dt class="col-4">Submitted</dt><dd class="col-8">{{ r.created_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+      <dt class="col-4">Due</dt><dd class="col-8 {% if r.due_at < now and r.status.value in ('open','in_progress') %}text-danger fw-semibold{% endif %}">{{ r.due_at.strftime('%Y-%m-%d') }}</dd>
+      <dt class="col-4">Details</dt><dd class="col-8" style="white-space:pre-line">{{ r.details or '—' }}</dd>
+      <dt class="col-4">Handled by</dt><dd class="col-8">{{ r.handled_by.full_name if r.handled_by else '—' }}</dd>
+    </dl>
+  </div></div></div>
+  <div class="col-lg-6">
+    <div class="card adminuiux-card mb-3"><div class="card-body">
+      <h6>Respond</h6>
+      <form method="post" action="{{ url_for('admin_data_request_update', request_id=r.id) }}">{{ csrf_field() }}
+        <select name="status" class="form-select mb-2">{% for s in statuses %}<option value="{{ s.value }}" {% if r.status == s %}selected{% endif %}>{{ s.value.replace('_',' ') }}</option>{% endfor %}</select>
+        <textarea name="response" class="form-control mb-2" rows="3" placeholder="Response shown to the user">{{ r.response or '' }}</textarea>
+        <button class="btn btn-theme">Save</button>
+      </form>
+    </div></div>
+    {% if r.request_type.value == 'deletion' and r.user.is_active %}
+    <div class="card adminuiux-card border-danger-subtle"><div class="card-body">
+      <h6 class="text-danger">Fulfil deletion</h6>
+      <p class="small text-secondary">Replaces the user's name, email, phone and photo, removes 2FA and disables the account. Orders, certificates and invoices stay (legal retention) but no longer identify the person.</p>
+      <form method="post" action="{{ url_for('admin_data_request_anonymise', request_id=r.id) }}" onsubmit="return confirm('Anonymise this account permanently?');">{{ csrf_field() }}
+        <button class="btn btn-danger btn-sm">Anonymise account</button></form>
+    </div></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

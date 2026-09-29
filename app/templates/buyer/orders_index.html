@@ -40,7 +40,9 @@
             {% elif order.status.value == "confirmed" %}<span class="badge bg-info-subtle text-info">Confirmed</span>
             {% elif order.status.value == "in_transit" %}<span class="badge bg-primary-subtle text-primary">In transit</span>
             {% elif order.status.value == "delivered" %}<span class="badge bg-primary-subtle text-primary">Delivered</span>
-            {% else %}<span class="badge bg-success-subtle text-success">Completed</span>{% endif %}
+            {% elif order.status.value == "completed" %}<span class="badge bg-success-subtle text-success">Completed</span>
+            {% elif order.status.value in ("cancelled", "disputed") %}<span class="badge bg-danger-subtle text-danger">{{ order.status.value | capitalize }}</span>
+            {% else %}<span class="badge bg-secondary-subtle text-secondary">{{ order.status.value | capitalize }}</span>{% endif %}
           </td>
           <td class="text-secondary small">{{ order.created_at.strftime("%Y-%m-%d") }}</td>
           <td class="text-end">

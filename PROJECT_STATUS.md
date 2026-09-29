@@ -32,8 +32,36 @@ scenario.
 | G | Security & user management: CSRF tokens, cookie `secure` flag, login/OTP rate-limiting, expanded audit log coverage | ✅ Done |
 | H | RTL layout fix, personalize page rewiring, phone country flags, user-detail redesign, admin audit-log viewer, per-role registration toggle + OTP dev-mode toggle | ✅ Done |
 | H-fix | Restored 4 files that never landed on the dev machine after Batch H (`app.core.portal_nav` etc. `ModuleNotFoundError`s), + new testing tooling: `scripts/seed_test_data.py`, `scripts/check_routes.py`, `tests_selenium/` | ✅ Done |
+| I | ERP Master Data (all 20 masters from Minerals_ERP_Master_Data.pdf): mineral group/type/grade, specs, parameters, test methods, particle size, UOM, packaging, mines, warehouses/bins, applications, segments, HS codes, incoterms, payment terms, subscription plans, Product Master catalog, Batch/Lot + QC gate; generic `/admin/master-data` engine with CSV import/export + starter data | ✅ Done |
+| J | Schema V1 alignment (Minerals_DB_Schema_V1): bilingual/regulatory company fields, user profile fields, listing↔catalog link, product/RFQ specs, COA results, lab/passport fees, business references, frozen order financials + VAT, reveal log, settlement fees, order documents, bilingual notifications | ✅ Done |
+| K | Admin Control Center: typed system settings (fees, VAT, policies, numbering, security, dev tools), security checklist, company edit/suspend, user creation, impersonation, order override console, fee ledger, admin-2FA enforcement, private document storage, security headers, subscription limits | ✅ Done |
 
-## PHASE 3 — Payments & Compliance: ⬜ NOT STARTED
+## BRD completion release (this delivery) — see docs/BRD_COVERAGE.md
+
+| Batch | Scope | Status |
+|---|---|---|
+| R1 | One language button → language + RTL/LTR together (server-driven, theme switch captured); Arabic UI catalogue (1,600+ phrases, `app/services/master_data/i18n/*.tsv`, admin-editable); chart labels translated; test banner off by default | ✅ Done |
+| Q1 | Admin permission levels (super_admin / operations / finance / compliance / support), users list with filters + bulk actions, admin "New company", PDPL consent + privacy centre + data-subject request queue + anonymisation, public Privacy/Terms/Help pages (admin-editable content) | ✅ Done |
+| M6 | Real bilingual notifications (bell, page, deep links, admin alerts by area) | ✅ Done |
+| M4 | Subscription lifecycle: plan page, upgrade/downgrade rules, renew, grace → expire → downgrade, charges with VAT, admin subscriptions + charges | ✅ Done |
+| M1 | Disputes: raise with evidence (SHA-256), thread, internal notes, withdraw, admin status/assign, immutable decision, logged correction, order RESOLVED + completed_via_dispute | ✅ Done |
+| M2 | Lab workflow: schedule → testing → per-parameter results → auto PASS/FAIL → COA with fingerprint + printable view; `/lab/certificates`; Admin → Lab Partners (fee, turnaround, accreditation, pause, preferred); premium priority | ✅ Done |
+| M3 | Seller spec editor (catalogue pre-fill), specs required before verification, buyer browse with specs + COA results + passport badges + plan-priority ordering, structured RFQ, spec match score, quote revision/expiry, comparison table, RFQ cancel, Admin → Products (suspend/reactivate) + Admin → RFQs, passport renewal (expedited for premium) | ✅ Done |
+| P1 | Order documents (upload after reveal, share toggle, integrity-checked download), commercial invoice (INV-, not ZATCA), INVOICED step, order progress stepper | ✅ Done |
+| R2 | Visual Control Center (ECharts: KPIs, combo, donuts, stacked bars, gauge), Admin → Reports (revenue streams, normal vs dispute orders, disputes, lab pass rates, top minerals, CSV) | ✅ Done |
+| D | `scripts/generate_demo_data.py` — 100+ records per module over 12 months, every password `admin123` | ✅ Done |
+
+## Pending by decision
+
+| Batch | Scope | Status |
+|---|---|---|
+| L | ZATCA Fatoora Phase 2 e-invoicing (clearance/reporting, QR, hash chain, CSID, credit notes) | ⏸ Later — needs tax-advisor decision on invoice issuer |
+| N | Payment gateway (SAMA-licensed: mada / Apple Pay / SADAD), subscription billing | ⏸ Later |
+| O | Inventory ledger, Odoo/SAP B1 export | ⬜ |
+| Q | Infra hardening before go-live: encryption at rest, backups, Redis rate limiting, strict CSP, pen test | ⬜ Before go-live |
+| R | Wathq CR / MIM licence API checks (BRD §13: future enhancement), native mobile | ⬜ |
+
+## PHASE 3 — Payments & Compliance: 🟡 FOUNDATIONS LAID (Batches J/K: VAT snapshot, settlement fees, references)
 ZATCA e-invoicing, escrow/settlement, subscription billing
 enforcement, disputes, audit logging expansion.
 
@@ -41,20 +69,13 @@ enforcement, disputes, audit logging expansion.
 Inventory management, logistics/shipping, document management,
 advanced reporting, admin monitoring, mobile responsiveness pass.
 
----
-
-## Reference documents from other batches
-- **`DATA_DICTIONARY.md`** (Batch A) — full table-by-table database reference
-- Each batch's own README (`BATCH_A_README.md`, `BATCH_B_README.md`,
-  `BATCH_C_README.md`, ...) — step-by-step testing instructions and
-  the specific design decisions made in that batch
-
----
 
 ## Known cleanup pending (low priority, doesn't block anything)
-- Delete `app/templates/layouts/base_app.html` and `base_portal.html` (unused)
-- Delete `app/modules/seller/routes.py` (stray unused duplicate)
-- Wire `users.last_login_at` — currently a dead column, never written to
+- Delete `app/modules/seller/routes_old.py` (stray unused duplicate)
+- Delete legacy `app/models/certificate.py`, `app/models/passport.py`, `app/services/passport_service.py` (pre-Batch-A, no longer imported)
+- ~~Wire `users.last_login_at`~~ — done in Batch K
+- Pre-existing autogenerate drift on `users.email` (unique constraint vs unique index) — cosmetic, reconcile in a later migration
+- Delete `app/static/uploads/company_documents/` after running Control Center → "Secure legacy uploads"
 
 ## Deliberate scope boundaries
 Noted here so they don't get re-litigated by accident — these are
@@ -62,8 +83,7 @@ considered decisions, not oversights:
 
 - Email is not editable from `/my-profile` or `/admin/users`
 - Company role is not editable anywhere after registration
-- Passport validity period (365 days) is a hardcoded constant, no
-  admin-configurable policy UI yet
+- ~~Passport validity period hardcoded~~ — now System Settings → Policies (Batch K)
 - No 2FA backup codes — recovery path is admin disabling 2FA for a
   locked-out user
 - Buyer browse search is mineral-type match only, no other filters
@@ -114,23 +134,8 @@ it — a "column ... does not exist" error right after applying a batch
 almost always means this step was missed. Check `alembic current`
 against the latest filename in `alembic/versions/` to confirm.
 
-## NEW: post-batch routine (`scripts/`, `tests_selenium/`)
-Every batch from now on should end with this three-step routine before
-you consider it "done" on your machine:
+## Post-batch routine — updated for Batch I+
+1. `alembic upgrade head`   2. `python scripts/load_master_data.py`   3. `python scripts/seed_test_data.py`
+4. `python scripts/check_routes.py` (now expands every master-data screen)   5. `pytest tests/ -q`
 
-1. `alembic upgrade head`
-2. `python scripts/seed_test_data.py` — idempotent; safe to run after
-   every batch, creates/repairs a full set of known test accounts,
-   companies, products, RFQs, quotations and an order at every stage
-   of its lifecycle. Writes `scripts/seed_ids.json`.
-3. `python scripts/check_routes.py` — in-process route smoke test (no
-   server needs to be running separately); hits every GET route
-   anonymously and as each seeded role, exits non-zero if anything
-   500s. This is what would have caught the `ModuleNotFoundError`s
-   that triggered H-fix, instantly, at import time.
 
-`tests_selenium/` is the companion real-browser suite for the handful
-of mutating (POST) flows `check_routes.py` deliberately never fires —
-run it with `pytest tests_selenium/` once `seed_test_data.py` has been
-run. See `TESTING_TOOLS_README.md` for full setup and details on all
-three.

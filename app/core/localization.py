@@ -1,31 +1,5 @@
 """
 app/core/localization.py
-
-BRD §6.10: "All user-facing interfaces, documents, and notifications
-shall be available in both Arabic and English... Arabic-language
-interfaces shall render with correct right-to-left layout."
-
-Deliberately a plain nested dict, not a full i18n framework (gettext/
-Babel/etc.) — this project has stayed dependency-light throughout, and
-a framework's .po/.mo compilation pipeline is real infrastructure
-overhead that isn't justified for a two-language, no-pluralization-
-rules-needed system. If this ever needs a third language or real
-plural/gender rules, that's the point to reconsider.
-
-Scope of THIS batch: the global chrome (header, sidebar, footer — every
-page extends one of these, so translating them covers the whole app's
-navigation and structure) plus the auth pages (login, register,
-account status). Deeper per-portal pages (listings, RFQs, orders,
-admin tables...) are NOT translated yet — t() below falls back to
-English automatically for any key it doesn't have an Arabic string
-for, so nothing breaks or shows blank, it just isn't Arabic yet. See
-temp.txt's WHAT'S NEXT for the plan to extend coverage.
-
-Usage: t("nav.dashboard", lang) or, in a template, the "t" global
-function registered in main.py: {{ t('nav.dashboard') }} (lang is
-read from the request-scoped "lang" template variable already present
-in every page's context via portal_nav.build_portal_context / the
-auth pages' own context).
 """
 
 SUPPORTED_LANGUAGES = ("en", "ar")
@@ -191,6 +165,54 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
     "common.pending": {"en": "Pending", "ar": "قيد الانتظار"},
     "common.rejected": {"en": "Rejected", "ar": "مرفوض"},
     "common.welcome": {"en": "Welcome", "ar": "مرحبًا"},
+
+    # --- Batch Q1 / M1–M4: navigation ---
+    "nav.h_overview": {"en": "Overview", "ar": "نظرة عامة"},
+    "nav.h_onboarding": {"en": "Onboarding", "ar": "التسجيل والاعتماد"},
+    "nav.h_marketplace": {"en": "Marketplace", "ar": "السوق"},
+    "nav.h_finance": {"en": "Finance", "ar": "المالية"},
+    "nav.h_compliance": {"en": "Compliance", "ar": "الامتثال"},
+    "nav.h_configuration": {"en": "Configuration", "ar": "الإعدادات"},
+    "nav.lab_partners": {"en": "Lab Partners", "ar": "المختبرات الشريكة"},
+    "nav.products": {"en": "Products", "ar": "المنتجات"},
+    "nav.rfqs": {"en": "RFQs", "ar": "طلبات التسعير"},
+    "nav.subscriptions": {"en": "Subscriptions", "ar": "الاشتراكات"},
+    "nav.subscription": {"en": "My Subscription", "ar": "اشتراكي"},
+    "nav.data_requests": {"en": "Data Requests", "ar": "طلبات البيانات"},
+    "nav.certificates": {"en": "Certificates", "ar": "الشهادات"},
+
+    # --- Batch I: master data ---
+    "nav.master_data": {"en": "Master Data (ERP)", "ar": "البيانات الرئيسية"},
+    "nav.control_center": {"en": "Control Center", "ar": "مركز التحكم"},
+    "nav.system_settings": {"en": "System Settings", "ar": "إعدادات النظام"},
+    "nav.finance": {"en": "Fees & Settlement", "ar": "الرسوم والتسوية"},
+    "md.title": {"en": "ERP Master Data", "ar": "البيانات الرئيسية للنظام"},
+    "md.subtitle": {"en": "Every reference list the platform uses — managed here, no code changes needed.", "ar": "جميع القوائم المرجعية للمنصة - تُدار من هنا دون أي تعديل برمجي."},
+    "md.load_starter": {"en": "Load starter data", "ar": "تحميل البيانات الأولية"},
+    "md.empty_hint": {"en": "No master data yet. Click “Load starter data” to load the reference lists from the ERP Master Data document, then edit freely.", "ar": "لا توجد بيانات بعد. اضغط «تحميل البيانات الأولية» ثم عدّلها كما تشاء."},
+    "md.add": {"en": "Add new", "ar": "إضافة"},
+    "md.edit": {"en": "Edit", "ar": "تعديل"},
+    "md.export": {"en": "Export CSV", "ar": "تصدير CSV"},
+    "md.import": {"en": "Import CSV", "ar": "استيراد CSV"},
+    "md.template": {"en": "Download template", "ar": "تنزيل القالب"},
+    "md.search": {"en": "Search code or name…", "ar": "ابحث بالرمز أو الاسم…"},
+    "md.all": {"en": "All", "ar": "الكل"},
+    "md.active_only": {"en": "Active only", "ar": "النشطة فقط"},
+    "md.inactive_only": {"en": "Inactive only", "ar": "غير النشطة فقط"},
+    "md.no_rows": {"en": "No records match.", "ar": "لا توجد سجلات مطابقة."},
+    "md.save": {"en": "Save", "ar": "حفظ"},
+    "md.save_add_another": {"en": "Save & add another", "ar": "حفظ وإضافة آخر"},
+    "md.cancel": {"en": "Cancel", "ar": "إلغاء"},
+    # --- Batch K: control center ---
+    "cc.title": {"en": "Admin Control Center", "ar": "مركز تحكم المسؤول"},
+    "cc.subtitle": {"en": "Configure, test and monitor the whole platform from one place.", "ar": "اضبط واختبر وراقب المنصة بالكامل من مكان واحد."},
+    "ss.title": {"en": "System Settings", "ar": "إعدادات النظام"},
+    "ss.subtitle": {"en": "Fees, VAT, policies, numbering and security — effective immediately, every change audit-logged.", "ar": "الرسوم والضريبة والسياسات والترقيم والأمان - تسري فورًا وكل تغيير مسجل."},
+    "ss.reset": {"en": "Reset to default", "ar": "إعادة الافتراضي"},
+    "ss.default": {"en": "Default", "ar": "الافتراضي"},
+    "banner.test_env": {"en": "TEST ENVIRONMENT — data here is not real", "ar": "بيئة اختبار - البيانات هنا ليست حقيقية"},
+    "banner.impersonating": {"en": "You are viewing the platform as", "ar": "أنت تتصفح المنصة بصفتك"},
+    "banner.stop_impersonating": {"en": "Return to admin", "ar": "العودة إلى حساب المسؤول"},
 }
 
 

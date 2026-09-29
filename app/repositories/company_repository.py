@@ -42,5 +42,5 @@ def list_all(
 
 def create(db: Session, company: Company) -> Company:
     db.add(company)
-    db.flush()  # assigns company.id without committing yet — caller controls the transaction
+    db.flush() 
     return company

@@ -15,7 +15,9 @@ class AdminUserActionError(ValueError):
 
 
 def update_user(
-    db: Session, target: User, acting_admin: User, *, full_name: str, is_active: bool
+    db: Session, target: User, acting_admin: User, *, full_name: str, is_active: bool,
+    phone: str | None = None, job_title: str | None = None, company_role: str | None = None,
+    preferred_language: str | None = None,
 ) -> User:
     if not full_name.strip():
         raise AdminUserActionError("Full name cannot be blank.")
@@ -25,10 +27,17 @@ def update_user(
     previous_active = target.is_active
     target.full_name = full_name.strip()
     target.is_active = is_active
+    if phone is not None:
+        target.phone = phone.strip() or None
+    if job_title is not None:
+        target.job_title = job_title.strip() or None
+    if company_role is not None:
+        if company_role not in ("owner", "manager", "operator", "viewer"):
+            raise AdminUserActionError("Invalid company role.")
+        target.company_role = company_role
+    if preferred_language in ("en", "ar"):
+        target.preferred_language = preferred_language
 
-    # Batch G: only log when something about the account's standing
-    # actually changed — a routine "just edited the name" save
-    # shouldn't read the same as an activate/deactivate decision.
     if previous_active != is_active:
         audit_log_repository.create(
             db,
@@ -71,10 +80,6 @@ def reset_password(db: Session, target: User, acting_admin: User, new_password: 
     target.locked_until = None
     target.failed_login_attempts = 0
 
-    # Batch G: BRD §6.8 admin-action trail — deliberately no password
-    # content or hash in `details`, an admin resetting a password is
-    # exactly the kind of high-sensitivity action that needs a WHO/WHEN
-    # record without ever logging the credential itself.
     audit_log_repository.create(
         db,
         AuditLog(

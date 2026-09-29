@@ -1,85 +1,76 @@
 {% extends "layouts/base.html" %}
+{% from "partials/spec_table_macros.html" import spec_view with context %}
 {% block title %}{{ rfq.mineral_type }} RFQ{% endblock %}
 {% block content %}
+{% macro offer_form(action, q, label) %}
+<form method="post" action="{{ action }}">{{ csrf_field() }}
+  <div class="mb-3">
+    <label class="form-label" for="product_id">Offered listing</label>
+    <select class="form-select" id="product_id" name="product_id">
+      <option value="">— not linked to a listing —</option>
+      {% for p, score in listings %}<option value="{{ p.id }}" {% if q and q.product_id == p.id %}selected{% endif %}>{{ p.mineral_type }}{% if p.grade %} · {{ p.grade }}{% endif %} — {{ p.quantity_value }} {{ p.quantity_unit }}{% if score is not none %} · spec match {{ score }}%{% endif %}</option>{% endfor %}
+    </select>
+    <div class="form-text">Linking a verified listing attaches its current COA and passport and shows the buyer how well it matches their spec.</div>
+  </div>
+  <div class="row g-3 mb-3">
+    <div class="col-md-4"><label class="form-label">Unit price</label><input class="form-control" type="number" step="0.01" min="0.01" name="price_value" value="{{ q.price_value if q else '' }}" required></div>
+    <div class="col-md-2"><label class="form-label">Currency</label><input class="form-control" name="price_currency" value="{{ q.price_currency if q else 'SAR' }}" required></div>
+    <div class="col-md-3"><label class="form-label">Per</label><input class="form-control" name="price_unit" value="{{ q.price_unit if q and q.price_unit else 'per ' ~ rfq.quantity_unit }}"></div>
+    <div class="col-md-3"><label class="form-label">Lead time (days)</label><input class="form-control" type="number" min="1" name="lead_time_days" value="{{ q.lead_time_days if q else '' }}" required></div>
+    <div class="col-md-4"><label class="form-label">Incoterm</label><select class="form-select" name="incoterm_id"><option value="">{{ 'As requested (' ~ rfq.incoterm.code ~ ')' if rfq.incoterm else '—' }}</option>
+      {% for inc in incoterms %}<option value="{{ inc.id }}" {% if q and q.incoterm_id == inc.id %}selected{% endif %}>{{ inc.code }}</option>{% endfor %}</select></div>
+    <div class="col-md-4"><label class="form-label">Payment terms (days)</label><input class="form-control" type="number" min="0" max="365" name="payment_terms_days" value="{{ q.payment_terms_days if q and q.payment_terms_days is not none else (rfq.payment_terms_days if rfq.payment_terms_days is not none else '') }}"></div>
+    <div class="col-md-4"><label class="form-label">Valid for (days)</label><input class="form-control" type="number" min="1" max="180" name="validity_days" value="{{ q.validity_days if q and q.validity_days else default_validity }}"></div>
+  </div>
+  <div class="mb-3"><label class="form-label">Notes</label><textarea class="form-control" name="terms_notes" rows="2">{{ q.terms_notes if q and q.terms_notes else '' }}</textarea></div>
+  <button type="submit" class="btn btn-theme"><i class="bi bi-send"></i> {{ label }}</button>
+  <p class="text-secondary small mt-2 mb-0">The buyer sees your quote but not your company until an order is confirmed.</p>
+</form>
+{% endmacro %}
 
 <a href="{{ url_for('seller_rfq_inbox_index') }}" class="text-secondary text-decoration-none small">&larr; Back to inbox</a>
+<div class="d-flex justify-content-between align-items-center mt-2 mb-3">
+  <div><h4 class="mb-0">{{ rfq.mineral_type }}</h4><div class="small text-secondary">{{ rfq.rfq_reference }}</div></div>
+  {% if accepting %}<span class="badge bg-success-subtle text-success">Accepting quotes until {{ rfq.closes_at.strftime('%Y-%m-%d') if rfq.closes_at else '—' }}</span>
+  {% else %}<span class="badge bg-secondary-subtle text-secondary">Closed</span>{% endif %}
+</div>
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
 
-<h4 class="mt-2 mb-4">{{ rfq.mineral_type }}</h4>
-
-<div class="card adminuiux-card mb-3">
-  <div class="card-body">
-    <dl class="row mb-0">
-      <dt class="col-sm-3">Quantity</dt>
-      <dd class="col-sm-9">{{ rfq.quantity_value }} {{ rfq.quantity_unit }}</dd>
-
-      <dt class="col-sm-3">Delivery location</dt>
-      <dd class="col-sm-9">{{ rfq.delivery_location }}</dd>
-
-      <dt class="col-sm-3">Delivery timeframe</dt>
-      <dd class="col-sm-9">{{ rfq.delivery_timeframe }}</dd>
-
-      <dt class="col-sm-3">Specifications</dt>
-      <dd class="col-sm-9" style="white-space: pre-line;">{{ rfq.specifications_notes or "—" }}</dd>
-
-      <dt class="col-sm-3">Commercial terms</dt>
-      <dd class="col-sm-9" style="white-space: pre-line;">{{ rfq.commercial_terms_notes or "—" }}</dd>
-
-      <dt class="col-sm-3">Posted</dt>
-      <dd class="col-sm-9">{{ rfq.created_at.strftime("%Y-%m-%d %H:%M UTC") }}</dd>
+<div class="row g-3 mb-3">
+  <div class="col-lg-6"><div class="card adminuiux-card h-100"><div class="card-body">
+    <dl class="row mb-0 small">
+      <dt class="col-sm-4">Quantity</dt><dd class="col-sm-8">{{ rfq.quantity_value }} {{ rfq.quantity_unit }}</dd>
+      <dt class="col-sm-4">Delivery</dt><dd class="col-sm-8">{{ rfq.delivery_location }} · {{ rfq.delivery_timeframe }}{% if rfq.required_by %} · by {{ rfq.required_by }}{% endif %}</dd>
+      <dt class="col-sm-4">Incoterm / payment</dt><dd class="col-sm-8">{{ rfq.incoterm.code if rfq.incoterm else '—' }} / {{ (rfq.payment_terms_days ~ ' days') if rfq.payment_terms_days is not none else '—' }}</dd>
+      <dt class="col-sm-4">Other requirements</dt><dd class="col-sm-8" style="white-space: pre-line;">{{ rfq.specifications_notes or "—" }}</dd>
+      <dt class="col-sm-4">Commercial notes</dt><dd class="col-sm-8" style="white-space: pre-line;">{{ rfq.commercial_terms_notes or "—" }}</dd>
     </dl>
-  </div>
+  </div></div></div>
+  <div class="col-lg-6"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6><i class="bi bi-rulers"></i> Required specification</h6>{{ spec_view(spec_rows, 'No structured specification.') }}
+  </div></div></div>
 </div>
 
-{% if error %}
-<div class="alert alert-danger py-2">{{ error }}</div>
-{% endif %}
-
-<div class="card adminuiux-card">
-  <div class="card-body">
-    <h6 class="mb-3"><i class="bi bi-tags"></i> Your quotation</h6>
-
-    {% if my_quotation %}
-      <p class="text-success mb-1"><i class="bi bi-check-circle-fill"></i> Submitted</p>
-      <dl class="row mb-0">
-        <dt class="col-sm-3">Price</dt>
-        <dd class="col-sm-9">{{ my_quotation.price_currency }} {{ my_quotation.price_value }}{% if my_quotation.price_unit %} <span class="text-secondary">{{ my_quotation.price_unit }}</span>{% endif %}</dd>
-        <dt class="col-sm-3">Lead time</dt>
-        <dd class="col-sm-9">{{ my_quotation.lead_time_days }} day(s)</dd>
-        <dt class="col-sm-3">Terms</dt>
-        <dd class="col-sm-9" style="white-space: pre-line;">{{ my_quotation.terms_notes or "—" }}</dd>
-      </dl>
-    {% elif rfq.status.value != "open" %}
-      <p class="text-secondary mb-0">This RFQ is closed and no longer accepting quotations.</p>
-    {% else %}
-      <form method="post" action="{{ url_for('seller_rfq_submit_quote', rfq_id=rfq.id) }}">
-  {{ csrf_field() }}
-        <div class="row g-3 mb-3">
-          <div class="col-md-4">
-            <label class="form-label" for="price_value">Price</label>
-            <input class="form-control" type="number" step="0.01" min="0.01" id="price_value" name="price_value" required />
-          </div>
-          <div class="col-md-4">
-            <label class="form-label" for="price_currency">Currency</label>
-            <input class="form-control" id="price_currency" name="price_currency" value="SAR" required />
-          </div>
-          <div class="col-md-4">
-            <label class="form-label" for="price_unit">Unit <span class="text-secondary">(optional)</span></label>
-            <input class="form-control" id="price_unit" name="price_unit" placeholder="e.g. per MT" />
-          </div>
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="lead_time_days">Lead time (days)</label>
-          <input class="form-control" type="number" min="1" step="1" id="lead_time_days" name="lead_time_days" required />
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="terms_notes">Terms <span class="text-secondary">(optional)</span></label>
-          <textarea class="form-control" id="terms_notes" name="terms_notes" rows="3" placeholder="Payment terms, Incoterms, packaging, etc."></textarea>
-        </div>
-        <button type="submit" class="btn btn-theme"><i class="bi bi-send"></i> Submit quotation</button>
-        <p class="text-secondary small mt-2 mb-0">The buyer sees your quote but not your company — your identity stays hidden until an order is confirmed.</p>
-      </form>
+<div class="card adminuiux-card"><div class="card-body">
+  <h6 class="mb-3"><i class="bi bi-tags"></i> Your quotation</h6>
+  {% if my_quotation %}
+    <div class="d-flex flex-wrap gap-3 mb-3 small">
+      <span><span class="badge bg-{{ 'success' if my_quotation.status.value in ('submitted','accepted') else 'secondary' }}-subtle text-{{ 'success' if my_quotation.status.value in ('submitted','accepted') else 'secondary' }}">{{ my_quotation.status.value | capitalize }}</span></span>
+      <span>{{ my_quotation.quotation_reference }} · revision {{ my_quotation.revision_no or 1 }}</span>
+      <span>{{ my_quotation.price_currency }} {{ '{:,.2f}'.format(my_quotation.price_value) }} {{ my_quotation.price_unit or '' }} · total {{ '{:,.2f}'.format(my_quotation.total_price or 0) }}</span>
+      <span>{{ my_quotation.lead_time_days }} days · valid until {{ my_quotation.valid_until or '—' }}</span>
+      {% if my_quotation.match_score is not none %}<span>Spec match {{ my_quotation.match_score }}%</span>{% endif %}
+    </div>
+    {% if accepting and my_quotation.status.value in ('submitted','expired') %}
+      <details><summary class="btn btn-sm btn-outline-theme mb-2"><i class="bi bi-pencil"></i> Revise quotation</summary>
+        {{ offer_form(url_for('seller_rfq_revise_quote', rfq_id=rfq.id), my_quotation, 'Submit revision') }}
+      </details>
     {% endif %}
-  </div>
-</div>
-
+  {% elif not accepting %}
+    <p class="text-secondary mb-0">This RFQ is closed and no longer accepting quotations.</p>
+  {% else %}
+    {{ offer_form(url_for('seller_rfq_submit_quote', rfq_id=rfq.id), None, 'Submit quotation') }}
+  {% endif %}
+</div></div>
 {% endblock %}

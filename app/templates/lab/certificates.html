@@ -1,0 +1,27 @@
+{% extends "layouts/base.html" %}
+{% block title %}Certificates{% endblock %}
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-patch-check"></i> Certificates issued</h4>
+<div class="row g-2 mb-3">
+  <div class="col-4"><div class="card adminuiux-card"><div class="card-body py-2"><div class="small text-secondary">Total</div><div class="fs-4 fw-semibold">{{ stats.total }}</div></div></div></div>
+  <div class="col-4"><div class="card adminuiux-card"><div class="card-body py-2"><div class="small text-secondary">Passed</div><div class="fs-4 fw-semibold text-success">{{ stats.pass }}</div></div></div></div>
+  <div class="col-4"><div class="card adminuiux-card"><div class="card-body py-2"><div class="small text-secondary">Failed</div><div class="fs-4 fw-semibold text-danger">{{ stats.fail }}</div></div></div></div>
+</div>
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-5"><input name="q" value="{{ q }}" class="form-control" placeholder="Certificate number"></div>
+  <div class="col-md-4"><select name="result" class="form-select"><option value="">All results</option><option value="pass" {% if result=='pass' %}selected{% endif %}>Passed</option><option value="fail" {% if result=='fail' %}selected{% endif %}>Failed</option></select></div>
+  <div class="col-md-3"><button class="btn btn-theme w-100"><i class="bi bi-funnel"></i> Filter</button></div>
+</form>
+{% if not rows %}<div class="alert alert-secondary">No certificates yet.</div>{% else %}
+<div class="card adminuiux-card"><div class="table-responsive"><table class="table align-middle mb-0">
+<thead><tr><th>Number</th><th>Product</th><th>Seller</th><th>Result</th><th>Issued</th><th>Valid until</th><th></th></tr></thead>
+<tbody>{% for c in rows %}{% set p = c.scopes[0].product if c.scopes else None %}<tr>
+  <td class="fw-semibold">{{ c.certificate_number }}</td>
+  <td>{{ p.mineral_type if p else '—' }}{% if p and p.grade %} · {{ p.grade }}{% endif %}</td>
+  <td class="small">{{ c.subject_company.company_name }}</td>
+  <td>{% if c.status.value == 'approved' %}<span class="badge bg-success-subtle text-success">Pass</span>{% else %}<span class="badge bg-danger-subtle text-danger">Fail</span>{% endif %}</td>
+  <td class="small">{{ c.issue_date }}</td><td class="small">{{ c.expiry_date or '—' }}</td>
+  <td class="text-end"><a class="btn btn-sm btn-outline-theme" target="_blank" href="{{ url_for('certificate_document', cert_id=c.id) }}"><i class="bi bi-printer"></i></a></td>
+</tr>{% endfor %}</tbody></table></div></div>
+{% include "partials/pager.html" %}{% endif %}
+{% endblock %}

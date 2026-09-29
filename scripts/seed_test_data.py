@@ -1,68 +1,10 @@
 """
 scripts/seed_test_data.py
-
-Creates a complete, known, idempotent dataset that exercises every
-stage of the platform — one call away from having every path-param
-route (`/admin/companies/{id}`, `/seller/listings/{id}`,
-`/buyer/rfqs/{id}`, `/admin/passports/{id}`, `/buyer/orders/{id}`,
-etc.) resolvable to a real row, and fixed, memorable logins for the
-route checker (scripts/check_routes.py) and the Selenium suite
-(tests_selenium/) to log in with.
-
-WHERE THIS RUNS: drop this file into your project's own `scripts/`
-folder (create it if it doesn't exist) so `from app...` imports
-resolve — same idea as `seeds/create_admin.py`, just automated and
-covering the whole trading loop instead of one admin account.
-
-Run it against whatever DB your .env currently points at:
-
-    python scripts/seed_test_data.py
-
-Safe to run again after every batch — every step checks whether its
-row already exists (by a fixed email/CR number) and reuses it instead
-of erroring or duplicating, so this is meant to be part of your normal
-"pull the batch, migrate, seed, test" routine, not a one-time setup.
-
-WHAT IT CREATES (all passwords: Test@12345)
-  admin@mineralstest.com            — platform admin
-  seller@mineralstest.com           — approved seller company (Al-Faisal Minerals Trading)
-  buyer@mineralstest.com            — approved buyer company (Gulf Industrial Buyers Co.)
-  lab@mineralstest.com               — approved lab company (Riyadh Testing Labs)
-
-  1 product listing, taken all the way through: draft -> verification
-  requested -> lab issues certificate (VERIFIED) -> Mineral Passport
-  requested -> admin-approved passport.
-
-  1 RFQ from the buyer, 1 quotation from the seller, accepted by the
-  buyer (creates an Order), progressed through confirmed -> in_transit
-  -> delivered -> completed (buyer confirms receipt) so every order
-  timeline state has at least one real row to look at.
-
-  A SECOND, pending-only side dataset (an unapproved seller company,
-  a pending Mineral Passport request, an open RFQ with no quotation
-  yet) so the admin approval queue, the passport review queue and the
-  RFQ inbox aren't empty either.
-
-WHY SERVICES, NOT RAW ROWS: every step below calls the same
-app/services/*.py functions the real routes call (register_new_
-company_user, approve_company, create_listing, request_verification,
-issue_certificate, request_passport, approve_passport, create_rfq,
-submit_quotation, accept_quotation, confirm_order, ...) instead of
-building ORM rows by hand. That means this data is only ever as valid
-as the app's own business rules allow — if a service function's
-validation changes in a way that breaks this script, that's this
-script correctly catching a real regression, not a seeding bug.
 """
 import sys
 import uuid
 from pathlib import Path
 
-# Run as `python scripts/seed_test_data.py` from anywhere — this file's
-# parent's parent (the project root, containing the `app` package) is
-# added to sys.path so the `from app...` imports below resolve. Without
-# this, plain `python scripts/seed_test_data.py` fails with
-# "ModuleNotFoundError: No module named 'app'" because Python only puts
-# the script's OWN folder (scripts/) on sys.path, not the project root.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app.database.base import SessionLocal
@@ -85,8 +27,19 @@ from app.services import (
     verification_service,
 )
 
-PASSWORD = "Test@12345"
+PASSWORD = "admin123"
 DUMMY_PDF = b"%PDF-1.4 test document for seeded data\n%%EOF"
+
+
+def _add_specs(db, product, rows) -> None:
+    """Batch M3: declared specification (required before verification by default)."""
+    from decimal import Decimal
+    from app.services import spec_service
+    if not product.specs:
+        spec_service.save_product_specs(db, product, [
+            {"parameter": n, "min": Decimal(lo) if lo else None, "max": Decimal(hi) if hi else None,
+             "unit": u, "test_method": m} for n, lo, hi, u, m in rows])
+        db.commit()
 
 
 def _print(label: str, value: str) -> None:
@@ -96,7 +49,12 @@ def _print(label: str, value: str) -> None:
 def get_or_create_admin(db) -> User:
     admin = user_repository.get_by_email(db, "admin@mineralstest.com")
     if admin:
-        print("[skip] admin@mineralstest.com already exists")
+        admin.hashed_password = hash_password(PASSWORD)
+        admin.failed_login_attempts = 0
+        admin.locked_until = None
+        admin.is_active = True
+        db.commit()
+        print("[fix]  admin@mineralstest.com exists — password reset + unlocked")
         return admin
     admin = User(
         company_id=None,
@@ -118,7 +76,10 @@ def get_or_create_company_user(
 ) -> tuple[User, Company]:
     existing = user_repository.get_by_email(db, email)
     if existing:
-        print(f"[skip] {email} already exists")
+        existing.hashed_password = hash_password(PASSWORD)  # keep demo logins on "admin123"
+        existing.failed_login_attempts, existing.locked_until = 0, None
+        db.commit()
+        print(f"[skip] {email} already exists (password reset)")
         return existing, existing.company
 
     payload = RegisterRequest(
@@ -202,6 +163,7 @@ def main() -> None:
             print(f"[new]  product listing created ({product.mineral_type}, id={product.id})")
         else:
             print(f"[skip] product listing already exists (id={product.id})")
+        _add_specs(db, product, [("Al2O3", "48", None, "%", "XRF"), ("SiO2", None, "6", "%", "XRF"), ("Moisture", None, "10", "%", "Gravimetric")])
 
         from app.models.product import ProductStatus
         if product.status == ProductStatus.DRAFT:
@@ -246,6 +208,7 @@ def main() -> None:
             )
             db.commit()
             db.refresh(second_product)
+            _add_specs(db, second_product, [("Fe", "62", None, "%", "XRF"), ("SiO2", None, "5", "%", "XRF")])
             req2 = verification_service.request_verification(db, second_product, lab_company, seller_user)
             db.commit()
             verification_service.issue_certificate(db, req2, lab_user, "Seeded — pending passport demo.")
@@ -262,10 +225,6 @@ def main() -> None:
             )
             print("[skip] second product (pending passport demo) already exists")
 
-        # --- A THIRD product with its verification request left in
-        # REQUESTED status (not yet issued/rejected) — so the lab's own
-        # /lab/verification-requests/{id} review page has a real,
-        # still-actionable item to open, not just completed history. ---
         third_product = next(
             (p for p in product_repository.list_for_company(db, seller_company.id) if p.mineral_type == "Silica Sand (seed, pending verification)"),
             None,
@@ -278,6 +237,7 @@ def main() -> None:
             )
             db.commit()
             db.refresh(third_product)
+            _add_specs(db, third_product, [("SiO2", "99", None, "%", "XRF"), ("Fe2O3", None, "0.05", "%", "ICP")])
             pending_verification_request = verification_service.request_verification(db, third_product, lab_company, seller_user)
             db.commit()
             print(f"[new]  third product + PENDING verification request created (id={pending_verification_request.id})")
@@ -356,9 +316,6 @@ def main() -> None:
                 db.commit()
                 print("       -> buyer confirmed receipt: order COMPLETED")
 
-        # --- A SECOND, still-open RFQ with no quotation yet, so the
-        # seller's RFQ inbox and the buyer's RFQ list aren't just full of
-        # closed history. ---
         rfq2 = next((r for r in rfqs if r.mineral_type == "Copper Concentrate (seed, open)"), None)
         if rfq2 is None:
             rfq2 = rfq_service.create_rfq(
@@ -374,7 +331,7 @@ def main() -> None:
         else:
             print("[skip] second open RFQ already exists")
 
-        print("\n=== Done. Logins (password for all: Test@12345) ===")
+        print("\n=== Done. Logins (password for all: admin123) ===")
         _print("Admin:", "admin@mineralstest.com")
         _print("Seller (approved):", "seller@mineralstest.com")
         _print("Buyer (approved):", "buyer@mineralstest.com")
@@ -401,8 +358,22 @@ def main() -> None:
             "quotation_id": str(quotation.id) if quotation else None,
             "order_id": str(order.id) if order else None,
         }
+
+        from app.services.master_data.registry import visible_entities
+        from app.services.master_data.service import list_rows
+        from app.services.master_data.starter_data import load_starter_data
+        from app.models.batch import Batch
+        load_starter_data(db)
+        example_batch = db.query(Batch).filter(Batch.batch_number == "LOT-2026-00125").first()
+        ids["batch_id"] = str(example_batch.id) if example_batch else None
+        ids["master_row_ids"] = {}
+        for entity in visible_entities():
+            rows, _ = list_rows(db, entity, page_size=1)
+            ids["master_row_ids"][entity.key] = str(rows[0].id) if rows else None
+
         for k, v in ids.items():
-            _print(k + ":", str(v))
+            if k != "master_row_ids":
+                _print(k + ":", str(v))
 
         import json, pathlib
         out_path = pathlib.Path(__file__).parent / "seed_ids.json"

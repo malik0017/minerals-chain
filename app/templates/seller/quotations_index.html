@@ -37,6 +37,8 @@
           <td>{{ q.lead_time_days }} day(s)</td>
           <td>
             {% if q.status.value == "accepted" %}<span class="badge bg-success-subtle text-success">Accepted</span>
+            {% elif q.status.value == "rejected" %}<span class="badge bg-danger-subtle text-danger">Not selected</span>
+            {% elif q.status.value == "expired" %}<span class="badge bg-secondary-subtle text-secondary">Expired</span>
             {% else %}<span class="badge bg-secondary-subtle text-secondary">Submitted</span>{% endif %}
           </td>
           <td class="text-secondary small">{{ q.created_at.strftime("%Y-%m-%d") }}</td>

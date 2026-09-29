@@ -29,6 +29,9 @@
 
       <ul class="nav flex-column menu-active-line">
         {% for item in nav_items %}
+        {% if item.heading %}
+        <li class="nav-item not-iconic"><div class="px-3 pt-3 pb-1 small text-secondary text-uppercase fw-semibold" style="font-size:.7rem;letter-spacing:.04em">{{ item.label }}</div></li>
+        {% else %}
         <li class="nav-item">
           <a href="{{ item.url }}" class="nav-link {% if item.active %}active{% endif %}"
             ><i class="menu-icon bi {{ item.icon }}"></i>
@@ -36,6 +39,7 @@
             {% if item.badge %}<span class="badge text-bg-primary mx-2">{{ item.badge }}</span>{% endif %}
           </a>
         </li>
+        {% endif %}
         {% endfor %}
       </ul>
 

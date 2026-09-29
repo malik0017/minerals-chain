@@ -44,6 +44,7 @@
           <td>{{ r.delivery_location }}</td>
           <td>
             {% if r.status.value == "open" %}<span class="badge bg-success-subtle text-success">Open</span>
+            {% elif r.status.value == "cancelled" %}<span class="badge bg-danger-subtle text-danger">Cancelled</span>
             {% else %}<span class="badge bg-secondary-subtle text-secondary">Closed</span>{% endif %}
           </td>
           <td class="text-secondary small">{{ r.created_at.strftime("%Y-%m-%d") }}</td>

@@ -1,23 +1,5 @@
 """
 app/services/email_service.py
-
-Batch A: a single send_email() function every future feature (OTP
-verification in Batch B, and anything transactional later — password
-reset emails, order notifications, etc.) calls, regardless of whether
-real SMTP is configured yet.
-
-Two modes, controlled by settings.EMAIL_MODE (see core/config.py):
-  - "console" (default): nothing is actually sent. The email is
-    logged to the server's console/log output in full, so anyone
-    developing or testing against this system can see exactly what
-    would have been sent — including the OTP code itself — without
-    any mail server running. This is what ships until real SMTP
-    credentials are added to .env.
-  - "smtp": sends for real using smtplib against the configured host.
-
-Switching from console to smtp is a one-line .env change
-(EMAIL_MODE=smtp + the SMTP_* values) — no application code changes
-anywhere else, since every caller only ever sees send_email().
 """
 import logging
 import smtplib
@@ -30,8 +12,6 @@ logger = logging.getLogger("minerals_chain.email")
 
 
 class EmailSendError(RuntimeError):
-    """Raised when EMAIL_MODE=smtp and the send genuinely fails (bad
-    credentials, host unreachable, etc). Never raised in console mode."""
     pass
 
 

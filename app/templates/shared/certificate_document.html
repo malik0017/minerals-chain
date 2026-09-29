@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+{% from "partials/spec_table_macros.html" import results_table with context %}
+<html lang="{{ lang }}" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ cert.certificate_number or cert.name }} - Minerals Chain</title>
+<link href="{{ url_for('static', path='css/app.css') }}" rel="stylesheet">
+<style>
+  body{background:#eef1f4}.sheet{max-width:860px;margin:24px auto;background:#fff;padding:40px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+  .stamp{border:3px solid currentColor;border-radius:8px;padding:6px 14px;font-weight:700;letter-spacing:.08em;display:inline-block;transform:rotate(-4deg)}
+  @media print{body{background:#fff}.sheet{box-shadow:none;margin:0;max-width:none}.no-print{display:none!important}}
+</style>
+</head>
+<body>
+<div class="text-center my-3 no-print"><button class="btn btn-primary btn-sm" onclick="window.print()"><i class="bi bi-printer"></i> Print / Save as PDF</button></div>
+<div class="sheet">
+  <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-3">
+    <div><img src="{{ url_for('static', path='img/logo.svg') }}" height="40" alt=""> <span class="fw-semibold fs-5 align-middle">Minerals Chain</span>
+      <div class="small text-secondary">{{ 'شهادة تحليل' if cert.cert_type.value == 'lab_certificate' else 'جواز معدني' }}</div></div>
+    <div class="text-end">
+      <div class="fs-4 fw-bold">{{ cert.name }}</div>
+      <div class="font-monospace">{{ cert.certificate_number or 'Pending' }}</div>
+    </div>
+  </div>
+
+  <div class="row small mb-3">
+    <div class="col-6">
+      <div class="text-secondary">Product</div>
+      <div class="fw-semibold">{{ product.mineral_type if product else '—' }}{% if product and product.grade %} · {{ product.grade }}{% endif %}</div>
+      <div class="text-secondary mt-2">Seller</div>
+      <div class="fw-semibold">{% if masked %}<i class="bi bi-eye-slash"></i> Identity protected until order confirmation{% else %}{{ cert.subject_company.company_name }}{% endif %}</div>
+      {% if cert.category %}<div class="text-secondary mt-2">Scope</div><div class="fw-semibold">{{ cert.category.replace('_',' ') | capitalize }}</div>{% endif %}
+    </div>
+    <div class="col-6">
+      {% if cert.issuing_company %}<div class="text-secondary">Issuing laboratory</div><div class="fw-semibold">{{ cert.issuing_company.company_name }}</div>{% else %}<div class="text-secondary">Issued by</div><div class="fw-semibold">Minerals Chain platform</div>{% endif %}
+      <div class="text-secondary mt-2">Issue date / valid until</div>
+      <div class="fw-semibold">{{ cert.issue_date or '—' }} / {{ cert.expiry_date or 'no expiry' }}</div>
+      {% if vr %}<div class="text-secondary mt-2">Sample</div><div class="fw-semibold">{{ vr.sample_id or '—' }} · collected {{ cert.sample_collected_at or vr.collection_date or '—' }}</div>{% endif %}
+      {% if source %}<div class="text-secondary mt-2">Based on COA</div><div class="fw-semibold">{{ source.certificate_number }}</div>{% endif %}
+    </div>
+  </div>
+
+  {% if cert.results %}
+    <h6 class="mt-3">Test results</h6>
+    {{ results_table(cert) }}
+  {% elif cert.notes %}
+    <h6 class="mt-3">Tested parameters</h6><div style="white-space: pre-line;">{{ cert.notes }}</div>
+  {% endif %}
+  {% if cert.results and cert.notes %}<div class="small text-secondary mt-2">Remarks: {{ cert.notes }}</div>{% endif %}
+
+  <div class="d-flex justify-content-between align-items-end mt-4">
+    <div class="small">
+      {% if cert.analyst_name %}<div>Analyst: <strong>{{ cert.analyst_name }}</strong></div>{% endif %}
+      {% if cert.signed_off_at %}<div>Signed off: {{ cert.signed_off_at.strftime('%Y-%m-%d %H:%M UTC') }}</div>{% endif %}
+      {% if cert.file_hash %}<div class="font-monospace text-secondary" style="font-size:.7rem">SHA-256 {{ cert.file_hash }}</div>{% endif %}
+      {% if intact is not none %}<div class="{{ 'text-success' if intact else 'text-danger fw-bold' }}"><i class="bi bi-shield-{{ 'check' if intact else 'exclamation' }}"></i> {{ 'Integrity verified — results unchanged since sign-off' if intact else 'WARNING: recorded results differ from the signed-off fingerprint' }}</div>{% endif %}
+    </div>
+    <div>
+      {% if cert.status.value == 'approved' %}<span class="stamp text-success">{{ 'PASS' if cert.cert_type.value == 'lab_certificate' else 'VALID' if cert.is_currently_valid else 'EXPIRED' }}</span>
+      {% elif cert.status.value == 'rejected' %}<span class="stamp text-danger">{{ 'FAIL' if cert.cert_type.value == 'lab_certificate' else 'REJECTED' }}</span>
+      {% else %}<span class="stamp text-warning">PENDING</span>{% endif %}
+    </div>
+  </div>
+  {% if cert.rejection_reason %}<div class="alert alert-danger small mt-3 mb-0">{{ cert.rejection_reason }}</div>{% endif %}
+</div>
+</body></html>

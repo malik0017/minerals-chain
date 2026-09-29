@@ -67,7 +67,8 @@ def list_pending(db: Session, cert_type: CertificationType | None = None) -> lis
     query = db.query(Certification).filter(Certification.status == CertificationStatus.PENDING)
     if cert_type is not None:
         query = query.filter(Certification.cert_type == cert_type)
-    return query.order_by(Certification.created_at.asc()).all()
+    # Batch M3: premium (expedited) requests first — BRD §6.11
+    return query.order_by(Certification.is_expedited.desc(), Certification.created_at.asc()).all()
 
 
 def has_pending_or_active(db: Session, product_id: uuid.UUID, cert_type: CertificationType) -> bool:

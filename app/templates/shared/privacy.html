@@ -1,0 +1,55 @@
+{% extends "layouts/base.html" %}
+{% block title %}Privacy &amp; my data{% endblock %}
+{% block content %}
+<a href="{{ url_for('my_profile') }}" class="text-secondary text-decoration-none small">&larr; My Profile</a>
+<h4 class="mt-2 mb-1"><i class="bi bi-person-lock"></i> Privacy &amp; my data</h4>
+<p class="text-secondary mb-3">Your rights under the Personal Data Protection Law (PDPL). <a href="/privacy" target="_blank">Read the Privacy Notice</a>.</p>
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="card adminuiux-card h-100"><div class="card-body">
+      <h6><i class="bi bi-download"></i> Download my data</h6>
+      <p class="small text-secondary">A complete copy of your account, company details, notifications and activity log (JSON).</p>
+      <a class="btn btn-theme" href="{{ url_for('my_privacy_export') }}"><i class="bi bi-filetype-json"></i> Download</a>
+      <hr>
+      <div class="small">
+        <div><span class="text-secondary">Consent given:</span> {{ u.privacy_consent_at.strftime('%Y-%m-%d') if u.privacy_consent_at else 'Before consent tracking' }}</div>
+        <div><span class="text-secondary">Notice version:</span> {{ u.privacy_consent_version or '—' }}</div>
+      </div>
+    </div></div>
+  </div>
+  <div class="col-lg-8">
+    <div class="card adminuiux-card mb-3"><div class="card-body">
+      <h6><i class="bi bi-send"></i> Submit a request</h6>
+      <form method="post" action="{{ url_for('my_privacy_request') }}" class="row g-2">
+        {{ csrf_field() }}
+        <div class="col-md-4">
+          <select name="request_type" class="form-select" required>
+            <option value="correction">Correct my data</option>
+            <option value="deletion">Delete my data</option>
+            <option value="access">Access (formal copy)</option>
+            <option value="restriction">Restrict processing</option>
+            <option value="objection">Object to processing</option>
+          </select>
+        </div>
+        <div class="col-md-8"><textarea name="details" class="form-control" rows="2" placeholder="What should we change or delete?"></textarea></div>
+        <div class="col-12"><button class="btn btn-outline-theme">Submit request</button>
+          <span class="small text-secondary ms-2">We respond within 30 days. Records the law requires us to keep (invoices, certificates, orders) are retained but disconnected from your identity.</span></div>
+      </form>
+    </div></div>
+    <div class="card adminuiux-card"><div class="card-body">
+      <h6>My requests</h6>
+      {% if not requests %}<p class="small text-secondary mb-0">No requests yet.</p>{% else %}
+      <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+        <thead><tr><th>Reference</th><th>Type</th><th>Status</th><th>Due</th><th>Response</th></tr></thead>
+        <tbody>{% for r in requests %}<tr>
+          <td class="fw-semibold">{{ r.reference }}</td><td>{{ r.request_type.value }}</td>
+          <td>{% set c = {'open':'warning','in_progress':'info','completed':'success','rejected':'danger'}[r.status.value] %}<span class="badge bg-{{ c }}-subtle text-{{ c }}">{{ r.status.value.replace('_',' ') }}</span></td>
+          <td class="small">{{ r.due_at.strftime('%Y-%m-%d') }}</td><td class="small">{{ r.response or '—' }}</td>
+        </tr>{% endfor %}</tbody></table></div>{% endif %}
+    </div></div>
+  </div>
+</div>
+{% endblock %}

@@ -1,4 +1,5 @@
 {% extends "layouts/base.html" %}
+{% from "partials/spec_table_macros.html" import spec_view, results_table with context %}
 {% block title %}{{ product.mineral_type }}{% endblock %}
 {% block content %}
 
@@ -36,9 +37,27 @@
   </div>
 </div>
 
-<div class="alert alert-secondary d-flex align-items-center gap-2 mb-0">
-  <i class="bi bi-file-earmark-text"></i>
-  <div>Requesting a quote is coming in the next batch — sellers stay anonymous until you accept a quotation and confirm an order.</div>
+<div class="row g-3 mb-3">
+  <div class="col-lg-6"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6><i class="bi bi-rulers"></i> Declared specification</h6>
+    {{ spec_view(spec_rows) }}
+  </div></div></div>
+  <div class="col-lg-6"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6><i class="bi bi-shield-check"></i> Credentials</h6>
+    {% if passport %}<div class="mb-2"><span class="badge bg-primary-subtle text-primary">Mineral Passport</span> {{ passport.certificate_number }} · {{ passport.category.replace('_',' ') }} · valid until {{ passport.expiry_date }}
+      <a target="_blank" href="{{ url_for('certificate_document', cert_id=passport.id) }}" class="ms-1"><i class="bi bi-box-arrow-up-right"></i></a></div>{% endif %}
+    {% if coa %}<div><span class="badge bg-success-subtle text-success">Certificate of Analysis</span> {{ coa.certificate_number }}{% if coa.issuing_company %} · {{ coa.issuing_company.company_name }}{% endif %} · {{ coa.issue_date }}
+      <a target="_blank" href="{{ url_for('certificate_document', cert_id=coa.id) }}" class="ms-1"><i class="bi bi-box-arrow-up-right"></i></a></div>
+    {% else %}<div class="small text-secondary">No current certificate.</div>{% endif %}
+  </div></div></div>
 </div>
+{% if coa and coa.results %}
+<div class="card adminuiux-card mb-3"><div class="card-body"><h6><i class="bi bi-clipboard-data"></i> Lab results</h6>{{ results_table(coa) }}</div></div>
+{% endif %}
+
+<div class="card adminuiux-card border-primary"><div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
+  <div><i class="bi bi-eye-slash"></i> The seller stays anonymous until an order is confirmed. Post an RFQ pre-filled from this listing — this seller and others can quote.</div>
+  <a class="btn btn-theme" href="{{ url_for('buyer_rfq_new') }}?product_id={{ product.id }}"><i class="bi bi-file-earmark-text"></i> Request a quote</a>
+</div></div>
 
 {% endblock %}

@@ -1,31 +1,12 @@
 """
 app/models/quotation.py
-
-BRD §6.5:
-  - "Verified sellers whose products match an open RFQ shall be able
-    to view and respond with a formal quotation"
-  - "The system shall present quotations to the buyer without
-    revealing the responding seller's identity"
-  - "A buyer shall be able to compare multiple quotations against
-    defined criteria (price, lead time, terms, verification status)"
-  - "Acceptance of a quotation by the buyer shall formally create an
-    order and close the RFQ to further quotations"
-
-That last line is Batch 4's job (order creation doesn't exist yet) —
-this batch only covers submit + anonymized compare. `status` is
-already modeled with ACCEPTED as a value so Batch 4 doesn't need
-another migration, but nothing in this batch ever sets it.
-
-One seller company can only have ONE quotation per RFQ (enforced in
-quotation_service.py, not a DB constraint — see its docstring) —
-resubmitting isn't a "new quote," it's editing, which isn't built
-either; a seller gets one shot per RFQ for now.
 """
 import enum
 import uuid
+from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import Enum as SAEnum, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy import Date, Enum as SAEnum, ForeignKey, Integer, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -35,6 +16,8 @@ from app.database.base import Base, TimestampMixin
 class QuotationStatus(str, enum.Enum):
     SUBMITTED = "submitted"
     ACCEPTED = "accepted"
+    REJECTED = "rejected"  
+    EXPIRED = "expired"     
 
 
 class Quotation(Base, TimestampMixin):
@@ -60,7 +43,28 @@ class Quotation(Base, TimestampMixin):
         default=QuotationStatus.SUBMITTED,
     )
 
+    quotation_reference: Mapped[str | None] = mapped_column(String(30), nullable=True, unique=True)
+    product_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("products.id"), nullable=True)
+    coa_certification_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("certifications.id"), nullable=True
+    )
+    passport_certification_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("certifications.id"), nullable=True
+    )
+    total_price: Mapped[Decimal | None] = mapped_column(Numeric(16, 2), nullable=True)
+    payment_terms_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    incoterm_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("incoterms.id"), nullable=True)
+    validity_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    valid_until: Mapped[date | None] = mapped_column(Date, nullable=True)
+    match_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    submitted_by_user_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
+    )
+    revision_no: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+
     rfq: Mapped["RFQ"] = relationship("RFQ", foreign_keys=[rfq_id])
+    product: Mapped["Product"] = relationship("Product", foreign_keys=[product_id])
+    incoterm: Mapped["Incoterm"] = relationship("Incoterm")
     seller_company: Mapped["Company"] = relationship("Company", foreign_keys=[seller_company_id])
 
     def __repr__(self) -> str:  # pragma: no cover

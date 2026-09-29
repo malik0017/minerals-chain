@@ -1,0 +1,37 @@
+{% extends "layouts/base.html" %}
+{% from "partials/spec_table_macros.html" import spec_view with context %}
+{% block title %}RFQ {{ rfq.rfq_reference }}{% endblock %}
+{% block content %}
+<a href="{{ url_for('admin_rfqs') }}" class="text-secondary text-decoration-none small">&larr; All RFQs</a>
+<div class="d-flex justify-content-between align-items-center mt-2 mb-3">
+  <h4 class="mb-0">{{ rfq.rfq_reference }} · {{ rfq.mineral_type }}</h4>
+  <span class="badge bg-secondary-subtle text-secondary">{{ rfq.status.value }}</span>
+</div>
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+<div class="row g-3 mb-3">
+  <div class="col-lg-6"><div class="card adminuiux-card h-100"><div class="card-body small">
+    <dl class="row mb-0">
+      <dt class="col-4">Buyer</dt><dd class="col-8">{{ rfq.buyer_company.company_name }}</dd>
+      <dt class="col-4">Quantity</dt><dd class="col-8">{{ rfq.quantity_value }} {{ rfq.quantity_unit }}</dd>
+      <dt class="col-4">Delivery</dt><dd class="col-8">{{ rfq.delivery_location }} · {{ rfq.delivery_timeframe }}</dd>
+      <dt class="col-4">Closes</dt><dd class="col-8">{{ rfq.closes_at.strftime('%Y-%m-%d') if rfq.closes_at else '—' }}</dd>
+      {% if rfq.cancel_reason %}<dt class="col-4">Cancelled</dt><dd class="col-8 text-danger">{{ rfq.cancel_reason }}</dd>{% endif %}
+    </dl></div></div></div>
+  <div class="col-lg-6"><div class="card adminuiux-card h-100"><div class="card-body"><h6>Required specification</h6>{{ spec_view(spec_rows, 'None') }}</div></div></div>
+</div>
+<div class="card adminuiux-card mb-3"><div class="table-responsive"><table class="table align-middle mb-0">
+<thead><tr><th>Quotation</th><th>Seller</th><th>Unit price</th><th>Total</th><th>Lead</th><th>Match</th><th>Valid until</th><th>Status</th></tr></thead>
+<tbody>{% for r in rows %}{% set q = r.q %}<tr>
+  <td class="small">{{ q.quotation_reference }}{% if q.revision_no and q.revision_no > 1 %} (rev {{ q.revision_no }}){% endif %}</td>
+  <td class="small">{{ q.seller_company.company_name }}</td>
+  <td>{{ q.price_value }}</td><td>{{ '{:,.2f}'.format(r.total) }}{% if r.best_price %} <span class="badge bg-success">best</span>{% endif %}</td>
+  <td>{{ q.lead_time_days }} d</td><td>{{ (q.match_score ~ '%') if q.match_score is not none else '—' }}</td>
+  <td class="small">{{ q.valid_until or '—' }}</td><td><span class="badge bg-secondary-subtle text-secondary">{{ q.status.value }}</span></td>
+</tr>{% else %}<tr><td colspan="8" class="text-secondary">No quotations.</td></tr>{% endfor %}</tbody></table></div></div>
+{% if rfq.status.value == 'open' %}
+<form method="post" action="{{ url_for('admin_rfq_cancel', rfq_id=rfq.id) }}" class="d-flex gap-2">{{ csrf_field() }}
+  <input name="reason" class="form-control" placeholder="Reason for cancelling (policy breach, duplicate…)" required>
+  <button class="btn btn-outline-danger text-nowrap">Cancel RFQ</button></form>
+{% endif %}
+{% endblock %}

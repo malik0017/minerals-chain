@@ -1,71 +1,62 @@
 {% extends "layouts/base.html" %}
+{% from "partials/spec_table_macros.html" import spec_editor with context %}
 {% block title %}New RFQ{% endblock %}
 {% block content %}
-
 <a href="{{ url_for('buyer_rfqs_index') }}" class="text-secondary text-decoration-none small">&larr; Back to RFQs</a>
-
 <h4 class="mt-2 mb-4">New RFQ</h4>
+{% if errors %}<div class="alert alert-danger py-2"><ul class="mb-0 ps-3">{% for err in errors %}<li>{{ err }}</li>{% endfor %}</ul></div>{% endif %}
 
-{% if errors %}
-<div class="alert alert-danger py-2">
-  <ul class="mb-0 ps-3">
-    {% for err in errors %}<li>{{ err }}</li>{% endfor %}
-  </ul>
-</div>
-{% endif %}
-
-<div class="card adminuiux-card">
-  <div class="card-body">
-    <form method="post" action="{{ url_for('buyer_rfq_create') }}">
-  {{ csrf_field() }}
-
-      <div class="mb-3">
-        <label class="form-label" for="mineral_type">Mineral type</label>
-        <input class="form-control" id="mineral_type" name="mineral_type" value="{{ form.mineral_type or '' }}"
-               placeholder="e.g. Silica, Barite, Bentonite" required />
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label" for="specifications_notes">Required specifications <span class="text-secondary">(optional)</span></label>
-        <textarea class="form-control" id="specifications_notes" name="specifications_notes" rows="3"
-                  placeholder="e.g. Minimum 99% purity, iron oxide below 0.02%">{{ form.specifications_notes or '' }}</textarea>
-      </div>
-
-      <div class="row g-3 mb-3">
-        <div class="col-md-6">
-          <label class="form-label" for="quantity_value">Quantity</label>
-          <input class="form-control" type="number" step="0.01" min="0.01" id="quantity_value" name="quantity_value"
-                 value="{{ form.quantity_value or '' }}" required />
-        </div>
-        <div class="col-md-6">
-          <label class="form-label" for="quantity_unit">Unit</label>
-          <input class="form-control" id="quantity_unit" name="quantity_unit" value="{{ form.quantity_unit or 'MT' }}" required />
-        </div>
-      </div>
-
-      <div class="row g-3 mb-3">
-        <div class="col-md-6">
-          <label class="form-label" for="delivery_location">Delivery location</label>
-          <input class="form-control" id="delivery_location" name="delivery_location" value="{{ form.delivery_location or '' }}"
-                 placeholder="e.g. Jubail Industrial City" required />
-        </div>
-        <div class="col-md-6">
-          <label class="form-label" for="delivery_timeframe">Delivery timeframe</label>
-          <input class="form-control" id="delivery_timeframe" name="delivery_timeframe" value="{{ form.delivery_timeframe or '' }}"
-                 placeholder="e.g. Within 30 days" required />
-        </div>
-      </div>
-
-      <div class="mb-4">
-        <label class="form-label" for="commercial_terms_notes">Commercial terms <span class="text-secondary">(optional)</span></label>
-        <textarea class="form-control" id="commercial_terms_notes" name="commercial_terms_notes" rows="3"
-                  placeholder="e.g. Payment terms, preferred Incoterms">{{ form.commercial_terms_notes or '' }}</textarea>
-      </div>
-
-      <button type="submit" class="btn btn-theme">Post RFQ</button>
-      <p class="text-secondary small mt-2 mb-0">Your company identity stays confidential — sellers see this request, not who posted it, until an order is confirmed.</p>
-    </form>
+<form method="post" action="{{ url_for('buyer_rfq_create') }}">
+{{ csrf_field() }}
+<div class="card adminuiux-card mb-3"><div class="card-body">
+  <div class="section-eyebrow text-secondary text-uppercase small fw-semibold mb-3">What do you need?</div>
+  <div class="row g-3 mb-3">
+    <div class="col-md-6">
+      <label class="form-label" for="product_master_id">Catalog product <span class="text-secondary">(recommended)</span></label>
+      <select class="form-select" id="product_master_id" name="product_master_id" data-spec-prefill="rfqSpecs" data-fill-name="mineral_type">
+        <option value="">— free text —</option>
+        {% for pm in catalog_products %}<option value="{{ pm.id }}" {% if form.product_master_id == pm.id|string %}selected{% endif %}>{{ pm.code }} — {{ pm.name_en }}</option>{% endfor %}
+      </select>
+      <div class="form-text">Fills the platform's standard quality ranges below; adjust them to your needs.</div>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="mineral_type">Mineral / product</label>
+      <input class="form-control" id="mineral_type" name="mineral_type" value="{{ form.mineral_type or '' }}" placeholder="e.g. Silica sand 99.5%" required />
+    </div>
   </div>
-</div>
+  <label class="form-label">Required specification</label>
+  {{ spec_editor(spec_rows or [], 'spec', id='rfqSpecs') }}
+  <div class="mt-3">
+    <label class="form-label" for="specifications_notes">Other requirements <span class="text-secondary">(optional)</span></label>
+    <textarea class="form-control" id="specifications_notes" name="specifications_notes" rows="2" placeholder="e.g. particle size, packaging, sampling">{{ form.specifications_notes or '' }}</textarea>
+  </div>
+</div></div>
 
+<div class="card adminuiux-card mb-3"><div class="card-body">
+  <div class="section-eyebrow text-secondary text-uppercase small fw-semibold mb-3">Quantity & delivery</div>
+  <div class="row g-3">
+    <div class="col-md-3"><label class="form-label" for="quantity_value">Quantity</label>
+      <input class="form-control" type="number" step="0.01" min="0.01" id="quantity_value" name="quantity_value" value="{{ form.quantity_value or '' }}" required /></div>
+    <div class="col-md-2"><label class="form-label" for="quantity_unit">Unit</label>
+      <input class="form-control" id="quantity_unit" name="quantity_unit" value="{{ form.quantity_unit or 'MT' }}" required /></div>
+    <div class="col-md-4"><label class="form-label" for="delivery_location">Delivery location</label>
+      <input class="form-control" id="delivery_location" name="delivery_location" value="{{ form.delivery_location or '' }}" placeholder="e.g. Jubail Industrial City" required /></div>
+    <div class="col-md-3"><label class="form-label" for="required_by">Required by</label>
+      <input class="form-control" type="date" id="required_by" name="required_by" value="{{ form.required_by or '' }}" /></div>
+    <div class="col-md-4"><label class="form-label" for="delivery_timeframe">Delivery timeframe</label>
+      <input class="form-control" id="delivery_timeframe" name="delivery_timeframe" value="{{ form.delivery_timeframe or '' }}" placeholder="e.g. Within 30 days" /></div>
+    <div class="col-md-4"><label class="form-label" for="incoterm_id">Incoterm</label>
+      <select class="form-select" id="incoterm_id" name="incoterm_id"><option value="">—</option>
+        {% for inc in incoterms %}<option value="{{ inc.id }}" {% if form.incoterm_id == inc.id|string %}selected{% endif %}>{{ inc.code }} — {{ inc.name_en }}</option>{% endfor %}</select></div>
+    <div class="col-md-4"><label class="form-label" for="payment_terms_days">Payment terms (days)</label>
+      <input class="form-control" type="number" min="0" max="365" id="payment_terms_days" name="payment_terms_days" value="{{ form.payment_terms_days or '' }}" placeholder="e.g. 30" /></div>
+    <div class="col-12"><label class="form-label" for="commercial_terms_notes">Commercial notes <span class="text-secondary">(optional)</span></label>
+      <textarea class="form-control" id="commercial_terms_notes" name="commercial_terms_notes" rows="2">{{ form.commercial_terms_notes or '' }}</textarea></div>
+  </div>
+</div></div>
+
+<button type="submit" class="btn btn-theme">Post RFQ</button>
+<p class="text-secondary small mt-2 mb-0"><i class="bi bi-eye-slash"></i> Your company identity stays confidential — sellers see this request, not who posted it, until an order is confirmed.</p>
+</form>
+<script src="{{ url_for('static', path='js/spec_prefill.js') }}"></script>
 {% endblock %}

@@ -218,6 +218,13 @@
   </div>
   {% endif %}
 
+  {# Batch Q1: PDPL consent #}
+  <div class="form-check mb-3">
+    <input class="form-check-input" type="checkbox" id="privacy_consent" name="privacy_consent" value="1" required>
+    <label class="form-check-label small" for="privacy_consent">
+      I have read the <a href="/privacy" target="_blank">Privacy Notice</a> and <a href="/terms" target="_blank">Terms of Use</a>, and I consent to the processing of my data for registration, verification and trading on the platform.
+    </label>
+  </div>
   <button type="submit" class="btn btn-theme w-100 d-flex align-items-center justify-content-center gap-2" {% if not email_is_verified %}disabled{% endif %}>
     {{ t('auth.register.submit') }} <i class="bi bi-arrow-right"></i>
   </button>

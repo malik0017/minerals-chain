@@ -1,6 +1,5 @@
 """
 app/models/user.py
-
 """
 import enum
 import uuid
@@ -37,19 +36,20 @@ class User(Base, TimestampMixin):
         nullable=False,
     )
 
-    # Mirrors company approval for seller/buyer/lab users; admins are active on creation.
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-
-    # BRD §6.10 Localization — per-user language preference, drives dir="rtl" in base.html.
     preferred_language: Mapped[str] = mapped_column(String(2), nullable=False, default="en")
     avatar_filename: Mapped[str | None] = mapped_column(String(255), nullable=True)
     failed_login_attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-
     totp_secret: Mapped[str | None] = mapped_column(String(64), nullable=True)
     totp_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    phone: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    job_title: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    company_role: Mapped[str] = mapped_column(String(20), nullable=False, default="owner")
+    admin_role: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    privacy_consent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    privacy_consent_version: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
     # --- Relationships ---
     company: Mapped["Company"] = relationship(

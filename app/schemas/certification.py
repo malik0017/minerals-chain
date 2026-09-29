@@ -1,10 +1,6 @@
 """app/schemas/certification.py"""
 from pydantic import BaseModel, field_validator
 
-# Free-string category, validated here rather than a DB enum — see
-# models/certification.py's docstring for why. Same three values the
-# old PassportScope enum had; the DB doesn't enforce this list, this
-# schema does.
 ALLOWED_PASSPORT_CATEGORIES = {"domestic", "gcc_export", "international_export"}
 
 

@@ -42,9 +42,6 @@ def list_pending(db: Session) -> list[MineralPassport]:
     )
 
 def has_pending_or_active(db: Session, product_id: uuid.UUID) -> bool:
-    """Stops a seller from filing a second passport request while one
-    is pending review, or while an approved-and-unexpired one already
-    covers this product."""
     from datetime import date
 
     existing = (
