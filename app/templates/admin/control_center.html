@@ -68,40 +68,40 @@
     <h6 class="mb-2"><i class="bi bi-person-plus"></i> New registrations per month</h6>
     {{ ch.lines('ccReg', dash.months, dash.registrations, 260, area=True) }}
   </div></div></div>
-  <div class="col-lg-4"><div class="card adminuiux-card h-100"><div class="card-body">
-    <h6 class="mb-1"><i class="bi bi-shield-lock"></i> Security score</h6>
+  <div class="col-lg-4"><a href="{{ url_for('admin_security') }}" class="text-decoration-none text-reset"><div class="card adminuiux-card h-100 mc-kpi mc-kpi-click"><div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-1">
+      <h6 class="mb-0"><i class="bi bi-shield-lock"></i> Security score</h6>
+      <span class="small text-theme">Open checklist <i class="bi bi-arrow-right"></i></span>
+    </div>
     {{ ch.gauge('ccScore', security_score, 190, 'of 100') }}
     <div class="d-flex justify-content-center gap-3 small">
       {% for lvl, c, ic in [('fail','danger','bi-x-octagon-fill'),('warn','warning','bi-exclamation-triangle-fill'),('info','info','bi-info-circle-fill'),('ok','success','bi-check-circle-fill')] %}
       <span class="text-{{ c }}"><i class="bi {{ ic }}"></i> {{ checklist | selectattr('level','equalto',lvl) | list | length }}</span>{% endfor %}
     </div>
-  </div></div></div>
+  </div></div></a></div>
 </div>
 
-{# ---- security checklist (compact) + quick actions ---- #}
-<div class="row g-3">
-  <div class="col-lg-7">
-    {% include "partials/security_checklist.html" %}
+<div class="card adminuiux-card"><div class="card-body">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <h6 class="mb-0"><i class="bi bi-lightning"></i> Quick actions</h6>
+    <div class="small text-secondary"><i class="bi bi-hdd-network"></i> {{ health.app_env }} · PostgreSQL {{ health.postgres }} · email {{ health.email_mode }} · {{ k.users }} active users</div>
   </div>
-  <div class="col-lg-5"><div class="card adminuiux-card h-100"><div class="card-body">
-    <h6 class="mb-2"><i class="bi bi-lightning"></i> Quick actions</h6>
-    <div class="row g-2 text-center">
-    {% set actions = [
-      ('admin_company_new', 'bi-building-add', 'New company'), ('admin_user_new', 'bi-person-plus', 'New user'),
-      ('admin_master_data_index', 'bi-database-gear', 'Master data'), ('admin_system_settings', 'bi-sliders', 'Settings'),
-      ('admin_subscriptions', 'bi-stars', 'Plans'), ('admin_finance', 'bi-cash-coin', 'Fees'),
-      ('admin_products', 'bi-grid', 'Listings'), ('admin_rfqs', 'bi-file-earmark-text', 'RFQs'),
-      ('admin_data_requests', 'bi-person-lock', 'PDPL'), ('admin_audit_log', 'bi-journal-text', 'Audit log'),
-      ('admin_labs', 'bi-eyedropper', 'Labs'), ('admin_reports', 'bi-graph-up-arrow', 'Reports'),
-    ] %}
-    {% for route, icon, label in actions %}
-      <div class="col-3"><a href="{{ url_for(route) }}" class="text-decoration-none d-block p-2 rounded-3 border h-100">
-        <i class="bi {{ icon }} fs-4 text-theme"></i><div class="small text-body mt-1">{{ label }}</div></a></div>
-    {% endfor %}
-    </div>
-    <div class="small text-secondary mt-3"><i class="bi bi-hdd-network"></i> {{ health.app_env }} · PostgreSQL {{ health.postgres }} · email {{ health.email_mode }} · {{ k.users }} active users</div>
-  </div></div></div>
-</div>
+  <div class="mc-quick-grid">
+  {% set actions = [
+    ('admin_company_new', 'bi-building-add', 'New company'), ('admin_user_new', 'bi-person-plus', 'New user'),
+    ('admin_approvals_list', 'bi-inbox', 'Approvals'), ('admin_documents', 'bi-folder2-open', 'Documents'),
+    ('admin_master_data_index', 'bi-database-gear', 'Master data'), ('admin_system_settings', 'bi-sliders', 'Settings'),
+    ('admin_security', 'bi-shield-lock', 'Security'), ('admin_subscriptions', 'bi-stars', 'Plans'),
+    ('admin_finance', 'bi-cash-coin', 'Fees'), ('admin_products', 'bi-grid', 'Listings'),
+    ('admin_rfqs', 'bi-file-earmark-text', 'RFQs'), ('admin_data_requests', 'bi-person-lock', 'PDPL'),
+    ('admin_audit_log', 'bi-journal-text', 'Audit log'), ('admin_labs', 'bi-eyedropper', 'Labs'),
+    ('admin_reports', 'bi-graph-up-arrow', 'Reports'),
+  ] %}
+  {% for route, icon, label in actions %}
+    <a href="{{ url_for(route) }}" class="mc-quick-tile"><i class="bi {{ icon }}"></i><span>{{ label }}</span></a>
+  {% endfor %}
+  </div>
+</div></div>
 {% endblock %}
 {% block extra_js %}{{ ch.scripts() }}
 <script>document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function(e){ if (window.bootstrap) new bootstrap.Tooltip(e); });</script>

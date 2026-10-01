@@ -1,0 +1,201 @@
+/* ============================================
+   Financial Snapshot Styling - Batch V Design Improvements
+   ============================================ */
+
+.financial-snapshot {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  padding: 24px;
+  margin: 24px 0;
+}
+
+.financial-snapshot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.financial-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.financial-item-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #0369a1;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.financial-item-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e40af;
+  line-height: 1;
+}
+
+.financial-item-description {
+  font-size: 12px;
+  color: #0369a1;
+  margin-top: 4px;
+  opacity: 0.8;
+}
+
+/* Breakdown section */
+.financial-breakdown {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 6px;
+  padding: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 14px;
+  border-bottom: 1px solid rgba(3, 105, 161, 0.1);
+}
+
+.breakdown-row:last-child {
+  border-bottom: none;
+}
+
+.breakdown-label {
+  color: #0369a1;
+  font-weight: 500;
+}
+
+.breakdown-value {
+  color: #1e40af;
+  font-weight: 600;
+  text-align: right;
+  min-width: 140px;
+}
+
+.breakdown-row.total {
+  background: rgba(3, 105, 161, 0.05);
+  padding: 12px;
+  border-radius: 4px;
+  font-weight: 700;
+  margin-top: 8px;
+  font-size: 16px;
+  border-bottom: none !important;
+}
+
+.breakdown-row.total .breakdown-value {
+  color: #1e40af;
+  font-size: 18px;
+}
+
+.breakdown-row.deduction .breakdown-value {
+  color: #dc2626;
+}
+
+/* Settlement section variant */
+.settlement-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin: 24px 0;
+}
+
+.settlement-metrics {
+  display: grid;
+  grid-template-rows: auto auto auto auto;
+  gap: 16px;
+}
+
+.settlement-metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 6px;
+  border-left: 3px solid #e5e7eb;
+}
+
+.settlement-metric-row.total {
+  background: #eff6ff;
+  border-left-color: #3b82f6;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.settlement-metric-row.deduction {
+  border-left-color: #ef4444;
+}
+
+.settlement-metric-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settlement-metric-title {
+  font-weight: 600;
+  color: #111827;
+  font-size: 14px;
+}
+
+.settlement-metric-description {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.settlement-metric-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+  text-align: right;
+  min-width: 120px;
+}
+
+.settlement-breakdown-chart {
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+/* Currency formatting */
+.currency {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.5px;
+}
+
+.currency.positive {
+  color: #10b981;
+}
+
+.currency.negative {
+  color: #ef4444;
+}
+
+.currency.neutral {
+  color: #1f2937;
+}
+
+@media (max-width: 768px) {
+  .financial-snapshot-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .settlement-section {
+    grid-template-columns: 1fr;
+  }
+
+  .breakdown-row {
+    font-size: 13px;
+  }
+
+  .breakdown-value {
+    min-width: 100px;
+  }
+}

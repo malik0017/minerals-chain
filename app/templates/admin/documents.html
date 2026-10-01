@@ -29,15 +29,17 @@
     <h6 class="mb-2"><i class="bi bi-files"></i> By type</h6>{{ ch.hbars('docTypes', s.by_type, 230) }}</div></div></div>
 </div>
 
-<form method="get" class="mb-3"><div class="input-group mc-filter-bar">
+<form method="get" class="mb-3" data-mc-ajax="docResults" autocomplete="off"><div class="input-group mc-filter-bar">
   <span class="input-group-text"><i class="bi bi-search"></i></span>
-  <input name="q" value="{{ f.q }}" class="form-control" placeholder="Company or document number">
+  <input type="search" name="q" value="{{ f.q }}" class="form-control" placeholder="Company or document number">
   <select name="type" class="form-select" style="max-width:230px"><option value="">All types</option>{% for k, v in types.items() %}<option value="{{ k }}" {% if f.type == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select>
   <select name="status" class="form-select" style="max-width:170px"><option value="">Any review</option>{% for k, v in status_labels.items() %}<option value="{{ k }}" {% if f.status == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select>
   <select name="health" class="form-select" style="max-width:170px"><option value="">Any expiry</option><option value="expiring" {% if f.health == 'expiring' %}selected{% endif %}>Expiring soon</option><option value="expired" {% if f.health == 'expired' %}selected{% endif %}>Expired</option></select>
-  <button class="btn btn-theme"><i class="bi bi-funnel"></i> Filter</button>
+  <button type="button" class="btn btn-outline-secondary" data-mc-reset title="Clear filters"><i class="bi bi-x-lg"></i> Clear</button>
 </div></form>
 
+<div id="docResults">
+<div class="small text-secondary mb-2">{{ total }} document{{ '' if total == 1 else 's' }}</div>
 <div class="card adminuiux-card"><div class="table-responsive"><table class="table align-middle mb-0">
 <thead><tr><th>Company</th><th>Document</th><th>Number</th><th>Expires</th><th>Health</th><th>Review</th><th class="text-end">Action</th></tr></thead>
 <tbody>{% for d in rows %}{% set h = health_of(d) %}<tr>
@@ -48,7 +50,7 @@
   <td class="text-nowrap">{{ health_badge(h, d.days_left()) }}</td>
   <td>{{ status_badge(d.status, status_labels) }}{% if d.review_note %} <i class="bi bi-chat-left-text text-secondary" title="{{ d.review_note }}"></i>{% endif %}</td>
   <td class="text-end mc-action-cell text-nowrap">
-    <a class="btn btn-sm btn-outline-secondary" target="_blank" href="{{ url_for('admin_document_file', doc_id=d.id) }}"><i class="bi bi-eye"></i></a>
+    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin_document_view', doc_id=d.id) }}" title="View and review"><i class="bi bi-eye"></i></a>
     {% if d.status != 'approved' %}<form method="post" action="{{ url_for('admin_document_review', doc_id=d.id) }}" class="d-inline">{{ csrf_field() }}
       <input type="hidden" name="decision" value="approve"><input type="hidden" name="back" value="{{ back }}">
       <button class="btn btn-sm btn-success"><i class="bi bi-check-lg"></i> Approve</button></form>{% endif %}
@@ -58,6 +60,7 @@
 </tr>{% else %}<tr><td colspan="7" class="text-center text-secondary py-4"><i class="bi bi-inbox"></i> No documents match</td></tr>{% endfor %}</tbody>
 </table></div></div>
 {% include "partials/pager.html" %}
+</div>
 
 <div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
   <form method="post" id="rejectForm">{{ csrf_field() }}<input type="hidden" name="decision" value="reject"><input type="hidden" name="back" value="{{ back }}">
@@ -73,6 +76,7 @@
 document.getElementById('rejectModal').addEventListener('show.bs.modal', function (ev) {
   var b = ev.relatedTarget;
   document.getElementById('rejectForm').action = b.getAttribute('data-action');
+  document.querySelector('#rejectForm [name=back]').value = location.pathname + location.search;
   document.getElementById('rejectName').textContent = b.getAttribute('data-name');
 });
 </script>

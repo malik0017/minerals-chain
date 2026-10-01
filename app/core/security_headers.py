@@ -19,7 +19,7 @@ CSP_SOURCES = {
     "connect-src": ["'self'"],
     "worker-src": ["'self'"],
     "manifest-src": ["'self'"],
-    "frame-src": ["'none'"],
+    "frame-src": ["'self'"],
     "frame-ancestors": ["'none'"],
     "object-src": ["'none'"],
     "base-uri": ["'self'"],

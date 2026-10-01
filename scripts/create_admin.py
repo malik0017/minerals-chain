@@ -11,10 +11,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-import app.models  # noqa: E402,F401
-from app.core.security import hash_password  # noqa: E402
-from app.database.base import SessionLocal  # noqa: E402
-from app.models.user import User, UserRole  # noqa: E402
+import app.models  
+from app.core.security import hash_password  
+from app.database.base import SessionLocal  
+from app.models.user import User, UserRole  
 
 WEAK = {"admin123", "password", "12345678", "123456789", "qwerty123"}
 

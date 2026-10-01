@@ -1,0 +1,94 @@
+{% extends "layouts/base.html" %}
+{% import "partials/charts.html" as ch with context %}
+{% block title %}Security{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <div><h4 class="mb-1"><i class="bi bi-shield-lock"></i> Security &amp; hardening</h4>
+    <p class="text-secondary small mb-0">Environment: <span class="badge bg-{{ 'danger' if is_production else 'info' }}-subtle text-{{ 'danger' if is_production else 'info' }}">{{ app_env }}</span></p></div>
+  <a class="btn btn-sm btn-outline-theme" href="{{ url_for('admin_system_settings') }}"><i class="bi bi-sliders"></i> System settings</a>
+</div>
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+
+<div class="row g-3 mb-3">
+  <div class="col-lg-4"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6 class="mb-1"><i class="bi bi-speedometer2"></i> Security score</h6>
+    {{ ch.gauge('secScore', security_score, 190, 'of 100') }}
+    <div class="d-flex justify-content-center gap-3 small">
+      {% for lvl, c, ic, lbl in [('fail','danger','bi-x-octagon-fill','critical'),('warn','warning','bi-exclamation-triangle-fill','warnings'),('info','info','bi-info-circle-fill','advisory'),('ok','success','bi-check-circle-fill','passed')] %}
+      <span class="text-{{ c }}" title="{{ lbl }}"><i class="bi {{ ic }}"></i> {{ checklist | selectattr('level','equalto',lvl) | list | length }}</span>{% endfor %}
+    </div>
+  </div></div></div>
+  <div class="col-lg-8"><div class="card adminuiux-card h-100"><div class="card-body">
+    <h6 class="mb-3"><i class="bi bi-signpost-split"></i> What the buttons do</h6>
+    <div class="row g-3 small">
+      <div class="col-md-6 d-flex gap-2"><span class="mc-kpi-icon bg-warning-subtle text-warning"><i class="bi bi-magic"></i></span>
+        <div><div class="fw-semibold">Fix now</div><div class="text-secondary">A platform setting stored in the database. It is applied the moment you click — no restart, recorded in the audit log.</div></div></div>
+      <div class="col-md-6 d-flex gap-2"><span class="mc-kpi-icon bg-info-subtle text-info"><i class="bi bi-terminal"></i></span>
+        <div><div class="fw-semibold">.env guide</div><div class="text-secondary">A server setting (secrets, HTTPS, mail, Redis). By design it can't be changed from the browser: edit the <code>.env</code> file and restart — steps below.</div></div></div>
+      <div class="col-md-6 d-flex gap-2"><span class="mc-kpi-icon bg-primary-subtle text-primary"><i class="bi bi-shield-lock"></i></span>
+        <div><div class="fw-semibold">My 2FA</div><div class="text-secondary">Enforcing 2FA for admins is blocked until your own account has 2FA, so you can't lock yourself out.</div></div></div>
+      <div class="col-md-6 d-flex gap-2"><span class="mc-kpi-icon bg-secondary-subtle text-secondary"><i class="bi bi-send"></i></span>
+        <div><div class="fw-semibold">Test email</div><div class="text-secondary">Sends a message to you. In <code>console</code> mode it is printed in the server terminal instead of delivered.</div></div></div>
+    </div>
+  </div></div></div>
+</div>
+
+<div class="mb-3">{% include "partials/security_checklist.html" %}</div>
+
+<div class="card adminuiux-card mb-3" id="env-guide"><div class="card-body">
+  <h6 class="mb-3"><i class="bi bi-terminal"></i> Fixing .env items — step by step</h6>
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <ol class="mc-steps mb-0">
+        <li><div class="fw-semibold">Stop the server</div><div class="small text-secondary">Press <kbd>Ctrl</kbd>+<kbd>C</kbd> in the terminal running uvicorn{% if is_production %} (or <code>sudo systemctl stop minerals</code>){% endif %}.</div></li>
+        <li><div class="fw-semibold">Open the .env file</div><div class="small text-secondary">{% if is_production %}In the app folder on the server, e.g. <code>/srv/minerals/app/.env</code>.{% else %}<code>C:\laragon\www\minerals\.env</code> — same folder as <code>requirements.txt</code>.{% endif %}</div></li>
+        <li><div class="fw-semibold">Apply the changes — pick one</div>
+          <div class="small text-secondary mb-1">Automatic (keeps a backup of the old file):</div>
+          <pre class="bg-body-tertiary p-2 rounded small mb-2" translate="no">python scripts/harden_env.py --profile {{ 'production' if is_production else 'local' }}</pre>
+          <div class="small text-secondary">Or copy the lines on the right into <code>.env</code>, replacing any existing line with the same name.</div></li>
+        <li><div class="fw-semibold">Start the server again</div><pre class="bg-body-tertiary p-2 rounded small mb-0" translate="no">{% if is_production %}sudo systemctl start minerals{% else %}uvicorn app.main:app --reload{% endif %}</pre></li>
+        <li><div class="fw-semibold">Reload this page</div><div class="small text-secondary">Fixed items turn green and the score goes up.</div></li>
+      </ol>
+      {% if not is_production %}
+      <div class="alert alert-warning small mt-3 mb-0"><i class="bi bi-exclamation-triangle"></i> On your local machine keep <code>COOKIE_SECURE=false</code> — Laragon serves plain <code>http://</code> and login stops working if it is <code>true</code>. That warning is expected until the site runs on HTTPS (AWS). Use <code>--profile production</code> only on the live server.</div>
+      {% endif %}
+    </div>
+    <div class="col-lg-6">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <div class="fw-semibold small">Lines to add or update</div>
+        {% if env_fixes %}<div class="d-flex gap-1">
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-mc-copy="#envFixText"><i class="bi bi-clipboard"></i> Copy</button>
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin_security_env') }}"><i class="bi bi-download"></i> Download</a></div>{% endif %}
+      </div>
+      {% if env_fixes %}
+      <pre class="bg-body-tertiary p-3 rounded small mb-3 mc-env-block" id="envFixText" translate="no">{% for k, v in env_fixes.items() %}{{ k }}={{ v }}
+{% endfor %}</pre>
+      {% else %}<div class="text-success small mb-3"><i class="bi bi-check-circle-fill"></i> No .env changes needed for this environment.</div>{% endif %}
+      {% if not is_production %}<div class="small text-secondary"><i class="bi bi-info-circle"></i> Advisory items (Redis, SMTP, CSP enforce) are for the live server — leave them as they are while testing locally so OTP codes keep printing in the terminal.</div>{% endif %}
+      {% if 'FILE_ENCRYPTION_KEY' in env_fixes %}<div class="small text-secondary mt-2"><i class="bi bi-key"></i> After adding <code>FILE_ENCRYPTION_KEY</code> and restarting, run <code translate="no">python scripts/encrypt_storage.py</code> once to encrypt files already uploaded. Keep a copy of the key — without it the files cannot be opened.</div>{% endif %}
+    </div>
+  </div>
+  <hr class="my-4">
+  <h6 class="mb-2"><i class="bi bi-book"></i> Setting reference</h6>
+  <div class="table-responsive"><table class="table table-sm small align-middle mb-0 mc-list-table">
+    <thead><tr><th style="width:18%">Setting</th><th style="width:34%">What it does</th><th style="width:24%">Local (Laragon)</th><th>Live (AWS)</th></tr></thead>
+    <tbody>{% for k, (what, local, live) in env_notes.items() %}
+      <tr><td class="fw-semibold" translate="no">{{ k }}</td><td class="text-secondary">{{ what }}</td><td>{{ local }}</td><td>{{ live }}</td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+</div></div>
+{% endblock %}
+{% block extra_js %}{{ ch.scripts() }}
+<script>
+document.querySelectorAll('[data-mc-copy]').forEach(function (b) {
+  b.addEventListener('click', function () {
+    var el = document.querySelector(b.getAttribute('data-mc-copy'));
+    if (!el) return;
+    navigator.clipboard.writeText(el.innerText).then(function () {
+      var old = b.innerHTML; b.innerHTML = '<i class="bi bi-check2"></i> Copied'; setTimeout(function () { b.innerHTML = old; }, 1500);
+    });
+  });
+});
+</script>
+{% endblock %}

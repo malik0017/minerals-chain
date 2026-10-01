@@ -20,5 +20,5 @@ class MasterDataMixin(TimestampMixin):
             return self.name_ar
         return self.name_en
 
-    def __str__(self) -> str:  # used by the generic admin UI for FK labels
+    def __str__(self) -> str: 
         return f"{self.code} — {self.name_en}"

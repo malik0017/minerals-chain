@@ -190,6 +190,32 @@ def read(doc: CompanyDocument) -> tuple[bytes, bool]:
         raise DocumentError(str(exc))
 
 
+def mime_of(doc: CompanyDocument) -> str:
+    return doc.mime or private_files.mime_for(doc.file_path or "")
+
+
+def preview_kind(doc: CompanyDocument) -> str:
+    m = mime_of(doc)
+    if m == "application/pdf":
+        return "pdf"
+    if m.startswith("image/"):
+        return "image"
+    if m.startswith("text/html"):
+        return "html"
+    return "other"
+
+
+def file_state(doc: CompanyDocument) -> dict:
+    try:
+        data, intact = read(doc)
+    except DocumentError as exc:
+        reason = str(exc)
+        if "not found" in reason.lower():
+            reason = "The file is not on this server's storage (it may have been deleted, or the storage folder was not copied)."
+        return {"ok": False, "intact": False, "size": None, "error": reason, "kind": preview_kind(doc)}
+    return {"ok": True, "intact": intact, "size": len(data), "error": None, "kind": preview_kind(doc)}
+
+
 def admin_listing(db: Session, *, status: str = "", health_filter: str = "", doc_type: str = "", q: str = ""):
     today = date.today()
     query = db.query(CompanyDocument).join(Company).filter(CompanyDocument.is_current.is_(True))

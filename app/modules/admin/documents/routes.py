@@ -50,12 +50,27 @@ def review(doc_id: uuid.UUID, db: Session = Depends(get_db), admin: User = Depen
                             status_code=303)
 
 
-@router.get("/{doc_id}/file", name="admin_document_file")
-def download(doc_id: uuid.UUID, db: Session = Depends(get_db), admin: User = Depends(require_admin("companies"))):
+@router.get("/{doc_id}", name="admin_document_view")
+def view(doc_id: uuid.UUID, request: Request, db: Session = Depends(get_db), admin: User = Depends(require_admin("companies")),
+         msg: str | None = None, error: str | None = None):
     doc = docs.get(db, doc_id)
     if doc is None:
-        return Response(status_code=404)
+        return RedirectResponse(url=f"/admin/documents?error={quote('Document not found.')}", status_code=303)
+    ctx = build_portal_context(admin, UserRole.ADMIN, active_path="/admin/documents")
+    ctx.update({"doc": doc, "company": doc.company, "file": docs.file_state(doc), "health": docs.health(doc),
+                "history": docs.history(db, doc.company, doc.doc_type), "types": docs.DOC_TYPES,
+                "status_labels": docs.STATUS_LABELS, "mime": docs.mime_of(doc),
+                "back": f"/admin/documents/{doc.id}", "msg": msg, "error": error})
+    return templates.TemplateResponse(request, "admin/document_view.html", ctx)
+
+
+@router.get("/{doc_id}/file", name="admin_document_file")
+def download(doc_id: uuid.UUID, db: Session = Depends(get_db), admin: User = Depends(require_admin("companies")),
+             download: int = 0):
+    doc = docs.get(db, doc_id)
+    if doc is None:
+        return RedirectResponse(url=f"/admin/documents?error={quote('Document not found.')}", status_code=303)
     try:
-        return serve(doc, *docs.read(doc))
-    except docs.DocumentError:
-        return Response(status_code=404)
+        return serve(doc, *docs.read(doc), download=bool(download))
+    except docs.DocumentError as exc:
+        return RedirectResponse(url=f"/admin/documents/{doc.id}?error={quote(str(exc))}", status_code=303)

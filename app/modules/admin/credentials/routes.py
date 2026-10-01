@@ -44,6 +44,18 @@ def index(request: Request, db: Session = Depends(get_db), admin: User = Depends
     return templates.TemplateResponse(request, "admin/credential_checks.html", ctx)
 
 
+@router.post("/run-all", name="admin_credential_check_run_all")
+def run_all(db: Session = Depends(get_db), admin: User = Depends(require_admin("approvals")), scope: str = Form("unchecked")):
+    if all(ccs.mode_for(k) == "off" for k in CHECK_KINDS):
+        return RedirectResponse(url=f"/admin/credential-checks?error={quote('Registry checks are switched off (WATHQ_MODE / MIM_MODE = off).')}", status_code=303)
+    n = ccs.run_all(db, admin, only_unchecked=scope != "all")
+    if not n["companies"]:
+        text = "Every company already has a check. Use “Re-check all” to refresh them."
+    else:
+        text = f"Checked {n['companies']} compan{'y' if n['companies'] == 1 else 'ies'}: {n['checks']} check(s), {n['issues']} with issues."
+    return RedirectResponse(url=f"/admin/credential-checks?msg={quote(text)}", status_code=303)
+
+
 @router.post("/{company_id}/{kind}", name="admin_credential_check_run")
 def run(company_id: uuid.UUID, kind: str, db: Session = Depends(get_db), admin: User = Depends(require_admin("approvals")),
         back: str = Form("/admin/credential-checks")):

@@ -439,7 +439,7 @@ def logout(request: Request):
 @router.get("/home", name="home")
 def home(request: Request, user: User = Depends(get_current_user_required)):
     if user.role == UserRole.ADMIN:
-        return RedirectResponse(url=request.url_for("admin_approvals_list"), status_code=303)
+        return RedirectResponse(url=request.url_for("admin_control_center"), status_code=303)
 
     if user.company is not None and user.company.status != ApprovalStatus.APPROVED:
         return templates.TemplateResponse(

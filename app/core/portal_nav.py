@@ -64,6 +64,7 @@ _NAV_ITEMS = {
         {"heading": "nav.h_configuration"},
         {"icon": "bi-database-gear", "key": "nav.master_data", "url": "/admin/master-data", "area": "master_data"},
         {"icon": "bi-sliders", "key": "nav.system_settings", "url": "/admin/system-settings", "area": "system"},
+        {"icon": "bi-shield-lock", "key": "nav.security", "url": "/admin/security", "area": "system"},
         {"icon": "bi-hdd-stack", "key": "nav.backups", "url": "/admin/backups", "area": "system"},
         {"icon": "bi-activity", "key": "nav.monitoring", "url": "/admin/monitoring", "area": "system"},
         {"icon": "bi-key", "key": "nav.api_tokens", "url": "/admin/api-tokens", "area": "system"},

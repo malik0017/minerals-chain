@@ -1,10 +1,11 @@
 {% extends "layouts/base.html" %}
 {% block title %}{{ company.company_name }}{% endblock %}
 {% from "partials/credential_checks.html" import credential_panel with context %}
-{% from "partials/doc_health.html" import health_badge with context %}
+{% from "partials/doc_health.html" import health_badge, status_badge with context %}
 {% block content %}
 
-<a href="{{ url_for('admin_companies_list') }}" class="text-secondary text-decoration-none small">&larr; Back to all companies</a>
+<a href="{{ url_for('admin_companies_list') }}" class="text-secondary text-decoration-none small">&larr; Back to all
+  companies</a>
 
 {% set status_class = "mc-status-" ~ company.status.value %}
 <div class="mc-hero-card {{ status_class }} mt-2 mb-4">
@@ -15,12 +16,16 @@
         <div class="mc-hero-eyebrow">{{ company.role.value }} company</div>
         <h4>{{ company.company_name }}</h4>
         <div class="d-flex align-items-center gap-2">
-          {% if company.status.value == "approved" %}<span class="badge"><i class="bi bi-check-circle"></i> Approved</span>
-          {% elif company.status.value == "pending" %}<span class="badge"><i class="bi bi-hourglass-split"></i> Pending</span>
-          {% elif company.status.value == "rejected" %}<span class="badge"><i class="bi bi-x-circle"></i> Rejected</span>
+          {% if company.status.value == "approved" %}<span class="badge"><i class="bi bi-check-circle"></i>
+            Approved</span>
+          {% elif company.status.value == "pending" %}<span class="badge"><i class="bi bi-hourglass-split"></i>
+            Pending</span>
+          {% elif company.status.value == "rejected" %}<span class="badge"><i class="bi bi-x-circle"></i>
+            Rejected</span>
           {% else %}<span class="badge"><i class="bi bi-slash-circle"></i> Suspended</span>
           {% endif %}
-          {% if company.subscription_tier %}<span class="badge"><i class="bi bi-award"></i> {{ company.subscription_tier.value | capitalize }}</span>{% endif %}
+          {% if company.subscription_tier %}<span class="badge"><i class="bi bi-award"></i> {{
+            company.subscription_tier.value | capitalize }}</span>{% endif %}
         </div>
       </div>
     </div>
@@ -32,274 +37,457 @@
   </div>
 </div>
 
+{% set lic_days = (company.license_valid_until - today).days if company.license_valid_until else None %}
 <div class="card adminuiux-card mb-3">
   <div class="card-body">
-    <h6 class="mb-3"><i class="bi bi-building"></i> Company details</h6>
-    <div class="mc-info-grid">
-      <div class="mc-info-item">
-        <div class="mc-info-icon"><i class="bi bi-file-earmark-text"></i></div>
-        <div>
-          <div class="mc-info-label">Commercial Registration</div>
-          <div class="mc-info-value">{{ company.cr_number }}</div>
-        </div>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+      <h6 class="mb-0"><i class="bi bi-building"></i> Company profile</h6>
+      <div class="d-flex gap-2 flex-wrap">
+        <span
+          class="badge bg-{{ 'success' if company.license_verified else 'secondary' }}-subtle text-{{ 'success' if company.license_verified else 'secondary' }}"><i
+            class="bi bi-{{ 'patch-check' if company.license_verified else 'patch-question' }}"></i> Licence {{
+          'verified' if company.license_verified else 'not verified' }}</span>
+        {% if company.is_founding_member %}<span class="badge bg-warning-subtle text-warning"><i
+            class="bi bi-star-fill"></i> Founding member</span>{% endif %}
       </div>
-      <div class="mc-info-item">
-        <div class="mc-info-icon"><i class="bi bi-patch-check"></i></div>
-        <div>
-          <div class="mc-info-label">Licence / accreditation</div>
-          <div class="mc-info-value">{{ company.license_or_accreditation_number or "—" }}</div>
-        </div>
-      </div>
-      {% if company.vat_registration_number %}
-      <div class="mc-info-item">
-        <div class="mc-info-icon"><i class="bi bi-receipt"></i></div>
-        <div>
-          <div class="mc-info-label">VAT registration number</div>
-          <div class="mc-info-value">{{ company.vat_registration_number }}</div>
-        </div>
-      </div>
-      {% endif %}
-      <div class="mc-info-item">
-        <div class="mc-info-icon"><i class="bi bi-envelope"></i></div>
-        <div>
-          <div class="mc-info-label">Contact</div>
-          <div class="mc-info-value">{{ company.contact_email }}{% if company.contact_phone %} · {{ company.contact_phone }}{% endif %}</div>
-        </div>
-      </div>
-      <div class="mc-info-item">
-        <div class="mc-info-icon"><i class="bi bi-calendar-check"></i></div>
-        <div>
-          <div class="mc-info-label">Registered</div>
-          <div class="mc-info-value">{{ company.created_at.strftime("%Y-%m-%d %H:%M UTC") }}</div>
-        </div>
-      </div>
-      {% if company.rejection_reason %}
-      <div class="mc-info-item">
-        <div class="mc-info-icon text-danger"><i class="bi bi-exclamation-triangle"></i></div>
-        <div>
-          <div class="mc-info-label">Rejection reason</div>
-          <div class="mc-info-value">{{ company.rejection_reason }}</div>
-        </div>
-      </div>
-      {% endif %}
     </div>
-  </div>
-</div>
-
-{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
-{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
-
-<div class="row g-3 mb-3">
-  <div class="col-lg-8">
-    <div class="card adminuiux-card h-100"><div class="card-body">
-      <h6 class="mb-3"><i class="bi bi-pencil-square"></i> Manage company (admin)</h6>
-      <form method="post" action="{{ url_for('admin_company_edit', company_id=company.id) }}">
-        {{ csrf_field() }}
-        <div class="row g-2">
-          <div class="col-md-6"><label class="form-label small">Legal name (English)</label><input class="form-control form-control-sm" name="company_name" value="{{ company.company_name }}" required></div>
-          <div class="col-md-6"><label class="form-label small">Legal name (Arabic)</label><input class="form-control form-control-sm" dir="rtl" name="company_name_ar" value="{{ company.company_name_ar or '' }}"></div>
-          <div class="col-md-4"><label class="form-label small">CR number</label><input class="form-control form-control-sm" name="cr_number" value="{{ company.cr_number }}" required></div>
-          <div class="col-md-4"><label class="form-label small">VAT registration no. (15 digits)</label><input class="form-control form-control-sm" name="vat_registration_number" value="{{ company.vat_registration_number or '' }}" maxlength="15"></div>
-          <div class="col-md-4"><label class="form-label small">Licence / accreditation no.</label><input class="form-control form-control-sm" name="license_or_accreditation_number" value="{{ company.license_or_accreditation_number }}" required></div>
-          <div class="col-md-4"><label class="form-label small">Licence valid until</label><input type="date" class="form-control form-control-sm" name="license_valid_until" value="{{ company.license_valid_until or '' }}"></div>
-          <div class="col-md-4"><label class="form-label small">Contact email</label><input class="form-control form-control-sm" name="contact_email" value="{{ company.contact_email }}" required></div>
-          <div class="col-md-4"><label class="form-label small">Contact phone</label><input class="form-control form-control-sm" name="contact_phone" value="{{ company.contact_phone or '' }}"></div>
-          <div class="col-md-4"><label class="form-label small">Region</label>
-            <select class="form-select form-select-sm" name="region_id"><option value="">—</option>
-              {% for r in regions %}<option value="{{ r.id }}" {% if company.region_id == r.id %}selected{% endif %}>{{ r.name_en }} / {{ r.name_ar }}</option>{% endfor %}</select></div>
-          <div class="col-md-4"><label class="form-label small">City</label><input class="form-control form-control-sm" name="city" value="{{ company.city or '' }}"></div>
-          <div class="col-md-4"><label class="form-label small">National address (short code)</label><input class="form-control form-control-sm" name="national_address" value="{{ company.national_address or '' }}" placeholder="RRRD2929"></div>
-          <div class="col-md-4"><label class="form-label small">Customer segment</label>
-            <select class="form-select form-select-sm" name="customer_segment_id"><option value="">—</option>
-              {% for sgm in segments %}<option value="{{ sgm.id }}" {% if company.customer_segment_id == sgm.id %}selected{% endif %}>{{ sgm.name_en }}</option>{% endfor %}</select></div>
-          <div class="col-md-4"><label class="form-label small">Subscription tier</label>
-            <select class="form-select form-select-sm" name="subscription_tier"><option value="">—</option>
-              {% for tr in tiers %}<option value="{{ tr.value }}" {% if company.subscription_tier == tr %}selected{% endif %}>{{ tr.value }}</option>{% endfor %}</select></div>
-          <div class="col-md-4"><label class="form-label small">Subscription valid until</label><input type="date" class="form-control form-control-sm" name="subscription_valid_until" value="{{ company.subscription_valid_until or '' }}"></div>
-          <div class="col-md-4 d-flex gap-3 align-items-end">
-            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="license_verified" value="1" id="lv" {% if company.license_verified %}checked{% endif %}><label class="form-check-label small" for="lv">Licence verified</label></div>
-            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="is_founding_member" value="1" id="fm" {% if company.is_founding_member %}checked{% endif %}><label class="form-check-label small" for="fm">Founding member</label></div>
+    <div class="row g-3">
+      <div class="col-md-6 col-xl-3">
+        <div class="mc-fact"><span class="mc-fact-icon bg-primary-subtle text-primary"><i
+              class="bi bi-translate"></i></span>
+          <div class="min-w-0">
+            <div class="mc-fact-label">Legal name</div>
+            <div class="mc-fact-value text-truncate">{{ company.company_name }}</div>
+            {% if company.company_name_ar %}<div class="mc-fact-sub text-truncate" dir="rtl">{{ company.company_name_ar
+              }}</div>{% else %}<div class="mc-fact-sub">Arabic name not set</div>{% endif %}
           </div>
         </div>
-        <button class="btn btn-theme btn-sm mt-3"><i class="bi bi-save"></i> Save company</button>
-      </form>
-    </div></div>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <div class="mc-fact"><span class="mc-fact-icon bg-info-subtle text-info"><i
+              class="bi bi-file-earmark-text"></i></span>
+          <div class="min-w-0">
+            <div class="mc-fact-label">Commercial registration</div>
+            <div class="mc-fact-value" translate="no">{{ company.cr_number }}</div>
+            <div class="mc-fact-sub">VAT {{ company.vat_registration_number or 'not set' }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <div class="mc-fact"><span
+            class="mc-fact-icon bg-{{ 'danger' if lic_days is not none and lic_days < 0 else 'warning' if lic_days is not none and lic_days <= 60 else 'success' }}-subtle text-{{ 'danger' if lic_days is not none and lic_days < 0 else 'warning' if lic_days is not none and lic_days <= 60 else 'success' }}"><i
+              class="bi bi-patch-check"></i></span>
+          <div class="min-w-0">
+            <div class="mc-fact-label">Licence / accreditation</div>
+            <div class="mc-fact-value" translate="no">{{ company.license_or_accreditation_number or '—' }}</div>
+            <div class="mc-fact-sub">{% if company.license_valid_until %}Valid until {{ company.license_valid_until }}{%
+              if lic_days is not none and lic_days < 0 %} · expired{% elif lic_days is not none and lic_days <=60 %} ·
+                {{ lic_days }} days left{% endif %}{% else %}No expiry recorded{% endif %}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+          <div class="mc-fact"><span class="mc-fact-icon bg-success-subtle text-success"><i
+                class="bi bi-award"></i></span>
+            <div class="min-w-0">
+              <div class="mc-fact-label">Subscription</div>
+              <div class="mc-fact-value">{{ company.subscription_tier.value | capitalize if company.subscription_tier
+                else 'None' }}</div>
+              <div class="mc-fact-sub">{{ 'Until ' ~ company.subscription_valid_until if
+                company.subscription_valid_until else 'No end date' }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+          <div class="mc-fact"><span class="mc-fact-icon bg-secondary-subtle text-secondary"><i
+                class="bi bi-envelope"></i></span>
+            <div class="min-w-0">
+              <div class="mc-fact-label">Contact</div>
+              <div class="mc-fact-value text-truncate"><a href="mailto:{{ company.contact_email }}"
+                  class="text-decoration-none">{{ company.contact_email }}</a></div>
+              <div class="mc-fact-sub" dir="ltr">{{ company.contact_phone or 'No phone' }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+          <div class="mc-fact"><span class="mc-fact-icon bg-danger-subtle text-danger"><i
+                class="bi bi-geo-alt"></i></span>
+            <div class="min-w-0">
+              <div class="mc-fact-label">Location</div>
+              <div class="mc-fact-value text-truncate">{{ company.city or '—' }}{% if company.region %}, {{
+                company.region.name_en }}{% endif %}</div>
+              <div class="mc-fact-sub">National address {{ company.national_address or 'not set' }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+          <div class="mc-fact"><span class="mc-fact-icon bg-warning-subtle text-warning"><i
+                class="bi bi-diagram-2"></i></span>
+            <div class="min-w-0">
+              <div class="mc-fact-label">Customer segment</div>
+              <div class="mc-fact-value text-truncate">{{ company.customer_segment.name_en if company.customer_segment
+                else '—' }}</div>
+              <div class="mc-fact-sub">{{ company.role.value | capitalize }} · {{ company_users | length }} user{{ '' if
+                company_users | length == 1 else 's' }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+          <div class="mc-fact"><span class="mc-fact-icon bg-primary-subtle text-primary"><i
+                class="bi bi-calendar-check"></i></span>
+            <div class="min-w-0">
+              <div class="mc-fact-label">Registered</div>
+              <div class="mc-fact-value">{{ company.created_at.strftime("%Y-%m-%d") }}</div>
+              <div class="mc-fact-sub">{{ company.created_at.strftime("%H:%M UTC") }}</div>
+            </div>
+          </div>
+        </div>
+        {% if company.rejection_reason %}
+        <div class="col-12">
+          <div class="alert alert-danger small mb-0"><i class="bi bi-exclamation-triangle"></i> <b>Rejection /
+              suspension reason:</b> {{ company.rejection_reason }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
   </div>
-  <div class="col-lg-4">
-    <div class="card adminuiux-card mb-3"><div class="card-body">
-      <h6 class="mb-2"><i class="bi bi-toggles"></i> Status</h6>
-      <form method="post" action="{{ url_for('admin_company_status', company_id=company.id) }}">
-        {{ csrf_field() }}
-        <select name="status" class="form-select form-select-sm mb-2">
-          {% for st in company_statuses %}<option value="{{ st.value }}" {% if company.status == st %}selected{% endif %}>{{ st.value }}</option>{% endfor %}
-        </select>
-        <input name="reason" class="form-control form-control-sm mb-2" placeholder="Reason (required to suspend/reject)">
-        <button class="btn btn-outline-theme btn-sm w-100">Apply status</button>
-        <div class="form-text">Suspending deactivates all the company's users; reactivating restores them.</div>
-      </form>
-    </div></div>
-    <div class="card adminuiux-card"><div class="card-body">
-      <h6 class="mb-2"><i class="bi bi-file-earmark-lock"></i> Registration documents</h6>
-      <a class="btn btn-sm btn-outline-theme mb-1" href="{{ url_for('admin_company_document', company_id=company.id, kind='cr') }}"><i class="bi bi-file-earmark-pdf"></i> CR document</a>
-      <a class="btn btn-sm btn-outline-theme mb-1" href="{{ url_for('admin_company_document', company_id=company.id, kind='license') }}"><i class="bi bi-file-earmark-pdf"></i> Licence document</a>
-      <div class="form-text">Served privately to admins only.</div>
-      <hr>
-      <ul class="list-unstyled small mb-2">{% for r in library %}
-        <li class="d-flex justify-content-between align-items-center py-1"><span class="text-truncate me-2">{{ r.label }}</span>{{ health_badge(r.health, r.days_left) }}</li>{% endfor %}</ul>
-      <a class="btn btn-sm btn-outline-secondary w-100" href="{{ url_for('admin_documents') }}?q={{ company.company_name | urlencode }}"><i class="bi bi-folder2-open"></i> Document library</a>
-    </div></div>
-  </div>
-</div>
 
-{{ credential_panel(company, cred) }}
+  {% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
+  {% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
 
-<div class="card adminuiux-card mb-3">
-  <div class="card-body">
-    <h6 class="mb-3"><i class="bi bi-people"></i> Users ({{ company_users | length }})</h6>
-    {% if not company_users %}
-    <p class="text-secondary mb-0">No users on this company.</p>
-    {% else %}
-    <div class="table-responsive">
-      <table class="table align-middle mb-0 mc-table-colorful">
-        <tbody>
-          {% for u in company_users %}
-          <tr class="mc-accent-{{ avatar_class(u.email) | replace('mc-avatar-', '') }}">
-            <td style="width:2.5rem;"><div class="mc-avatar-chip {{ avatar_class(u.email) }}">{{ initials(u.full_name) }}</div></td>
-            <td>
-              <div class="mc-row-label">
-                <div>
-                  <div class="mc-row-title">{{ u.full_name }}</div>
-                  <div class="mc-row-sub">{{ u.email }}</div>
+  <div class="row g-3 mb-3">
+    <div class="col-lg-8">
+      <div class="card adminuiux-card h-100">
+        <div class="card-body">
+          <h6 class="mb-3"><i class="bi bi-pencil-square"></i> Manage company</h6>
+          <form method="post" action="{{ url_for('admin_company_edit', company_id=company.id) }}"
+            class="mc-form-sections">
+            {{ csrf_field() }}
+            <div class="mc-form-section">
+              <div class="mc-form-section-title"><i class="bi bi-person-vcard"></i> Identity</div>
+              <div class="row g-3">
+                <div class="col-md-6"><label class="form-label">Legal name (English)</label><input class="form-control"
+                    name="company_name" value="{{ company.company_name }}" required></div>
+                <div class="col-md-6"><label class="form-label">Legal name (Arabic)</label><input class="form-control"
+                    dir="rtl" name="company_name_ar" value="{{ company.company_name_ar or '' }}"
+                    placeholder="الاسم القانوني"></div>
+              </div>
+            </div>
+            <div class="mc-form-section">
+              <div class="mc-form-section-title"><i class="bi bi-file-earmark-check"></i> Registration &amp; licensing
+              </div>
+              <div class="row g-3">
+                <div class="col-md-6 col-xl-3"><label class="form-label">CR number</label><input class="form-control"
+                    name="cr_number" value="{{ company.cr_number }}" required></div>
+                <div class="col-md-6 col-xl-3"><label class="form-label">VAT no. <span class="text-secondary small">(15
+                      digits)</span></label><input class="form-control" name="vat_registration_number"
+                    value="{{ company.vat_registration_number or '' }}" maxlength="15" inputmode="numeric"></div>
+                <div class="col-md-6 col-xl-3"><label class="form-label">Licence / accreditation no.</label><input
+                    class="form-control" name="license_or_accreditation_number"
+                    value="{{ company.license_or_accreditation_number }}" required></div>
+                <div class="col-md-6 col-xl-3"><label class="form-label">Licence valid until</label><input type="date"
+                    class="form-control" name="license_valid_until" value="{{ company.license_valid_until or '' }}">
                 </div>
               </div>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+            </div>
+            <div class="mc-form-section">
+              <div class="mc-form-section-title"><i class="bi bi-geo-alt"></i> Contact &amp; address</div>
+              <div class="row g-3">
+                <div class="col-md-6"><label class="form-label">Contact email</label><input type="email"
+                    class="form-control" name="contact_email" value="{{ company.contact_email }}" required></div>
+                <div class="col-md-6"><label class="form-label">Contact phone</label><input class="form-control"
+                    dir="ltr" name="contact_phone" value="{{ company.contact_phone or '' }}"
+                    placeholder="+966 5x xxx xxxx"></div>
+                <div class="col-md-4"><label class="form-label">Region</label>
+                  <select class="form-select" name="region_id">
+                    <option value="">—</option>
+                    {% for r in regions %}<option value="{{ r.id }}" {% if company.region_id==r.id %}selected{% endif
+                      %}>{{ r.name_en }} / {{ r.name_ar }}</option>{% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-4"><label class="form-label">City</label><input class="form-control" name="city"
+                    value="{{ company.city or '' }}"></div>
+                <div class="col-md-4"><label class="form-label">National address <span
+                      class="text-secondary small">(short code)</span></label><input class="form-control"
+                    name="national_address" value="{{ company.national_address or '' }}" placeholder="RRRD2929"></div>
+              </div>
+            </div>
+            <div class="mc-form-section border-0 mb-0">
+              <div class="mc-form-section-title"><i class="bi bi-briefcase"></i> Commercial</div>
+              <div class="row g-3">
+                <div class="col-md-4"><label class="form-label">Customer segment</label>
+                  <select class="form-select" name="customer_segment_id">
+                    <option value="">—</option>
+                    {% for sgm in segments %}<option value="{{ sgm.id }}" {% if company.customer_segment_id==sgm.id
+                      %}selected{% endif %}>{{ sgm.name_en }}</option>{% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-4"><label class="form-label">Subscription tier</label>
+                  <select class="form-select" name="subscription_tier">
+                    <option value="">—</option>
+                    {% for tr in tiers %}<option value="{{ tr.value }}" {% if company.subscription_tier==tr %}selected{%
+                      endif %}>{{ tr.value | capitalize }}</option>{% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-4"><label class="form-label">Subscription valid until</label><input type="date"
+                    class="form-control" name="subscription_valid_until"
+                    value="{{ company.subscription_valid_until or '' }}"></div>
+              </div>
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-4 pt-3 border-top">
+              <div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" role="switch"
+                  name="license_verified" value="1" id="lv" {% if company.license_verified %}checked{% endif %}><label
+                  class="form-check-label" for="lv">Licence verified</label></div>
+              <div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" role="switch"
+                  name="is_founding_member" value="1" id="fm" {% if company.is_founding_member %}checked{% endif
+                  %}><label class="form-check-label" for="fm">Founding member</label></div>
+              <button class="btn btn-theme ms-auto"><i class="bi bi-save"></i> Save changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
-    {% endif %}
-  </div>
-</div>
+    <div class="col-lg-4 d-flex flex-column gap-3">
+      <div class="card adminuiux-card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0"><i class="bi bi-toggles"></i> Status</h6>
+            {% set sc =
+            {'approved':'success','pending':'warning','rejected':'danger','suspended':'secondary'}.get(company.status.value,
+            'secondary') %}
+            <span class="badge bg-{{ sc }}-subtle text-{{ sc }}">{{ company.status.value | capitalize }}</span>
+          </div>
+          <form method="post" action="{{ url_for('admin_company_status', company_id=company.id) }}">
+            {{ csrf_field() }}
+            <select name="status" class="form-select mb-2">
+              {% for st in company_statuses %}<option value="{{ st.value }}" {% if company.status==st %}selected{% endif
+                %}>{{ st.value | capitalize }}</option>{% endfor %}
+            </select>
+            <input name="reason" class="form-control mb-2" placeholder="Reason (required to suspend / reject)">
+            <button class="btn btn-outline-theme w-100">Apply status</button>
+            <div class="form-text">Suspending deactivates all the company's users; reactivating restores them.</div>
+          </form>
+        </div>
+      </div>
 
-{% if company.role.value == "seller" %}
-<div class="card adminuiux-card mb-3">
-  <div class="card-body">
-    <h6 class="mb-3"><i class="bi bi-diagram-3"></i> Listings ({{ products | length }})</h6>
-    {% if not products %}
-    <p class="text-secondary mb-0">No listings yet.</p>
-    {% else %}
-    <div class="table-responsive">
-      <table class="table align-middle mb-0 mc-table-colorful">
-        <thead>
-          <tr><th>Mineral</th><th>Quantity</th><th>Status</th><th>Verification attempts</th><th>Updated</th></tr>
-        </thead>
-        <tbody>
-          {% for p in products %}
-          <tr class="mc-accent-{{ avatar_class(p.mineral_type) | replace('mc-avatar-', '') }}">
-            <td>
-              <div class="mc-row-label">
-                <div class="mc-avatar-chip {{ avatar_class(p.mineral_type) }}">{{ initials(p.mineral_type) }}</div>
-                <div>
-                  <div class="mc-row-title">{{ p.mineral_type }}</div>
-                  {% if p.grade %}<div class="mc-row-sub">{{ p.grade }}</div>{% endif %}
+      <div class="card adminuiux-card flex-grow-1">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0"><i class="bi bi-file-earmark-lock"></i> Documents</h6>
+            <span
+              class="small fw-semibold text-{{ 'success' if library_score == 100 else 'warning' if library_score >= 50 else 'danger' }}">{{
+              library_score }}% complete</span>
+          </div>
+          <div class="progress mc-progress-thin mb-3">
+            <div
+              class="progress-bar bg-{{ 'success' if library_score == 100 else 'warning' if library_score >= 50 else 'danger' }}"
+              style="width:{{ library_score }}%"></div>
+          </div>
+          <div class="mc-doc-list">
+            {% for r in library %}
+            {% set d = r.doc %}
+            {% set important = r.health in ('expiring', 'expired', 'rejected', 'missing') %}
+            <div class="mc-doc-row">
+              <span
+                class="mc-doc-icon {{ 'is-missing' if not d else 'is-ok' if d.status == 'approved' else 'is-bad' if d.status == 'rejected' else '' }}"><i
+                  class="bi bi-{{ 'file-earmark-check' if d and d.status == 'approved' else 'file-earmark-x' if d and d.status == 'rejected' else 'hourglass-split' if d else 'file-earmark-plus' }}"></i></span>
+              <div class="min-w-0 flex-grow-1">
+                <div class="mc-doc-title">{{ r.label }}{% if not r.required %} <span
+                    class="text-secondary fw-normal">(optional)</span>{% endif %}</div>
+                <div class="mc-doc-meta">{% if d %}<span translate="no">{{ d.number or 'No number' }}</span> · v{{
+                  d.version }}{% if d.expires_on %} · exp. {{ d.expires_on }}{% endif %}
+                  {% else %}Not uploaded yet{% endif %}
                 </div>
               </div>
-            </td>
-            <td>{{ p.quantity_value }} {{ p.quantity_unit }}</td>
-            <td>
-              {% if p.status.value == "draft" %}<span class="badge bg-secondary-subtle text-secondary">Draft</span>
-              {% elif p.status.value == "under_verification" %}<span class="badge bg-warning-subtle text-warning">Under verification</span>
-              {% elif p.status.value == "verified" %}<span class="badge bg-success-subtle text-success">Verified</span>
-              {% elif p.status.value == "failed_verification" %}<span class="badge bg-danger-subtle text-danger">Failed verification</span>
-              {% else %}<span class="badge bg-secondary-subtle text-secondary">Suspended</span>
-              {% endif %}
-            </td>
-            <td class="text-secondary small">{{ verification_counts.get(p.id, 0) }}</td>
-            <td class="text-secondary small">{{ p.updated_at.strftime("%Y-%m-%d") }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% endif %}
-  </div>
-</div>
-
-<div class="card adminuiux-card">
-  <div class="card-body">
-    <h6 class="mb-3"><i class="bi bi-shield-check"></i> Mineral Passports ({{ passports | length }})</h6>
-    {% if not passports %}
-    <p class="text-secondary mb-0">No passport requests yet.</p>
-    {% else %}
-    <div class="table-responsive">
-      <table class="table align-middle mb-0 mc-table-colorful">
-        <thead>
-          <tr><th>Mineral</th><th>Scope</th><th>Status</th><th>Passport #</th><th>Valid until</th></tr>
-        </thead>
-        <tbody>
-          {% for p in passports %}
-          {% set mineral_name = p.scopes[0].product.mineral_type if p.scopes else "—" %}
-          <tr class="mc-accent-{{ avatar_class(mineral_name) | replace('mc-avatar-', '') }}">
-            <td>
-              <div class="mc-row-label">
-                <div class="mc-avatar-chip {{ avatar_class(mineral_name) }}">{{ initials(mineral_name) }}</div>
-                <div class="mc-row-title">{{ mineral_name }}</div>
+              <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                {% if important %}{{ health_badge(r.health, r.days_left) }}{% else %}{{ status_badge(d.status,
+                {'pending': 'Pending', 'approved': 'Approved', 'rejected': 'Rejected'}) }}{% endif %}
+                {% if d %}<a class="btn btn-sm btn-light mc-doc-open"
+                  href="{{ url_for('admin_document_view', doc_id=d.id) }}" title="View and review"><i
+                    class="bi bi-eye"></i></a>{% endif %}
               </div>
-            </td>
-            <td>{{ p.category | replace("_", " ") | capitalize }}</td>
-            <td>
-              {% if p.status.value == "approved" %}
+            </div>
+            {% endfor %}
+          </div>
+          <a class="btn btn-sm btn-outline-secondary w-100 mt-3"
+            href="{{ url_for('admin_documents') }}?q={{ company.company_name | urlencode }}"><i
+              class="bi bi-folder2-open"></i> Open in document library</a>
+          <div class="form-text text-center"><i class="bi bi-lock"></i> Files are private — served to admins only.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{ credential_panel(company, cred) }}
+
+  <div class="card adminuiux-card mb-3">
+    <div class="card-body">
+      <h6 class="mb-3"><i class="bi bi-people"></i> Users ({{ company_users | length }})</h6>
+      {% if not company_users %}
+      <p class="text-secondary mb-0">No users on this company.</p>
+      {% else %}
+      <div class="table-responsive">
+        <table class="table align-middle mb-0 mc-table-colorful">
+          <tbody>
+            {% for u in company_users %}
+            <tr class="mc-accent-{{ avatar_class(u.email) | replace('mc-avatar-', '') }}">
+              <td style="width:2.5rem;">
+                <div class="mc-avatar-chip {{ avatar_class(u.email) }}">{{ initials(u.full_name) }}</div>
+              </td>
+              <td>
+                <div class="mc-row-label">
+                  <div>
+                    <div class="mc-row-title">{{ u.full_name }}</div>
+                    <div class="mc-row-sub">{{ u.email }}</div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if company.role.value == "seller" %}
+  <div class="card adminuiux-card mb-3">
+    <div class="card-body">
+      <h6 class="mb-3"><i class="bi bi-diagram-3"></i> Listings ({{ products | length }})</h6>
+      {% if not products %}
+      <p class="text-secondary mb-0">No listings yet.</p>
+      {% else %}
+      <div class="table-responsive">
+        <table class="table align-middle mb-0 mc-table-colorful">
+          <thead>
+            <tr>
+              <th>Mineral</th>
+              <th>Quantity</th>
+              <th>Status</th>
+              <th>Verification attempts</th>
+              <th>Updated</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in products %}
+            <tr class="mc-accent-{{ avatar_class(p.mineral_type) | replace('mc-avatar-', '') }}">
+              <td>
+                <div class="mc-row-label">
+                  <div class="mc-avatar-chip {{ avatar_class(p.mineral_type) }}">{{ initials(p.mineral_type) }}</div>
+                  <div>
+                    <div class="mc-row-title">{{ p.mineral_type }}</div>
+                    {% if p.grade %}<div class="mc-row-sub">{{ p.grade }}</div>{% endif %}
+                  </div>
+                </div>
+              </td>
+              <td>{{ p.quantity_value }} {{ p.quantity_unit }}</td>
+              <td>
+                {% if p.status.value == "draft" %}<span class="badge bg-secondary-subtle text-secondary">Draft</span>
+                {% elif p.status.value == "under_verification" %}<span
+                  class="badge bg-warning-subtle text-warning">Under verification</span>
+                {% elif p.status.value == "verified" %}<span
+                  class="badge bg-success-subtle text-success">Verified</span>
+                {% elif p.status.value == "failed_verification" %}<span
+                  class="badge bg-danger-subtle text-danger">Failed verification</span>
+                {% else %}<span class="badge bg-secondary-subtle text-secondary">Suspended</span>
+                {% endif %}
+              </td>
+              <td class="text-secondary small">{{ verification_counts.get(p.id, 0) }}</td>
+              <td class="text-secondary small">{{ p.updated_at.strftime("%Y-%m-%d") }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card adminuiux-card">
+    <div class="card-body">
+      <h6 class="mb-3"><i class="bi bi-shield-check"></i> Mineral Passports ({{ passports | length }})</h6>
+      {% if not passports %}
+      <p class="text-secondary mb-0">No passport requests yet.</p>
+      {% else %}
+      <div class="table-responsive">
+        <table class="table align-middle mb-0 mc-table-colorful">
+          <thead>
+            <tr>
+              <th>Mineral</th>
+              <th>Scope</th>
+              <th>Status</th>
+              <th>Passport #</th>
+              <th>Valid until</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in passports %}
+            {% set mineral_name = p.scopes[0].product.mineral_type if p.scopes else "—" %}
+            <tr class="mc-accent-{{ avatar_class(mineral_name) | replace('mc-avatar-', '') }}">
+              <td>
+                <div class="mc-row-label">
+                  <div class="mc-avatar-chip {{ avatar_class(mineral_name) }}">{{ initials(mineral_name) }}</div>
+                  <div class="mc-row-title">{{ mineral_name }}</div>
+                </div>
+              </td>
+              <td>{{ p.category | replace("_", " ") | capitalize }}</td>
+              <td>
+                {% if p.status.value == "approved" %}
                 {% if p.is_currently_valid %}<span class="badge bg-success-subtle text-success">Active</span>
                 {% else %}<span class="badge bg-secondary-subtle text-secondary">Expired</span>{% endif %}
-              {% elif p.status.value == "rejected" %}<span class="badge bg-danger-subtle text-danger">Rejected</span>
-              {% else %}<span class="badge bg-warning-subtle text-warning">Pending</span>
-              {% endif %}
-            </td>
-            <td class="text-secondary small">{{ p.certificate_number or "—" }}</td>
-            <td class="text-secondary small">{{ p.expiry_date or "—" }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+                {% elif p.status.value == "rejected" %}<span class="badge bg-danger-subtle text-danger">Rejected</span>
+                {% else %}<span class="badge bg-warning-subtle text-warning">Pending</span>
+                {% endif %}
+              </td>
+              <td class="text-secondary small">{{ p.certificate_number or "—" }}</td>
+              <td class="text-secondary small">{{ p.expiry_date or "—" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
     </div>
-    {% endif %}
   </div>
-</div>
-{% endif %}
+  {% endif %}
 
-{% if company.role.value == "lab" %}
-<div class="card adminuiux-card">
-  <div class="card-body">
-    <h6 class="mb-3"><i class="bi bi-patch-check"></i> Certificates issued ({{ certificates | length }})</h6>
-    {% if not certificates %}
-    <p class="text-secondary mb-0">No certificates issued yet.</p>
-    {% else %}
-    <div class="table-responsive">
-      <table class="table align-middle mb-0 mc-table-colorful">
-        <thead>
-          <tr><th>Certificate #</th><th>Mineral</th><th>Issued</th></tr>
-        </thead>
-        <tbody>
-          {% for c in certificates %}
-          {% set mineral_name = c.scopes[0].product.mineral_type if c.scopes else "—" %}
-          <tr class="mc-accent-{{ avatar_class(mineral_name) | replace('mc-avatar-', '') }}">
-            <td>
-              <div class="mc-row-label">
-                <div class="mc-avatar-chip {{ avatar_class(mineral_name) }}">{{ initials(mineral_name) }}</div>
-                <div class="mc-row-title">{{ c.certificate_number }}</div>
-              </div>
-            </td>
-            <td>{{ mineral_name }}</td>
-            <td class="text-secondary small">{{ c.issue_date.strftime("%Y-%m-%d") if c.issue_date else "—" }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+  {% if company.role.value == "lab" %}
+  <div class="card adminuiux-card">
+    <div class="card-body">
+      <h6 class="mb-3"><i class="bi bi-patch-check"></i> Certificates issued ({{ certificates | length }})</h6>
+      {% if not certificates %}
+      <p class="text-secondary mb-0">No certificates issued yet.</p>
+      {% else %}
+      <div class="table-responsive">
+        <table class="table align-middle mb-0 mc-table-colorful">
+          <thead>
+            <tr>
+              <th>Certificate #</th>
+              <th>Mineral</th>
+              <th>Issued</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in certificates %}
+            {% set mineral_name = c.scopes[0].product.mineral_type if c.scopes else "—" %}
+            <tr class="mc-accent-{{ avatar_class(mineral_name) | replace('mc-avatar-', '') }}">
+              <td>
+                <div class="mc-row-label">
+                  <div class="mc-avatar-chip {{ avatar_class(mineral_name) }}">{{ initials(mineral_name) }}</div>
+                  <div class="mc-row-title">{{ c.certificate_number }}</div>
+                </div>
+              </td>
+              <td>{{ mineral_name }}</td>
+              <td class="text-secondary small">{{ c.issue_date.strftime("%Y-%m-%d") if c.issue_date else "—" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
     </div>
-    {% endif %}
   </div>
-</div>
-{% endif %}
+  {% endif %}
 
-{% endblock %}
+  {% endblock %}

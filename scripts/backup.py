@@ -6,9 +6,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-import app.models  # noqa: E402,F401
-from app.database.base import SessionLocal  # noqa: E402
-from app.services import backup_service  # noqa: E402
+import app.models  
+from app.database.base import SessionLocal  
+from app.services import backup_service 
 
 
 def main() -> int:

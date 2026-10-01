@@ -1,0 +1,105 @@
+{% extends "layouts/base.html" %}
+{% from "partials/doc_health.html" import health_badge, status_badge with context %}
+{% block title %}{{ types.get(doc.doc_type, doc.doc_type) }} · {{ company.company_name }}{% endblock %}
+{% block content %}
+{% set file_url = url_for('admin_document_file', doc_id=doc.id) %}
+<a href="{{ url_for('admin_documents') }}" class="text-secondary text-decoration-none small">&larr; All documents</a>
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-2 mb-3">
+  <div class="d-flex align-items-center gap-3">
+    <span class="mc-kpi-icon bg-primary-subtle text-primary"><i class="bi bi-file-earmark-{{ 'pdf' if file.kind == 'pdf' else 'image' if file.kind == 'image' else 'text' }}"></i></span>
+    <div>
+      <h4 class="mb-0">{{ types.get(doc.doc_type, doc.doc_type) }} <span class="text-secondary fs-6">v{{ doc.version }}</span></h4>
+      <a class="small text-decoration-none" href="{{ url_for('admin_company_detail', company_id=company.id) }}">{{ company.company_name }}</a>
+      <span class="small text-secondary">· {{ company.role.value }}</span>
+    </div>
+  </div>
+  <div class="d-flex gap-2 align-items-center">
+    {{ status_badge(doc.status, status_labels) }} {{ health_badge(health, doc.days_left()) }}
+    {% if file.ok %}
+    <a class="btn btn-sm btn-outline-secondary" href="{{ file_url }}" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right"></i> Open</a>
+    <a class="btn btn-sm btn-outline-secondary" href="{{ file_url }}?download=1"><i class="bi bi-download"></i> Download</a>
+    {% endif %}
+  </div>
+</div>
+{% if msg %}<div class="alert alert-success py-2">{{ msg }}</div>{% endif %}
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+{% if file.ok and not file.intact %}
+<div class="alert alert-warning py-2"><i class="bi bi-shield-exclamation"></i> Integrity warning: this file changed after it was uploaded (SHA-256 mismatch). Treat it as untrusted and ask the company to re-upload.</div>
+{% endif %}
+
+<div class="row g-3">
+  <div class="col-xl-8">
+    <div class="card adminuiux-card mc-doc-preview"><div class="card-body p-2">
+      {% if not file.ok %}
+        <div class="text-center py-5 px-3">
+          <span class="mc-empty-icon bg-danger-subtle text-danger"><i class="bi bi-file-earmark-x"></i></span>
+          <h6 class="mt-3 mb-1">File not available</h6>
+          <p class="text-secondary small mb-3 mx-auto" style="max-width:520px">{{ file.error }}</p>
+          <div class="small text-secondary">Stored path: <code translate="no">{{ doc.file_path }}</code></div>
+          <p class="small text-secondary mt-3 mb-0">Reject it below with a note so the company is notified to upload the document again.</p>
+        </div>
+      {% elif file.kind == 'image' %}
+        <div class="text-center bg-body-tertiary rounded-3 p-2"><img src="{{ file_url }}" alt="{{ doc.original_name or 'document' }}" class="img-fluid rounded-2 mc-doc-image"></div>
+      {% elif file.kind in ('pdf', 'html') %}
+        <iframe src="{{ file_url }}" title="{{ doc.original_name or 'document' }}" class="mc-doc-frame"></iframe>
+      {% else %}
+        <div class="text-center py-5"><span class="mc-empty-icon"><i class="bi bi-file-earmark"></i></span>
+          <p class="text-secondary mt-3">No inline preview for this file type ({{ mime }}).</p>
+          <a class="btn btn-sm btn-theme" href="{{ file_url }}?download=1"><i class="bi bi-download"></i> Download</a></div>
+      {% endif %}
+    </div></div>
+  </div>
+
+  <div class="col-xl-4">
+    <div class="card adminuiux-card mb-3"><div class="card-body">
+      <h6 class="mb-3"><i class="bi bi-info-circle"></i> Details</h6>
+      <dl class="mc-dl mb-0">
+        <dt>Document number</dt><dd>{{ doc.number or '—' }}</dd>
+        {% if doc.title %}<dt>Title</dt><dd>{{ doc.title }}</dd>{% endif %}
+        <dt>Issued</dt><dd>{{ doc.issued_on or '—' }}</dd>
+        <dt>Expires</dt><dd>{{ doc.expires_on or 'No expiry' }}</dd>
+        <dt>Uploaded</dt><dd>{{ doc.created_at.strftime('%Y-%m-%d %H:%M') }}{% if doc.uploaded_by %}<div class="small text-secondary">{{ doc.uploaded_by.full_name }}</div>{% endif %}</dd>
+        {% if doc.reviewed_at %}<dt>Reviewed</dt><dd>{{ doc.reviewed_at.strftime('%Y-%m-%d %H:%M') }}{% if doc.reviewed_by %}<div class="small text-secondary">{{ doc.reviewed_by.full_name }}</div>{% endif %}</dd>{% endif %}
+        {% if doc.review_note %}<dt>Review note</dt><dd>{{ doc.review_note }}</dd>{% endif %}
+        <dt>File</dt><dd class="text-break">{{ doc.original_name or '—' }}<div class="small text-secondary">{{ mime }}{% if file.size %} · {{ '%.1f' % (file.size / 1024) }} KB{% endif %}</div></dd>
+        <dt>Integrity</dt><dd>{% if not file.ok %}<span class="text-danger"><i class="bi bi-x-circle"></i> Unavailable</span>{% elif file.intact %}<span class="text-success"><i class="bi bi-shield-check"></i> Verified</span>{% else %}<span class="text-warning"><i class="bi bi-shield-exclamation"></i> Mismatch</span>{% endif %}
+          {% if doc.file_sha256 %}<div class="small text-secondary font-monospace" translate="no" title="{{ doc.file_sha256 }}">{{ doc.file_sha256[:16] }}…</div>{% endif %}</dd>
+      </dl>
+    </div></div>
+
+    <div class="card adminuiux-card mb-3"><div class="card-body">
+      <h6 class="mb-3"><i class="bi bi-clipboard-check"></i> Review</h6>
+      {% if doc.status != 'approved' %}
+      <form method="post" action="{{ url_for('admin_document_review', doc_id=doc.id) }}" class="mb-3">{{ csrf_field() }}
+        <input type="hidden" name="decision" value="approve"><input type="hidden" name="back" value="{{ back }}">
+        <button class="btn btn-success w-100" {% if not file.ok %}disabled title="The file is missing — it cannot be approved"{% endif %}><i class="bi bi-check-lg"></i> Approve document</button>
+      </form>
+      {% endif %}
+      {% if doc.status != 'rejected' %}
+      <form method="post" action="{{ url_for('admin_document_review', doc_id=doc.id) }}">{{ csrf_field() }}
+        <input type="hidden" name="decision" value="reject"><input type="hidden" name="back" value="{{ back }}">
+        <label class="form-label small">Reason for rejection</label>
+        <textarea name="note" class="form-control form-control-sm mb-2" rows="3" minlength="5" required
+          placeholder="e.g. Scan is unreadable — upload a clear copy">{% if not file.ok %}The file could not be opened on our side — please upload the document again.{% endif %}</textarea>
+        <button class="btn btn-outline-danger w-100"><i class="bi bi-x-lg"></i> Reject and notify company</button>
+      </form>
+      {% else %}
+      <div class="small text-secondary">Rejected documents stay on record. The company uploads a new version to replace it.</div>
+      {% endif %}
+    </div></div>
+
+    <div class="card adminuiux-card"><div class="card-body">
+      <h6 class="mb-2"><i class="bi bi-clock-history"></i> Versions</h6>
+      <div class="list-group list-group-flush">
+      {% for v in history %}
+        <a href="{{ url_for('admin_document_view', doc_id=v.id) }}" class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center {% if v.id == doc.id %}fw-semibold{% endif %}">
+          <span>v{{ v.version }}{% if v.is_current %} <span class="badge bg-primary-subtle text-primary">current</span>{% endif %}<div class="small text-secondary fw-normal">{{ v.created_at.strftime('%Y-%m-%d') }}</div></span>
+          {{ status_badge(v.status, status_labels) }}
+        </a>
+      {% endfor %}
+      </div>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

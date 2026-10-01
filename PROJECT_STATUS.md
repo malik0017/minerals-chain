@@ -84,18 +84,7 @@ Inventory management, logistics/shipping, document management,
 advanced reporting, admin monitoring, mobile responsiveness pass.
 
 ## Still pending
-- ZATCA Fatoora Phase 2 (Batch L) and payment gateway (Batch N) — by decision.
-- Wathq / MIM live mode needs production API credentials (`WATHQ_MODE=live`, `WATHQ_API_KEY`; `MIM_MODE=live`, `MIM_API_URL`, `MIM_API_KEY`).
-- Native store apps: the PWA + `/api/v1` are the foundation; a store build (e.g. Capacitor/Flutter) is a separate project.
-- External penetration test by an accredited firm (see docs/SECURITY_PENTEST_PLAN.md).
-
-
-## Known cleanup pending (low priority, doesn't block anything)
-- Delete `app/modules/seller/routes_old.py` (stray unused duplicate)
-- Delete legacy `app/models/certificate.py`, `app/models/passport.py`, `app/services/passport_service.py` (pre-Batch-A, no longer imported)
-- ~~Wire `users.last_login_at`~~ — done in Batch K
-- ~~Pre-existing autogenerate drift on `users.email`~~ — fixed in migration 0018
-- Delete `app/static/uploads/company_documents/` after running Control Center → "Secure legacy uploads"
+- ZATCA Fatoora and payment gateway  — by decision.
 
 ## Deliberate scope boundaries
 Noted here so they don't get re-litigated by accident — these are
@@ -103,7 +92,6 @@ considered decisions, not oversights:
 
 - Email is not editable from `/my-profile` or `/admin/users`
 - Company role is not editable anywhere after registration
-- ~~Passport validity period hardcoded~~ — now System Settings → Policies (Batch K)
 - No 2FA backup codes — recovery path is admin disabling 2FA for a
   locked-out user
 - Buyer browse search is mineral-type match only, no other filters
@@ -157,3 +145,15 @@ against the latest filename in `alembic/versions/` to confirm.
 7. `python scripts/security_selftest.py`   8. cron: `*/15 * * * * python scripts/run_scheduled_jobs.py --due`
 
 
+## New tool
+    python scripts/check_document_files.py               lists documents whose file is missing
+    python scripts/check_document_files.py --placeholder  (development only) writes a placeholder PDF for each
+
+    
+cd C:\laragon\www\minerals
+venv\Scripts\activate
+pip install -r requirements-dev.txt
+alembic upgrade head
+python scripts/load_master_data.py
+python scripts/seed_test_data.py
+python -m uvicorn app.main:app --reload

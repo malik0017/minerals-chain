@@ -4,11 +4,6 @@ B2B marketplace for Saudi industrial minerals — verified sellers, identity-pro
 
 **Stack:** FastAPI · SQLAlchemy 2 · Alembic · PostgreSQL 16 · Redis · Jinja2 · Bootstrap · ECharts · gunicorn/uvicorn · nginx
 
-## Documentation
-- `docs/PROJECT_STRUCTURE.md` — every folder and file, and how a request flows through the code
-- `docs/DEPLOYMENT.md` — live server setup, updates, backups, operations
-- `docs/SECURITY_PENTEST_PLAN.md` — brief for the external penetration test
-- `PROJECT_STATUS.md` — what is built, what is pending, decisions
 
 ## Run locally (Windows / Laragon)
 ```powershell

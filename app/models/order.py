@@ -19,10 +19,10 @@ class OrderStatus(str, enum.Enum):
     IN_TRANSIT = "in_transit"
     DELIVERED = "delivered"
     COMPLETED = "completed"
-    INVOICED = "invoiced"     # Batch L (ZATCA e-invoicing)
-    DISPUTED = "disputed"     # Batch M (disputes)
-    RESOLVED = "resolved"     # Batch M (dispute closed by admin ruling)
-    CANCELLED = "cancelled"   # admin cancel (Batch K Control Center)
+    INVOICED = "invoiced"     
+    DISPUTED = "disputed"    
+    RESOLVED = "resolved"     
+    CANCELLED = "cancelled"   
 
 
 class Order(Base, TimestampMixin):
@@ -130,7 +130,7 @@ class SettlementFeeStatus(str, enum.Enum):
     PAID = "paid"
     FAILED = "failed"
     REFUNDED = "refunded"
-    WAIVED = "waived"      # admin waiver (e.g. founding member promotion)
+    WAIVED = "waived"      
 
 
 class SettlementFee(Base, TimestampMixin):

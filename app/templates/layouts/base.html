@@ -41,7 +41,6 @@
   <script>window.__mcApplyPersonalize && window.__mcApplyPersonalize();</script>
 
   <script defer src="{{ url_for('static', path='js/app.js') }}"></script>
-  {# Batch R1: single language/direction mechanism (replaces language_switcher.js) #}
   <script src="{{ url_for('static', path='js/lang_sync.js') }}"></script>
 
 </head>
@@ -124,6 +123,7 @@
   {% block extra_js %}{% endblock %}
   <script src="{{ url_for('static', path='js/pwa.js') }}" defer></script>
   <script src="{{ url_for('static', path='js/mc_table.js') }}" defer></script>
+  <script src="{{ url_for('static', path='js/mc_ui.js') }}" defer></script>
 
   <script src="{{ url_for('static', path='js/investment/investment-dashboard.js') }}"></script>
 </body>

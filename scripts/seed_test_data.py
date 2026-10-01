@@ -16,6 +16,7 @@ from app.schemas.auth import RegisterRequest
 from app.schemas.product import ProductRequest
 from app.schemas.rfq import RFQRequest
 from app.schemas.quotation import QuotationRequest
+from app.services import placeholder_pdf
 from app.services import (
     admin_service,
     auth_service,
@@ -28,7 +29,7 @@ from app.services import (
 )
 
 PASSWORD = "admin123"
-DUMMY_PDF = b"%PDF-1.4 test document for seeded data\n%%EOF"
+DUMMY_PDF = placeholder_pdf.make("Minerals Chain test document", ["Seeded for local testing"])
 
 
 def _add_specs(db, product, rows) -> None:

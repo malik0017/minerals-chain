@@ -21,6 +21,27 @@ TOGGLES = {
     "dev_banner": ("setting", "dev_mode_banner", False),
 }
 
+ENV_NOTES = {
+    "SECRET_KEY": ("Signs login sessions. Anyone who knows it can forge a session.",
+                   "Set once; changing it signs everyone out.", "Required — unique random value per server."),
+    "DEBUG": ("Shows internal errors and SQL in responses.", "false", "false"),
+    "COOKIE_SECURE": ("Browser only sends the login cookie over HTTPS.",
+                      "Keep false — Laragon serves plain http, login stops working if true.", "true, after HTTPS is live."),
+    "REDIS_URL": ("Shared store for login/OTP rate limits across workers.",
+                  "Optional — in-memory is fine with one process.", "Recommended: redis://localhost:6379/0 (or ElastiCache)."),
+    "EMAIL_MODE": ("console prints emails in the terminal, smtp really sends them.",
+                   "console for testing (OTP codes appear in the uvicorn window).", "smtp"),
+    "SMTP_HOST": ("Mail server host name.", "Only when testing real email.", "Your provider, e.g. Amazon SES or a KSA provider."),
+    "SMTP_PORT": ("Mail server port (587 = STARTTLS).", "587", "587"),
+    "SMTP_USERNAME": ("Mail account user.", "—", "Provider credentials."),
+    "SMTP_PASSWORD": ("Mail account password / API key.", "—", "Provider credentials — never commit it."),
+    "SMTP_FROM_EMAIL": ("Sender address on outgoing email.", "—", "A verified no-reply address on your domain."),
+    "CSP_MODE": ("Content-Security-Policy: report-only logs violations, enforce blocks them.",
+                 "report-only while developing.", "enforce once the violation count stays at 0."),
+    "FILE_ENCRYPTION_KEY": ("Encrypts uploaded documents on disk (Fernet key).",
+                            "Optional; if set, back it up — lost key = unreadable files.", "Required; store a copy in AWS Secrets Manager."),
+}
+
 
 def _item(key, level, title, detail, fix="", kind="none", env=None, toggle=None, link=None):
     return {"key": key, "level": level, "title": title, "detail": detail, "fix": fix, "kind": kind,
@@ -104,11 +125,17 @@ def checklist(db: Session) -> list[dict]:
     return sorted(items, key=lambda i: LEVEL_ORDER[i["level"]])
 
 
-def env_fixes(items: list[dict]) -> dict:
+LOCAL_ONLY_SKIP = ("COOKIE_SECURE",)
+
+
+def env_fixes(items: list[dict], local: bool = False) -> dict:
     out = {}
     for i in items:
-        if i["level"] != "ok":
+        if i["level"] in (("fail", "warn") if local else ("fail", "warn", "info")):
             out.update(i["env"])
+    if local:
+        for k in LOCAL_ONLY_SKIP:
+            out.pop(k, None)
     return out
 
 

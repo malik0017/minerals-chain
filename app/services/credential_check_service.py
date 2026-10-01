@@ -208,6 +208,26 @@ def auto_check(db: Session, company: Company) -> list[CredentialCheck]:
     return out
 
 
+def run_all(db: Session, user: User, only_unchecked: bool = True) -> dict:
+    checked_ids = {r[0] for r in db.query(CredentialCheck.company_id).distinct()}
+    counts = {"companies": 0, "checks": 0, "issues": 0, "skipped": 0}
+    for company in db.query(Company).order_by(Company.company_name).all():
+        if only_unchecked and company.id in checked_ids:
+            continue
+        counts["companies"] += 1
+        for kind in ("cr", "mining_license") if company.role == CompanyRole.SELLER else ("cr",):
+            try:
+                c = run_check(db, company, kind, user, commit=False)
+            except CredentialCheckError:
+                counts["skipped"] += 1
+                continue
+            counts["checks"] += 1
+            if c.result != "verified":
+                counts["issues"] += 1
+    db.commit()
+    return counts
+
+
 def for_company(db: Session, company_id) -> list[CredentialCheck]:
     return (db.query(CredentialCheck).filter(CredentialCheck.company_id == company_id)
             .order_by(CredentialCheck.created_at.desc()).limit(20).all())

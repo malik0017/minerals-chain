@@ -1,0 +1,401 @@
+<!-- ============================================
+     Minerals Chain Admin Portal
+     ============================================ -->
+
+<!-- ========== KPI CARDS COMPONENT ========== -->
+<div class="kpi-cards-grid">
+  <div class="kpi-card">
+    <div class="kpi-card-header">
+      <span class="kpi-card-label">Total Orders</span>
+      <div class="kpi-card-icon" style="background: #e0f2fe;">📊</div>
+    </div>
+    <div class="kpi-card-value">2,847</div>
+    <div class="kpi-card-meta">This month</div>
+    <div class="kpi-card-trend positive">↑ 12.5% vs last month</div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-card-header">
+      <span class="kpi-card-label">Revenue</span>
+      <div class="kpi-card-icon" style="background: #dcfce7;">💰</div>
+    </div>
+    <div class="kpi-card-value">₪ 2.4M</div>
+    <div class="kpi-card-meta">This month</div>
+    <div class="kpi-card-trend positive">↑ 8.3% vs last month</div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-card-header">
+      <span class="kpi-card-label">Active Partners</span>
+      <div class="kpi-card-icon" style="background: #fce7f3;">🤝</div>
+    </div>
+    <div class="kpi-card-value">156</div>
+    <div class="kpi-card-meta">Total</div>
+    <div class="kpi-card-trend neutral">→ No change</div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-card-header">
+      <span class="kpi-card-label">Pending Orders</span>
+      <div class="kpi-card-icon" style="background: #fed7aa;">⏱️</div>
+    </div>
+    <div class="kpi-card-value">42</div>
+    <div class="kpi-card-meta">Awaiting action</div>
+    <div class="kpi-card-trend negative">↑ 5 new today</div>
+  </div>
+</div>
+
+
+<!-- ========== SECTION HEADER VARIANTS ========== -->
+<div class="section-header primary">
+  <h3><span class="section-header-icon">💼</span> Company Information</h3>
+  <p class="section-header-description">Core company details and contact information</p>
+</div>
+
+<div class="form-section">
+  <!-- Form fields go here -->
+</div>
+
+
+<div class="section-header success">
+  <h3><span class="section-header-icon">✓</span> Payment Status</h3>
+  <p class="section-header-description">Settlement and transaction history</p>
+</div>
+
+
+<div class="section-header warning">
+  <h3><span class="section-header-icon">⚠️</span> Compliance Requirements</h3>
+  <p class="section-header-description">ZATCA and regulatory compliance status</p>
+</div>
+
+
+<div class="section-header danger">
+  <h3><span class="section-header-icon">🔴</span> Critical Alerts</h3>
+  <p class="section-header-description">Items requiring immediate attention</p>
+</div>
+
+
+<!-- ========== CARD VARIANTS ========== -->
+<div class="card elevated">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Diamond Minerals Ltd.</div>
+      <div class="card-subtitle">Active Partner • Verified</div>
+    </div>
+    <span class="badge badge-success">Active</span>
+  </div>
+  <p>Premium minerals supplier with 5+ years track record. Verified certifications: ISO 9001, OHSAS 18001.</p>
+  <div class="card-footer">
+    <button class="btn btn-primary">View Profile</button>
+    <button class="btn btn-secondary">Edit</button>
+    <button class="btn btn-danger">Suspend</button>
+  </div>
+</div>
+
+
+<div class="card filled">
+  <div class="card-header">
+    <div class="card-title">Monthly Statistics</div>
+  </div>
+  <div class="card-stat">
+    <span class="card-stat-value">847</span>
+    <span class="card-stat-unit">Orders Processed</span>
+    <span class="card-stat-trend up">↑ 12%</span>
+  </div>
+</div>
+
+
+<!-- ========== FINANCIAL SNAPSHOT ========== -->
+<div class="financial-snapshot">
+  <div class="financial-snapshot-grid">
+    <div class="financial-item">
+      <div class="financial-item-label">Subtotal</div>
+      <div class="financial-item-value">₪ 45,500.00</div>
+    </div>
+    <div class="financial-item">
+      <div class="financial-item-label">Tax (15%)</div>
+      <div class="financial-item-value">₪ 6,825.00</div>
+    </div>
+    <div class="financial-item">
+      <div class="financial-item-label">Discount</div>
+      <div class="financial-item-value">₪ 2,000.00</div>
+    </div>
+    <div class="financial-item">
+      <div class="financial-item-label">Total Amount</div>
+      <div class="financial-item-value" style="color: #15803d; font-size: 28px;">₪ 50,325.00</div>
+    </div>
+  </div>
+
+  <div class="financial-breakdown">
+    <div class="breakdown-row">
+      <span class="breakdown-label">Product Subtotal</span>
+      <span class="breakdown-value">₪ 45,500.00</span>
+    </div>
+    <div class="breakdown-row">
+      <span class="breakdown-label">VAT (15%)</span>
+      <span class="breakdown-value">₪ 6,825.00</span>
+    </div>
+    <div class="breakdown-row">
+      <span class="breakdown-label">Promotional Discount</span>
+      <span class="breakdown-value">-₪ 2,000.00</span>
+    </div>
+    <div class="breakdown-row total">
+      <span class="breakdown-label">Total Order Value</span>
+      <span class="breakdown-value">₪ 50,325.00</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========== DATA TABLE ========== -->
+<div class="table-container">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th data-sortable>Settlement Date</th>
+        <th data-sortable>Period</th>
+        <th class="nowrap" data-sortable>Gross Amount</th>
+        <th class="nowrap" data-sortable>Fees</th>
+        <th class="nowrap" data-sortable>Net Amount</th>
+        <th>Status</th>
+        <th style="text-align: right;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>2026-09-30</td>
+        <td class="muted">Sep 1 - Sep 30, 2026</td>
+        <td class="accent">₪ 125,450.50</td>
+        <td class="accent">₪ 3,763.52</td>
+        <td class="accent" style="color: #15803d; font-weight: 700;">₪ 121,686.98</td>
+        <td><span class="row-status success">✓ Settled</span></td>
+        <td>
+          <div class="table-actions">
+            <button class="table-action-btn">View</button>
+            <button class="table-action-btn">Download</button>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>2026-08-31</td>
+        <td class="muted">Aug 1 - Aug 31, 2026</td>
+        <td class="accent">₪ 98,200.00</td>
+        <td class="accent">₪ 2,946.00</td>
+        <td class="accent" style="color: #15803d; font-weight: 700;">₪ 95,254.00</td>
+        <td><span class="row-status success">✓ Settled</span></td>
+        <td>
+          <div class="table-actions">
+            <button class="table-action-btn">View</button>
+            <button class="table-action-btn">Download</button>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>2026-07-31</td>
+        <td class="muted">Jul 1 - Jul 31, 2026</td>
+        <td class="accent">₪ 112,750.00</td>
+        <td class="accent">₪ 3,382.50</td>
+        <td class="accent" style="color: #15803d; font-weight: 700;">₪ 109,367.50</td>
+        <td><span class="row-status warning">⏱️ Processing</span></td>
+        <td>
+          <div class="table-actions">
+            <button class="table-action-btn">View</button>
+            <button class="table-action-btn" disabled>Download</button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ========== DOCUMENT VIEWER ========== -->
+<div class="document-viewer-container">
+  <div class="document-viewer-header">
+    <div class="document-viewer-title">Invoice #INV-2026-08834.pdf</div>
+    <div class="document-viewer-tools">
+      <button class="document-viewer-tool-btn" title="Zoom In">🔍+</button>
+      <button class="document-viewer-tool-btn" title="Zoom Out">🔍−</button>
+      <button class="document-viewer-tool-btn" title="Download">⬇️</button>
+      <button class="document-viewer-tool-btn" title="Print">🖨️</button>
+    </div>
+  </div>
+
+  <div class="document-viewer-content">
+    <iframe class="document-preview-frame"
+            src="/preview/invoice-2026-08834.pdf"
+            type="application/pdf"
+            style="width: 90%; height: 100%;">
+    </iframe>
+  </div>
+
+  <div class="document-viewer-footer">
+    <span>Invoice • Verified • Last updated 2026-09-28</span>
+    <div class="document-viewer-pagination">
+      <button class="pagination-btn">←</button>
+      <span>Page <input type="text" class="pagination-input" value="1"> of 1</span>
+      <button class="pagination-btn">→</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========== HELP CALLOUT VARIANTS ========== -->
+<div class="help-callout info">
+  <div class="help-callout-icon">ℹ️</div>
+  <div class="help-callout-content">
+    <h4>What is PDPL?</h4>
+    <p>Pending Data Placement Requests allow partners to request permission to access or update specific company data.</p>
+    <h4>Workflow Steps:</h4>
+    <ol>
+      <li><strong>Request Created:</strong> Partner submits PDPL request for access</li>
+      <li><strong>Pending Review:</strong> Admin reviews the request and data being requested</li>
+      <li><strong>Approved/Rejected:</strong> Admin approves or rejects access request</li>
+      <li><strong>Active/Inactive:</strong> Once approved, access becomes active</li>
+    </ol>
+  </div>
+</div>
+
+
+<div class="help-callout warning">
+  <div class="help-callout-icon">⚠️</div>
+  <div class="help-callout-content">
+    <h4>Important Security Note</h4>
+    <p>Never share API tokens in public repositories or communication channels. Tokens are equivalent to passwords.</p>
+  </div>
+</div>
+
+
+<div class="help-callout danger">
+  <div class="help-callout-icon">🔴</div>
+  <div class="help-callout-content">
+    <h4>System Alert</h4>
+    <p>Database backup is more than 48 hours old. Please verify backup status immediately.</p>
+  </div>
+</div>
+
+
+<!-- ========== AUDIT LOG ENTRY ========== -->
+<div class="audit-log-entry">
+  <div class="audit-log-header">
+    <div class="audit-log-action">
+      <div class="audit-log-action-icon login">👤</div>
+      <div class="audit-log-action-details">
+        <div class="audit-log-action-title">User Login</div>
+        <div class="audit-log-action-description">Mudassir Admin logged in successfully</div>
+      </div>
+    </div>
+    <div class="audit-log-timestamp">2026-09-30 14:32:45</div>
+  </div>
+
+  <div class="audit-log-details">
+    <div class="audit-log-detail-item">
+      <div class="audit-log-detail-label">User ID</div>
+      <div class="audit-log-detail-value">admin_001</div>
+    </div>
+    <div class="audit-log-detail-item">
+      <div class="audit-log-detail-label">Email</div>
+      <div class="audit-log-detail-value">mudassir@minerals.dev</div>
+    </div>
+    <div class="audit-log-detail-item">
+      <div class="audit-log-detail-label">IP Address</div>
+      <div class="audit-log-detail-value">192.168.1.100</div>
+    </div>
+    <div class="audit-log-detail-item">
+      <div class="audit-log-detail-label">Session ID</div>
+      <div class="audit-log-detail-value">sess_9a3f2b1e5c8d</div>
+    </div>
+    <div class="audit-log-detail-item">
+      <div class="audit-log-detail-label">Device</div>
+      <div class="audit-log-detail-value">Chrome 127 / Mac OS X</div>
+    </div>
+    <div class="audit-log-detail-item">
+      <div class="audit-log-detail-label">Duration</div>
+      <div class="audit-log-detail-value">Active (3h 24m)</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========== DOCUMENTATION CARDS ========== -->
+<div class="documentation-cards">
+  <div class="doc-card">
+    <div class="doc-card-header">
+      <span class="doc-card-icon">💾</span>
+      <h4>Automated Daily Backups</h4>
+    </div>
+    <div class="doc-card-body">
+      <p><strong>Schedule:</strong> 02:00 UTC (5:00 AM KSA)</p>
+      <p><strong>Retention:</strong> 30 days (AWS S3)</p>
+      <p><strong>Database:</strong> PostgreSQL 16 full backup</p>
+      <p><strong>RTO:</strong> 30 minutes | <strong>RPO:</strong> 24 hours</p>
+    </div>
+  </div>
+
+  <div class="doc-card">
+    <div class="doc-card-header">
+      <span class="doc-card-icon">🔐</span>
+      <h4>File Encryption at Rest</h4>
+    </div>
+    <div class="doc-card-body">
+      <p><strong>Algorithm:</strong> Fernet (AES-128 CBC)</p>
+      <p><strong>Key Rotation:</strong> Quarterly</p>
+      <p><strong>Master Key:</strong> AWS Secrets Manager</p>
+      <p><strong>Encrypted Files:</strong> Invoices, Contracts, Identity Docs</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========== HEALTH STATUS CARDS ========== -->
+<div class="monitoring-grid">
+  <div class="health-status-card">
+    <div class="health-status-header">
+      <h4>API Server Status</h4>
+      <span class="health-badge-online">● Online</span>
+    </div>
+    <div class="health-status-details">
+      <div class="health-metric">
+        <span class="health-label">Uptime</span>
+        <span class="health-value">47d 13h 24m</span>
+      </div>
+      <div class="health-metric">
+        <span class="health-label">CPU Usage</span>
+        <span class="health-value">12.5%</span>
+      </div>
+      <div class="health-metric">
+        <span class="health-label">Memory Usage</span>
+        <span class="health-value">2.4 GB / 8 GB</span>
+      </div>
+      <div class="health-metric">
+        <span class="health-label">Response Time</span>
+        <span class="health-value">145ms (avg)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="health-status-card">
+    <div class="health-status-header">
+      <h4>Database Status</h4>
+      <span class="health-badge-online">● Online</span>
+    </div>
+    <div class="health-status-details">
+      <div class="health-metric">
+        <span class="health-label">Connections</span>
+        <span class="health-value">24 / 100</span>
+      </div>
+      <div class="health-metric">
+        <span class="health-label">Disk Usage</span>
+        <span class="health-value">156 GB / 500 GB</span>
+      </div>
+      <div class="health-metric">
+        <span class="health-label">Query Latency</span>
+        <span class="health-value">8.2ms (avg)</span>
+      </div>
+      <div class="health-metric">
+        <span class="health-label">Last Backup</span>
+        <span class="health-value">2h 30m ago</span>
+      </div>
+    </div>
+  </div>
+</div>

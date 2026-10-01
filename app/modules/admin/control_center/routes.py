@@ -44,18 +44,30 @@ def control_center(request: Request, db: Session = Depends(get_db),
     context.update({
         "health": cc.system_health(db), "checklist": checklist,
         "impersonation_allowed": cc.impersonation_allowed(db), "msg": msg, "error": error,
-        # Batch R2: visual dashboard
         "dash": analytics_service.dashboard(db), "security_score": analytics_service.security_score(checklist),
-        "env_fixes": security_posture.env_fixes(checklist),
     })
     return templates.TemplateResponse(request, "admin/control_center.html", context)
+
+
+@router.get("/admin/security", name="admin_security")
+def security_page(request: Request, db: Session = Depends(get_db), admin: User = Depends(require_admin("system")),
+                  msg: str | None = None, error: str | None = None):
+    from app.services import analytics_service
+    checklist = cc.security_checklist(db)
+    context = build_portal_context(admin, UserRole.ADMIN, active_path="/admin/security")
+    context.update({
+        "checklist": checklist, "security_score": analytics_service.security_score(checklist),
+        "env_fixes": security_posture.env_fixes(checklist, local=settings.APP_ENV != "production"), "env_notes": security_posture.ENV_NOTES,
+        "is_production": settings.APP_ENV == "production", "app_env": settings.APP_ENV, "msg": msg, "error": error,
+    })
+    return templates.TemplateResponse(request, "admin/security.html", context)
 
 
 @router.post("/admin/control-center/secure-uploads", name="admin_secure_uploads")
 def secure_uploads(request: Request, db: Session = Depends(get_db),
                    admin: User = Depends(require_admin("system"))):
     moved = cc.secure_legacy_uploads(db, admin)
-    return _to(request, "admin_control_center", msg=f"Moved {moved} document(s) to private storage.")
+    return _to(request, "admin_security", msg=f"Moved {moved} document(s) to private storage.")
 
 
 @router.get("/admin/system-settings", name="admin_system_settings")
@@ -165,8 +177,8 @@ def security_fix(request: Request, item: str = Form(...), db: Session = Depends(
         security_posture.apply_toggle(db, admin, item)
     except ValueError as exc:
         db.rollback()
-        return _to(request, "admin_control_center", error=str(exc))
-    return _to(request, "admin_control_center", msg="Security setting applied.")
+        return _to(request, "admin_security", error=str(exc))
+    return _to(request, "admin_security", msg="Security setting applied.")
 
 
 @router.post("/admin/control-center/security/test-email", name="admin_security_test_email")
@@ -176,13 +188,13 @@ def security_test_email(request: Request, db: Session = Depends(get_db), admin: 
         email_service.send_email(to=admin.email, subject="Minerals Chain — test email",
                                  body="This is a test message from the Admin Control Center.")
     except Exception as exc:
-        return _to(request, "admin_control_center", error=f"Email failed: {exc}")
-    return _to(request, "admin_control_center", msg=f"Test email sent to {admin.email} (mode: {settings.EMAIL_MODE}).")
+        return _to(request, "admin_security", error=f"Email failed: {exc}")
+    return _to(request, "admin_security", msg=f"Test email sent to {admin.email} (mode: {settings.EMAIL_MODE}).")
 
 
 @router.get("/admin/control-center/security/env", name="admin_security_env")
 def security_env(db: Session = Depends(get_db), admin: User = Depends(require_admin("system"))):
-    fixes = security_posture.env_fixes(cc.security_checklist(db))
+    fixes = security_posture.env_fixes(cc.security_checklist(db), local=settings.APP_ENV != "production")
     body = "# Minerals Chain — add or update these lines in .env, then restart the app\n" + \
         "".join(f"{k}={v}\n" for k, v in fixes.items())
     return Response(content=body, media_type="text/plain; charset=utf-8",

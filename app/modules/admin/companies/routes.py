@@ -122,8 +122,10 @@ def company_detail(
     })
     context.update(company_admin_context(db))  # Batch K
     from app.services import company_document_service, credential_check_service
-    context.update({"cred": credential_check_service.panel(db, company),
-                    "library": company_document_service.checklist(db, company)})
+    library = company_document_service.checklist(db, company)
+    from datetime import date
+    context.update({"cred": credential_check_service.panel(db, company), "library": library,
+                    "library_score": company_document_service.completeness(library), "today": date.today()})
     return templates.TemplateResponse(request, "admin/company_detail.html", context)
 
 from urllib.parse import quote  
@@ -180,15 +182,22 @@ def company_status(request: Request, company_id: uuid.UUID, form: FormData = Dep
 
 
 @router.get("/{company_id}/documents/{kind}", name="admin_company_document")
-def company_document(company_id: uuid.UUID, kind: str, db: Session = Depends(get_db),
+def company_document(request: Request, company_id: uuid.UUID, kind: str, db: Session = Depends(get_db),
                      admin: User = Depends(require_admin("companies"))):
     company = company_repository.get_by_id(db, company_id)
-    filename = None
-    if company is not None:
-        filename = {"cr": company.cr_document_filename, "license": company.license_document_filename}.get(kind)
+    if company is None:
+        return RedirectResponse(url=request.url_for("admin_companies_list"), status_code=303)
+    from app.models.company_document import CompanyDocument
+    current = (db.query(CompanyDocument)
+               .filter(CompanyDocument.company_id == company.id, CompanyDocument.doc_type == kind, CompanyDocument.is_current.is_(True))
+               .first())
+    if current is not None:
+        return RedirectResponse(url=request.url_for("admin_document_view", doc_id=current.id), status_code=303)
+    filename = {"cr": company.cr_document_filename, "license": company.license_document_filename}.get(kind)
     path = resolve_document_path(filename) if filename else None
     if path is None:
-        return RedirectResponse(url=f"/admin/companies/{company_id}?error=" + quote("Document file not found."), status_code=303)
+        label = {"cr": "CR", "license": "Licence"}.get(kind, "Document")
+        return RedirectResponse(url=f"/admin/companies/{company_id}?error=" + quote(f"{label} document has not been uploaded, or its file is missing on the server."), status_code=303)
     from app.services import file_crypto
     from app.services.private_files import mime_for
     try:

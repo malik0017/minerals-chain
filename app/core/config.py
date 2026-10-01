@@ -13,21 +13,21 @@ class Settings(BaseSettings):
     # postgresql://a-m.mudassir:root@localhost:5432/minerals_chain_db
     DATABASE_URL: str
 
-    # --- Security (used from Batch 2 onward, defined now so .env is stable) ---
+    # --- Security (.env is stable) ---
     SECRET_KEY: str = "CHANGE_ME_DEV_ONLY_NOT_FOR_PRODUCTION"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24h session
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24             # 24h session
     COOKIE_SECURE: bool = False
-    LOGIN_RATE_LIMIT_MAX: int = 10          # attempts per IP
-    LOGIN_RATE_LIMIT_WINDOW_SECONDS: int = 300     # per 5 minutes
-    OTP_SEND_RATE_LIMIT_MAX: int = 3        # sends per email
-    OTP_SEND_RATE_LIMIT_WINDOW_SECONDS: int = 900  # per 15 minutes
-    OTP_VERIFY_RATE_LIMIT_MAX: int = 5      # verify attempts per pending token
-    OTP_VERIFY_RATE_LIMIT_WINDOW_SECONDS: int = 600  # per 10 minutes 
+    LOGIN_RATE_LIMIT_MAX: int = 10                         # attempts per IP
+    LOGIN_RATE_LIMIT_WINDOW_SECONDS: int = 300             # per 5 minutes
+    OTP_SEND_RATE_LIMIT_MAX: int = 3                       # sends per email
+    OTP_SEND_RATE_LIMIT_WINDOW_SECONDS: int = 900          # per 15 minutes
+    OTP_VERIFY_RATE_LIMIT_MAX: int = 5                     # verify attempts per pending token
+    OTP_VERIFY_RATE_LIMIT_WINDOW_SECONDS: int = 600        # per 10 minutes 
 
     # --- Localization ---
     DEFAULT_LANGUAGE: str = "en"
     SUPPORTED_LANGUAGES: tuple[str, ...] = ("en", "ar")
-    EMAIL_MODE: str = "console"        # console | smtp
+    EMAIL_MODE: str = "console"                           # console | smtp
     SMTP_HOST: str = ""
     SMTP_PORT: int = 587
     SMTP_USERNAME: str = ""

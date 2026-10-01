@@ -25,11 +25,13 @@ def _back(msg=None, error=None):
     return RedirectResponse(url="/account/documents" + q, status_code=303)
 
 
-def serve(doc, data: bytes, intact: bool) -> Response:
-    name = (doc.original_name or "document").replace('"', "")
-    return Response(content=data, media_type=doc.mime or "application/octet-stream",
-                    headers={"Content-Disposition": f'inline; filename="{name}"', "X-Integrity": "verified" if intact else "MISMATCH",
-                             "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:"})
+def serve(doc, data: bytes, intact: bool, download: bool = False) -> Response:
+    name = (doc.original_name or "document").replace('"', "").encode("ascii", "ignore").decode() or "document"
+    return Response(content=data, media_type=docs.mime_of(doc),
+                    headers={"Content-Disposition": f'{"attachment" if download else "inline"}; filename="{name}"',
+                             "X-Integrity": "verified" if intact else "MISMATCH", "Cache-Control": "no-store",
+                             "X-Frame-Options": "SAMEORIGIN",
+                             "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'self'"})
 
 
 @router.get("", name="my_documents")
@@ -66,8 +68,8 @@ async def upload(request: Request, file: UploadFile | None = File(None), db: Ses
 def download(doc_id: uuid.UUID, db: Session = Depends(get_db), user: User = Depends(guard)):
     doc = docs.get(db, doc_id, None if user.role == UserRole.ADMIN else user.company)
     if doc is None:
-        return Response(status_code=404)
+        return _back(error="Document not found.")
     try:
         return serve(doc, *docs.read(doc))
     except docs.DocumentError:
-        return Response(status_code=404)
+        return _back(error=f"{docs.DOC_TYPES.get(doc.doc_type, 'Document')} v{doc.version}: the file is missing on the server — please upload it again.")

@@ -1,0 +1,112 @@
+/* ============================================
+   Section Headers Styling - Batch V Design Improvements
+   ============================================ */
+
+.section-header {
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  border-left: 4px solid #3b82f6;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  border-radius: 4px;
+}
+
+.section-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-header-description {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.section-header-icon {
+  font-size: 18px;
+  opacity: 0.7;
+}
+
+/* Color variants for different section types */
+.section-header.primary {
+  border-left-color: #3b82f6;
+  background: linear-gradient(135deg, #eff6ff 0%, #e0f2fe 100%);
+}
+
+.section-header.primary h3 {
+  color: #1e40af;
+}
+
+.section-header.primary .section-header-description {
+  color: #0369a1;
+}
+
+.section-header.success {
+  border-left-color: #10b981;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+}
+
+.section-header.success h3 {
+  color: #065f46;
+}
+
+.section-header.success .section-header-description {
+  color: #047857;
+}
+
+.section-header.warning {
+  border-left-color: #f59e0b;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+}
+
+.section-header.warning h3 {
+  color: #92400e;
+}
+
+.section-header.warning .section-header-description {
+  color: #b45309;
+}
+
+.section-header.danger {
+  border-left-color: #ef4444;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+}
+
+.section-header.danger h3 {
+  color: #7f1d1d;
+}
+
+.section-header.danger .section-header-description {
+  color: #991b1b;
+}
+
+/* Form section wrapper */
+.form-section {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.form-section + .section-header {
+  margin-top: 24px;
+}
+
+@media (max-width: 768px) {
+  .section-header {
+    padding: 12px 16px;
+  }
+
+  .section-header h3 {
+    font-size: 15px;
+  }
+
+  .section-header-description {
+    font-size: 12px;
+  }
+}

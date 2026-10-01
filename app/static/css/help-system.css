@@ -1,0 +1,458 @@
+/* ============================================
+   Help System - Tooltips & Documentation - Batch V Design Improvements
+   ============================================ */
+
+/* Help Icon */
+.help-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+  text-align: center;
+  background: #dbeafe;
+  color: #0369a1;
+  border-radius: 50%;
+  cursor: help;
+  font-size: 12px;
+  font-weight: bold;
+  margin-left: 4px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.help-icon:hover {
+  background: #bae6fd;
+  color: #0c4a6e;
+}
+
+/* Tooltip */
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltip-text {
+  visibility: hidden;
+  background-color: #1e293b;
+  color: #ffffff;
+  text-align: left;
+  border-radius: 4px;
+  padding: 8px 12px;
+  position: absolute;
+  z-index: 1000;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -60px;
+  width: 120px;
+  font-size: 12px;
+  line-height: 1.4;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  white-space: normal;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+}
+
+.tooltip .tooltip-text::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #1e293b transparent transparent transparent;
+}
+
+.tooltip:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Help Callout */
+.help-callout {
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+  display: flex;
+  gap: 16px;
+}
+
+.help-callout.info {
+  background: #eff6ff;
+  border-color: #bae6fd;
+}
+
+.help-callout.success {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+.help-callout.warning {
+  background: #fffbeb;
+  border-color: #fcd34d;
+}
+
+.help-callout.danger {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.help-callout-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.help-callout-content {
+  flex: 1;
+}
+
+.help-callout-content h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.help-callout.info .help-callout-content h4 {
+  color: #0c4a6e;
+}
+
+.help-callout.success .help-callout-content h4 {
+  color: #065f46;
+}
+
+.help-callout.danger .help-callout-content h4 {
+  color: #7f1d1d;
+}
+
+.help-callout-content p {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  color: #b45309;
+  line-height: 1.5;
+}
+
+.help-callout.info .help-callout-content p {
+  color: #0c4a6e;
+}
+
+.help-callout.success .help-callout-content p {
+  color: #065f46;
+}
+
+.help-callout.danger .help-callout-content p {
+  color: #7f1d1d;
+}
+
+.help-callout-content ol,
+.help-callout-content ul {
+  margin: 8px 0;
+  padding-left: 20px;
+  font-size: 13px;
+  color: #b45309;
+}
+
+.help-callout.info .help-callout-content ol,
+.help-callout.info .help-callout-content ul {
+  color: #0c4a6e;
+}
+
+.help-callout.success .help-callout-content ol,
+.help-callout.success .help-callout-content ul {
+  color: #065f46;
+}
+
+.help-callout.danger .help-callout-content ol,
+.help-callout.danger .help-callout-content ul {
+  color: #7f1d1d;
+}
+
+/* Documentation Cards */
+.documentation-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.doc-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.doc-card:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  border-color: #d1d5db;
+}
+
+.doc-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.doc-card-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.doc-card-header h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.doc-card-body {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #374151;
+}
+
+.doc-card-body p {
+  margin: 8px 0;
+}
+
+.doc-card-body strong {
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.doc-card-body code {
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Monaco', monospace;
+  font-size: 12px;
+  color: #dc2626;
+}
+
+.doc-card-body ol,
+.doc-card-body ul {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.doc-card-body li {
+  margin: 4px 0;
+}
+
+/* Audit Log Entry */
+.audit-log-entry {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+}
+
+.audit-log-entry:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.audit-log-entry.expanded {
+  background: #eff6ff;
+}
+
+.audit-log-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+
+.audit-log-action {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.audit-log-action-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.audit-log-action-icon.login {
+  background: #dbeafe;
+  color: #0369a1;
+}
+
+.audit-log-action-icon.logout {
+  background: #fed7aa;
+  color: #b45309;
+}
+
+.audit-log-action-icon.create {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.audit-log-action-icon.edit {
+  background: #fce7f3;
+  color: #9d174d;
+}
+
+.audit-log-action-icon.delete {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.audit-log-action-details {
+  flex: 1;
+}
+
+.audit-log-action-title {
+  font-weight: 600;
+  color: #111827;
+  font-size: 14px;
+}
+
+.audit-log-action-description {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.audit-log-timestamp {
+  text-align: right;
+  color: #9ca3af;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.audit-log-details {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  display: none;
+}
+
+.audit-log-entry.expanded .audit-log-details {
+  display: grid;
+}
+
+.audit-log-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.audit-log-detail-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+}
+
+.audit-log-detail-value {
+  font-size: 13px;
+  color: #111827;
+  font-family: 'Monaco', monospace;
+  word-break: break-all;
+}
+
+/* Monitoring Grid */
+.monitoring-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.health-status-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.health-status-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.health-status-header h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.health-badge-online {
+  font-size: 12px;
+  font-weight: 600;
+  color: #10b981;
+}
+
+.health-badge-offline {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ef4444;
+}
+
+.health-status-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.health-metric {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.health-label {
+  color: #6b7280;
+}
+
+.health-value {
+  font-weight: 600;
+  color: #111827;
+}
+
+@media (max-width: 768px) {
+  .help-callout {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .documentation-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .audit-log-details {
+    grid-template-columns: 1fr;
+  }
+
+  .monitoring-grid {
+    grid-template-columns: 1fr;
+  }
+}

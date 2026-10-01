@@ -1,36 +1,53 @@
 {% extends "layouts/base.html" %}
-{% from "partials/list_kit.html" import page_head, kpis, toolbar, badge, row_label, empty_row, empty_state, ROLE_ST with context %}
+{% from "partials/list_kit.html" import page_head, kpis, toolbar, badge, row_label, empty_row, empty_state, ROLE_ST with
+context %}
 {% block title %}Pending registrations{% endblock %}
 {% block content %}
-{{ page_head('bi-inbox', 'Pending registrations', 'Review documents and registry checks, then approve or reject each company.') }}
+{{ page_head('bi-inbox', 'Pending registrations', 'Review documents and registry checks, then approve or reject each
+company.') }}
 {% if not companies %}
-{{ empty_state('bi-check2-all', 'Nothing to review right now — new registrations appear here and in your notifications.') }}
+{{ empty_state('bi-check2-all', 'Nothing to review right now — new registrations appear here and in your
+notifications.') }}
 {% else %}
 {% set roles = companies | map(attribute='role') | map(attribute='value') | list %}
 {% set oldest = companies | map(attribute='created_at') | min %}
 {{ kpis([
-  ('bi-inbox', 'Awaiting review', companies | length, 'warning', ''),
-  ('bi-shop', 'Sellers', roles | select('equalto', 'seller') | list | length, 'primary', 'seller'),
-  ('bi-bag', 'Buyers', roles | select('equalto', 'buyer') | list | length, 'info', 'buyer'),
-  ('bi-eyedropper', 'Labs', roles | select('equalto', 'lab') | list | length, 'warning', 'lab'),
-  ('bi-hourglass-split', 'Oldest waiting', oldest.strftime('%Y-%m-%d'), 'danger', None),
+('bi-inbox', 'Awaiting review', companies | length, 'warning', ''),
+('bi-shop', 'Sellers', roles | select('equalto', 'seller') | list | length, 'primary', 'seller'),
+('bi-bag', 'Buyers', roles | select('equalto', 'buyer') | list | length, 'info', 'buyer'),
+('bi-eyedropper', 'Labs', roles | select('equalto', 'lab') | list | length, 'warning', 'lab'),
+('bi-hourglass-split', 'Oldest waiting', oldest.strftime('%Y-%m-%d'), 'danger', None),
 ], 'approvalsTable') }}
 {{ toolbar('approvalsTable', ROLE_ST, 'Search company, CR or email…') }}
-<div class="card adminuiux-card"><div class="table-responsive"><table class="table align-middle mb-0 mc-list-table" id="approvalsTable">
-  <thead><tr><th>Company</th><th>Role</th><th>CR number</th><th>Licence</th><th>Submitted</th><th></th></tr></thead>
-  <tbody>
-  {% for company in companies %}
-    <tr data-status="{{ company.role.value }}">
-      <td>{{ row_label(company.company_name, company.contact_email) }}</td>
-      <td>{{ badge(company.role.value, ROLE_ST) }}</td>
-      <td class="small font-monospace">{{ company.cr_number }}</td>
-      <td class="small">{{ company.license_or_accreditation_number or '—' }}</td>
-      <td class="small text-nowrap">{{ company.created_at.strftime("%Y-%m-%d") }}</td>
-      <td class="text-end"><a href="{{ url_for('admin_approvals_review', company_id=company.id) }}" class="btn btn-sm btn-theme"><i class="bi bi-search"></i> Review</a></td>
-    </tr>
-  {% endfor %}
-  {{ empty_row(6) }}
-  </tbody>
-</table></div></div>
+<div class="card adminuiux-card">
+  <div class="table-responsive">
+    <table class="table align-middle mb-0 mc-list-table" id="approvalsTable">
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Role</th>
+          <th>CR number</th>
+          <th>Licence</th>
+          <th>Submitted</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for company in companies %}
+        <tr data-status="{{ company.role.value }}">
+          <td>{{ row_label(company.company_name, company.contact_email) }}</td>
+          <td>{{ badge(company.role.value, ROLE_ST) }}</td>
+          <td class="small font-monospace">{{ company.cr_number }}</td>
+          <td class="small">{{ company.license_or_accreditation_number or '—' }}</td>
+          <td class="small text-nowrap">{{ company.created_at.strftime("%Y-%m-%d") }}</td>
+          <td class="text-end"><a href="{{ url_for('admin_approvals_review', company_id=company.id) }}"
+              class="btn btn-sm btn-theme"><i class="bi bi-search"></i> Review</a></td>
+        </tr>
+        {% endfor %}
+        {{ empty_row(6) }}
+      </tbody>
+    </table>
+  </div>
+</div>
 {% endif %}
 {% endblock %}

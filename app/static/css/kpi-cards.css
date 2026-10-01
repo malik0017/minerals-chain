@@ -1,0 +1,99 @@
+/* ============================================
+   KPI Cards Styling - Batch V Design Improvements
+   ============================================ */
+
+.kpi-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.kpi-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  border-color: #d1d5db;
+}
+
+.kpi-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.kpi-card-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.kpi-card-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.kpi-card-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+  line-height: 1;
+}
+
+.kpi-card-meta {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.kpi-card-trend {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.kpi-card-trend.positive {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.kpi-card-trend.negative {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.kpi-card-trend.neutral {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+/* Grid layout for KPI cards */
+.kpi-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 768px) {
+  .kpi-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kpi-card-value {
+    font-size: 24px;
+  }
+}

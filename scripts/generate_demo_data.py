@@ -49,11 +49,12 @@ from app.services import control_center_service as cc
 from app.services.master_data import batch_service  
 from app.services.master_data.starter_data import load_starter_data  
 from app.services.reference_service import next_reference  
+from app.services import placeholder_pdf
 
 PASSWORD = "admin123"
 R = random.Random(2026)
 NOW = datetime.now(timezone.utc)
-PDF = b"%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n"
+PDF = placeholder_pdf.make("Minerals Chain test document", ["Seeded for local testing"])
 PNG = b"\x89PNG\r\n\x1a\n" + bytes(64)
 HASH = None  # argon2 hash of PASSWORD, computed once
 

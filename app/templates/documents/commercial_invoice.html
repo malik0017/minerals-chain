@@ -1,39 +1,164 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><title>{{ order.invoice_number }}</title>
-<style>
-body{font-family:Arial,Helvetica,sans-serif;color:#1d2733;background:#eef1f4;margin:0}
-.sheet{max-width:820px;margin:24px auto;background:#fff;padding:40px;border-radius:8px}
-h1{font-size:22px;margin:0}.muted{color:#6b7785;font-size:12px}table{width:100%;border-collapse:collapse;margin-top:16px}
-th,td{padding:8px;border-bottom:1px solid #e3e7ec;text-align:left;font-size:13px}th{background:#f5f7f9}
-.r{text-align:right}.grid{display:flex;gap:24px;margin-top:20px}.grid>div{flex:1}.box{border:1px solid #e3e7ec;border-radius:6px;padding:12px}
-.note{margin-top:24px;padding:10px;border:1px dashed #c9a227;background:#fffbea;font-size:12px}
-@media print{body{background:#fff}.sheet{margin:0;max-width:none}}
-</style></head><body><div class="sheet">
-<div style="display:flex;justify-content:space-between;align-items:flex-start">
-  <div><h1>Commercial Invoice <span style="font-size:16px;color:#6b7785">فاتورة تجارية</span></h1>
-    <div class="muted">Issued via {{ platform }}</div></div>
-  <div class="r"><div style="font-size:18px;font-weight:bold">{{ order.invoice_number }}</div>
-    <div class="muted">Issue date: {{ issued.strftime('%Y-%m-%d') }}</div><div class="muted">Due date: {{ due }}</div>
-    <div class="muted">Order: {{ order.order_reference }}</div></div>
-</div>
-<div class="grid">
-  <div class="box"><div class="muted">Seller / البائع</div><strong>{{ seller.company_name }}</strong>{% if seller.company_name_ar %}<br>{{ seller.company_name_ar }}{% endif %}
-    <div class="muted">CR {{ seller.cr_number }}{% if seller.vat_registration_number %} · VAT {{ seller.vat_registration_number }}{% endif %}</div>
-    <div class="muted">{{ seller.city or '' }}{% if seller.national_address %} · {{ seller.national_address }}{% endif %}</div></div>
-  <div class="box"><div class="muted">Buyer / المشتري</div><strong>{{ buyer.company_name }}</strong>{% if buyer.company_name_ar %}<br>{{ buyer.company_name_ar }}{% endif %}
-    <div class="muted">CR {{ buyer.cr_number }}{% if buyer.vat_registration_number %} · VAT {{ buyer.vat_registration_number }}{% endif %}</div>
-    <div class="muted">Deliver to: {{ order.delivery_location or order.rfq.delivery_location }}</div></div>
-</div>
-<table><thead><tr><th>Description</th><th class="r">Quantity</th><th class="r">Unit price ({{ order.currency }})</th><th class="r">Amount ({{ order.currency }})</th></tr></thead>
-<tbody><tr><td>{{ order.rfq.mineral_type }}{% if order.incoterm_code %} — {{ order.incoterm_code }}{% endif %}</td>
-<td class="r">{{ order.quantity or order.rfq.quantity_value }} {{ order.quantity_unit or order.rfq.quantity_unit }}</td>
-<td class="r">{{ '{:,.2f}'.format(order.price_per_unit or order.quotation.price_value) }}</td>
-<td class="r">{{ '{:,.2f}'.format(order.subtotal_sar or 0) }}</td></tr></tbody>
-<tfoot>
-<tr><td colspan="3" class="r">Subtotal / المجموع قبل الضريبة</td><td class="r">{{ '{:,.2f}'.format(order.subtotal_sar or 0) }}</td></tr>
-<tr><td colspan="3" class="r">VAT {{ order.vat_rate_pct or 0 }}% / ضريبة القيمة المضافة</td><td class="r">{{ '{:,.2f}'.format(order.vat_amount_sar or 0) }}</td></tr>
-<tr><td colspan="3" class="r"><strong>Total / الإجمالي</strong></td><td class="r"><strong>{{ '{:,.2f}'.format(order.total_value_sar or 0) }}</strong></td></tr>
-</tfoot></table>
-<div class="muted" style="margin-top:12px">Payment terms: {{ order.payment_terms_days if order.payment_terms_days is not none else 0 }} days. Settlement between buyer and seller takes place outside the platform.</div>
-<div class="note"><strong>Not a ZATCA e-invoice.</strong> This commercial invoice documents the agreed trade. The tax invoice under ZATCA Fatoora Phase 2 (clearance, QR code, cryptographic stamp) will be issued once e-invoicing (Batch L) is enabled.</div>
-</div></body></html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>{{ order.invoice_number }}</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      color: #1d2733;
+      background: #eef1f4;
+      margin: 0
+    }
+
+    .sheet {
+      max-width: 820px;
+      margin: 24px auto;
+      background: #fff;
+      padding: 40px;
+      border-radius: 8px
+    }
+
+    h1 {
+      font-size: 22px;
+      margin: 0
+    }
+
+    .muted {
+      color: #6b7785;
+      font-size: 12px
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px
+    }
+
+    th,
+    td {
+      padding: 8px;
+      border-bottom: 1px solid #e3e7ec;
+      text-align: left;
+      font-size: 13px
+    }
+
+    th {
+      background: #f5f7f9
+    }
+
+    .r {
+      text-align: right
+    }
+
+    .grid {
+      display: flex;
+      gap: 24px;
+      margin-top: 20px
+    }
+
+    .grid>div {
+      flex: 1
+    }
+
+    .box {
+      border: 1px solid #e3e7ec;
+      border-radius: 6px;
+      padding: 12px
+    }
+
+    .note {
+      margin-top: 24px;
+      padding: 10px;
+      border: 1px dashed #c9a227;
+      background: #fffbea;
+      font-size: 12px
+    }
+
+    @media print {
+      body {
+        background: #fff
+      }
+
+      .sheet {
+        margin: 0;
+        max-width: none
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sheet">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <h1>Commercial Invoice <span style="font-size:16px;color:#6b7785">فاتورة تجارية</span></h1>
+        <div class="muted">Issued via {{ platform }}</div>
+      </div>
+      <div class="r">
+        <div style="font-size:18px;font-weight:bold">{{ order.invoice_number }}</div>
+        <div class="muted">Issue date: {{ issued.strftime('%Y-%m-%d') }}</div>
+        <div class="muted">Due date: {{ due }}</div>
+        <div class="muted">Order: {{ order.order_reference }}</div>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="box">
+        <div class="muted">Seller / البائع</div><strong>{{ seller.company_name }}</strong>{% if seller.company_name_ar
+        %}<br>{{ seller.company_name_ar }}{% endif %}
+        <div class="muted">CR {{ seller.cr_number }}{% if seller.vat_registration_number %} · VAT {{
+          seller.vat_registration_number }}{% endif %}</div>
+        <div class="muted">{{ seller.city or '' }}{% if seller.national_address %} · {{ seller.national_address }}{%
+          endif %}</div>
+      </div>
+      <div class="box">
+        <div class="muted">Buyer / المشتري</div><strong>{{ buyer.company_name }}</strong>{% if buyer.company_name_ar
+        %}<br>{{ buyer.company_name_ar }}{% endif %}
+        <div class="muted">CR {{ buyer.cr_number }}{% if buyer.vat_registration_number %} · VAT {{
+          buyer.vat_registration_number }}{% endif %}</div>
+        <div class="muted">Deliver to: {{ order.delivery_location or order.rfq.delivery_location }}</div>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th class="r">Quantity</th>
+          <th class="r">Unit price ({{ order.currency }})</th>
+          <th class="r">Amount ({{ order.currency }})</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{ order.rfq.mineral_type }}{% if order.incoterm_code %} — {{ order.incoterm_code }}{% endif %}</td>
+          <td class="r">{{ order.quantity or order.rfq.quantity_value }} {{ order.quantity_unit or
+            order.rfq.quantity_unit }}</td>
+          <td class="r">{{ '{:,.2f}'.format(order.price_per_unit or order.quotation.price_value) }}</td>
+          <td class="r">{{ '{:,.2f}'.format(order.subtotal_sar or 0) }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3" class="r">Subtotal / المجموع قبل الضريبة</td>
+          <td class="r">{{ '{:,.2f}'.format(order.subtotal_sar or 0) }}</td>
+        </tr>
+        <tr>
+          <td colspan="3" class="r">VAT {{ order.vat_rate_pct or 0 }}% / ضريبة القيمة المضافة</td>
+          <td class="r">{{ '{:,.2f}'.format(order.vat_amount_sar or 0) }}</td>
+        </tr>
+        <tr>
+          <td colspan="3" class="r"><strong>Total / الإجمالي</strong></td>
+          <td class="r"><strong>{{ '{:,.2f}'.format(order.total_value_sar or 0) }}</strong></td>
+        </tr>
+      </tfoot>
+    </table>
+    <div class="muted" style="margin-top:12px">Payment terms: {{ order.payment_terms_days if order.payment_terms_days is
+      not none else 0 }} days. Settlement between buyer and seller takes place outside the platform.</div>
+    <div class="note"><strong>Not a ZATCA e-invoice.</strong> This commercial invoice documents the agreed trade. The
+      tax invoice under ZATCA Fatoora Phase 2 (clearance, QR code, cryptographic stamp) will be issued once e-invoicing
+      (Batch L) is enabled.</div>
+  </div>
+</body>
+
+</html>

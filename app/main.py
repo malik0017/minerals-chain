@@ -118,37 +118,37 @@ app.include_router(buyer_rfq_router)
 app.include_router(buyer_orders_router)
 app.include_router(lab_dashboard_router)
 app.include_router(lab_verification_router)
-from app.modules.admin.backups.routes import router as admin_backups_router  # noqa: E402
+from app.modules.admin.backups.routes import router as admin_backups_router 
 app.include_router(admin_backups_router)
-from app.modules.public.security_routes import router as security_router  # noqa: E402
+from app.modules.public.security_routes import router as security_router  
 app.include_router(security_router)
-from app.modules.seller.inventory.routes import router as seller_inventory_router  # noqa: E402
+from app.modules.seller.inventory.routes import router as seller_inventory_router  
 app.include_router(seller_inventory_router)
-from app.modules.admin.inventory.routes import router as admin_inventory_router  # noqa: E402
+from app.modules.admin.inventory.routes import router as admin_inventory_router  
 app.include_router(admin_inventory_router)
-from app.modules.admin.erp_export.routes import router as admin_erp_export_router  # noqa: E402
+from app.modules.admin.erp_export.routes import router as admin_erp_export_router  
 app.include_router(admin_erp_export_router)
-from app.modules.seller.erp_export.routes import router as seller_erp_export_router  # noqa: E402
+from app.modules.seller.erp_export.routes import router as seller_erp_export_router 
 app.include_router(seller_erp_export_router)
-from app.modules.admin.shipments.routes import router as admin_shipments_router  # noqa: E402
+from app.modules.admin.shipments.routes import router as admin_shipments_router  
 app.include_router(admin_shipments_router)
-from app.modules.seller.shipments.routes import router as seller_shipments_router  # noqa: E402
+from app.modules.seller.shipments.routes import router as seller_shipments_router  
 app.include_router(seller_shipments_router)
-from app.modules.buyer.shipments.routes import router as buyer_shipments_router  # noqa: E402
+from app.modules.buyer.shipments.routes import router as buyer_shipments_router 
 app.include_router(buyer_shipments_router)
-from app.modules.shared.document_library_routes import router as document_library_router  # noqa: E402
+from app.modules.shared.document_library_routes import router as document_library_router  
 app.include_router(document_library_router)
-from app.modules.admin.documents.routes import router as admin_documents_router  # noqa: E402
+from app.modules.admin.documents.routes import router as admin_documents_router  
 app.include_router(admin_documents_router)
-from app.modules.admin.monitoring.routes import router as admin_monitoring_router  # noqa: E402
+from app.modules.admin.monitoring.routes import router as admin_monitoring_router  
 app.include_router(admin_monitoring_router)
-from app.modules.admin.credentials.routes import router as admin_credentials_router  # noqa: E402
+from app.modules.admin.credentials.routes import router as admin_credentials_router  
 app.include_router(admin_credentials_router)
-from app.modules.api.v1 import router as api_v1_router  # noqa: E402
+from app.modules.api.v1 import router as api_v1_router  
 app.include_router(api_v1_router)
-from app.modules.shared.api_token_routes import router as api_token_router  # noqa: E402
+from app.modules.shared.api_token_routes import router as api_token_router  
 app.include_router(api_token_router)
-from app.modules.public.pwa_routes import router as pwa_router  # noqa: E402
+from app.modules.public.pwa_routes import router as pwa_router  
 app.include_router(pwa_router)
 
 @app.exception_handler(NotAuthenticatedException)

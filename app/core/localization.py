@@ -185,6 +185,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
     "nav.master_data": {"en": "Master Data (ERP)", "ar": "البيانات الرئيسية"},
     "nav.control_center": {"en": "Control Center", "ar": "مركز التحكم"},
     "nav.system_settings": {"en": "System Settings", "ar": "إعدادات النظام"},
+    "nav.security": {"en": "Security", "ar": "الأمان"},
     "nav.inventory": {"en": "Inventory", "ar": "المخزون"},
     "nav.credential_checks": {"en": "Registry Checks", "ar": "التحقق من السجلات"},
     "nav.api_tokens": {"en": "API Tokens", "ar": "رموز الواجهة البرمجية"},
